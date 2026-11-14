@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:devices' %}" style="font-weight:600">Qurilmalar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.name %}
+  {% include 'panel/_field.html' with f=form.direction %}
+  {% include 'panel/_field.html' with f=form.host %}
+  {% include 'panel/_field.html' with f=form.port %}
+  <div class="field"><label>{{ form.use_https }} {{ form.use_https.label }}</label></div>
+  {% include 'panel/_field.html' with f=form.username %}
+  {% include 'panel/_field.html' with f=form.password %}
+  <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
+  {% if obj %}<div class="hint" style="margin-bottom:12px">Hodisalarni qabul qilish manzili (qurilmada HTTP listening uchun): <span class="mono">{{ request.scheme }}://{{ request.get_host }}{{ obj.push_path }}</span></div>{% endif %}
+  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:devices' %}">Bekor qilish</a>
+</form>
+{% endblock %}

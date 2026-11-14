@@ -1,0 +1,35 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:schedule' %}" style="font-weight:600">Dars jadvali</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:620px">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% include 'panel/_field.html' with f=form.group %}
+  {% include 'panel/_field.html' with f=form.subject %}
+  {% include 'panel/_field.html' with f=form.new_subject %}
+  {% include 'panel/_field.html' with f=form.teacher %}
+  <div class="formgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
+    {% include 'panel/_field.html' with f=form.weekday %}
+    {% include 'panel/_field.html' with f=form.period %}
+    {% include 'panel/_field.html' with f=form.start %}
+    {% include 'panel/_field.html' with f=form.end %}
+  </div>
+  {% include 'panel/_field.html' with f=form.room %}
+  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:schedule' %}">Bekor qilish</a>
+</form>
+{% if lesson %}
+<form method="post" action="{% url 'panel:lesson_delete' lesson.pk %}" style="margin-top:14px" onsubmit="return confirm(&quot;Dars jadvaldan olib tashlansinmi?&quot;)">{% csrf_token %}
+  <button class="btn">Jadvaldan olib tashlash</button> <span class="muted">Davomat va baho tarixi saqlanadi.</span></form>
+{% endif %}
+{% endblock %}
+{% block js %}
+<script>
+(function(){
+  var times = {{ period_times|safe_json }};
+  var p = document.getElementById('id_period'), s = document.getElementById('id_start'), e = document.getElementById('id_end');
+  if(!p) return;
+  p.addEventListener('change', function(){ var t = times[p.value]; if(t && !s.value && !e.value){ s.value = t[0]; e.value = t[1]; } });
+})();
+</script>
+{% endblock %}

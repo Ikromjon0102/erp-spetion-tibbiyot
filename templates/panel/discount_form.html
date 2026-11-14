@@ -1,0 +1,12 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:discounts' %}" style="font-weight:600">Chegirmalar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.name %}
+  {% include 'panel/_field.html' with f=form.percent %}
+  {% include 'panel/_field.html' with f=form.description %}
+  <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
+  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:discounts' %}">Bekor qilish</a>
+</form>
+{% endblock %}

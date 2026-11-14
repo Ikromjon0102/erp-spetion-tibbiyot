@@ -1,0 +1,143 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}{{ s.user.get_full_name }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:students' %}" style="font-weight:600">O'quvchilar</a> <span class="muted">/</span> {{ s.user.last_name }} {{ s.user.first_name }}{% endblock %}
+{% block actions %}
+  {% if can_change %}<a class="btn" href="{% url 'panel:student_edit' s.pk %}">Tahrirlash</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+  {% if s.user.photo %}<img src="{% url 'face_photo' s.user.pk %}" alt="" style="width:56px;height:56px;border-radius:16px;object-fit:cover">{% else %}<span class="av" style="width:56px;height:56px;border-radius:16px;font-size:20px;margin:0">{{ s.user|initials }}</span>{% endif %}
+  <div style="flex:1;min-width:200px"><div style="font-size:19px;font-weight:800">{{ s.user.last_name }} {{ s.user.first_name }}</div>
+    <div class="muted">{{ s.group|default:"Sinfsiz" }}{% if s.birth_date %} · {{ s.birth_date|date:"d.m.Y" }}{% endif %}</div></div>
+  {% if presence %}<div><span class="dot {{ presence.0 }}"></span><b>{{ presence.1 }}</b></div>{% endif %}
+  {% if debt is not None %}<div>{% if debt %}<span class="badge bad">Qarz: {{ debt|money }} so'm</span>{% else %}<span class="badge">Qarz yo'q</span>{% endif %}</div>{% endif %}
+</div>
+
+<div class="tabs" id="tabs">
+  <button data-tab="info" class="on">Umumiy</button>
+  <button data-tab="parents">Ota-onalar <span class="badge gray">{{ parents|length }}</span></button>
+  <button data-tab="att">Davomat</button>
+  {% if grades is not None %}<button data-tab="grades">Baholar</button>{% endif %}
+  {% if payments is not None %}<button data-tab="pay">To'lov</button>{% endif %}
+  {% if access_days is not None %}<button data-tab="access">Kirish-chiqish</button>{% endif %}
+</div>
+
+<section class="tabpane" id="tab-info"><div class="card"><dl class="kv">
+  <dt>Familiya</dt><dd>{{ s.user.last_name }}</dd><dt>Ism</dt><dd>{{ s.user.first_name }}</dd>
+  <dt>Sinf</dt><dd>{{ s.group|default:"—" }}</dd><dt>Tug'ilgan sana</dt><dd>{{ s.birth_date|date:"d.m.Y"|default:"—" }}</dd>
+  <dt>Face ID</dt><dd class="mono">{{ s.access_id|default:"— (kiritilmagan)" }}</dd>
+</dl></div>
+<div class="card" style="margin-top:14px"><h2>Yuz rasmi <small class="muted">(Hikvision)</small></h2>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    {% if s.user.photo %}<img src="{% url 'face_photo' s.user.pk %}" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:14px;border:1px solid var(--line)">{% else %}<div class="empty" style="width:110px;height:110px;display:flex;align-items:center;justify-content:center">rasm yo'q</div>{% endif %}
+    <div>{% if can_change %}<form method="post" action="{% url 'panel:student_photo' s.pk %}" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="photo" accept="image/*" required> <button class="btn primary">Yuklash</button></form>
+      {% if s.user.photo %}<form method="post" action="{% url 'panel:student_photo_delete' s.pk %}" style="margin-top:6px">{% csrf_token %}<button class="btn">Rasmni o'chirish</button></form>{% endif %}
+      <div class="hint">Yuz aniq ko'ringan, old tomondan olingan rasm. {% if not s.access_id %}<b>Avval Face ID kiriting</b> (Tahrirlash) — qurilmaga shu ID bilan yoziladi.{% else %}Qurilmalarga avtomatik yuboriladi.{% endif %}</div>{% endif %}</div>
+  </div></div></section>
+
+<section class="tabpane" id="tab-parents" hidden><div class="card">
+  <h2>Ota-onalar</h2>
+  {% if parents %}
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ism</th>{% if show_phone %}<th>Telefon (login)</th>{% endif %}<th>Hisob</th>{% if can_change %}<th></th>{% endif %}</tr></thead><tbody>
+  {% for p in parents %}<tr>
+    <td><b>{{ p.get_full_name|default:p.username }}</b>{% if p.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
+    {% if show_phone %}<td class="mono">{{ p.phone|default:"—" }}</td>{% endif %}
+    <td>{% if p.has_usable_password %}{% if p.must_change_password %}<span class="badge warn">bir martalik parol</span>{% else %}<span class="badge">faol</span>{% endif %}{% else %}<span class="badge gray">parol berilmagan</span>{% endif %}</td>
+    {% if can_change %}<td style="text-align:right;white-space:nowrap">
+      {% if not p.is_teacher %}<form method="post" action="{% url 'panel:parent_password' s.pk p.pk %}" style="display:inline">{% csrf_token %}<button class="btn small">Bir martalik parol</button></form>{% endif %}
+      <form method="post" action="{% url 'panel:parent_remove' s.pk p.pk %}" style="display:inline" onsubmit="return confirm('Ota-onani bu o\'quvchidan ajratasizmi?')">{% csrf_token %}<button class="btn small danger">Ajratish</button></form>
+    </td>{% endif %}
+  </tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty">Ota-ona biriktirilmagan</div>{% endif %}
+  {% if can_change %}
+  <h2 style="margin-top:22px">Ota-ona qo'shish</h2>
+  {% if 'parents.add' in panel_can %}<p class="hint"><a href="{% url 'panel:parent_create' %}?oquvchi={{ s.pk }}">Batafsil forma (ism, familiya alohida) →</a></p>{% endif %}
+  <form method="post" action="{% url 'panel:parent_add' s.pk %}" class="formgrid">{% csrf_token %}
+    <div class="field"><label>Ism-familiya</label><input type="text" name="name" required></div>
+    <div class="field"><label>Telefon raqam (login)</label><input type="tel" name="phone" placeholder="+998 90 123-45-67" required></div>
+    <div class="wide"><button class="btn primary">Biriktirish</button> <span class="hint">Shu raqam bilan hisob allaqachon bo'lsa (masalan, farzandi ham o'qiydigan ustoz), yangi hisob ochilmaydi.</span></div>
+  </form>
+  {% endif %}
+</div></section>
+
+<section class="tabpane" id="tab-att" hidden><div class="card">
+  <h2>Davomat <small>so'nggi 30 kun</small></h2>
+  {% if att.total %}
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="stat good"><div class="k">Davomat</div><div class="v">{{ att.rate }}%</div></div>
+    <div class="stat"><div class="k">Keldi</div><div class="v">{{ att.present }}</div></div>
+    <div class="stat {% if att.absent %}warn{% endif %}"><div class="k">Kelmadi</div><div class="v">{{ att.absent }}</div></div>
+    <div class="stat"><div class="k">Kech / sababli</div><div class="v">{{ att.late }} / {{ att.excused }}</div></div>
+  </div>
+  {% if att.issues %}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sana</th><th>Dars</th><th>Holat</th></tr></thead><tbody>
+    {% for a in att.issues %}<tr><td class="mono">{{ a.date|date:"d.m.Y" }}</td><td>{{ a.lesson.period }}-dars · {{ a.lesson.teaching.subject }}</td>
+      <td><span class="badge {% if a.status == 'absent' %}bad{% elif a.status == 'late' %}warn{% else %}blue{% endif %}">{{ a.get_status_display }}</span></td></tr>{% endfor %}
+  </tbody></table></div>{% endif %}
+  {% else %}<div class="empty">So'nggi 30 kunda davomat belgilanmagan</div>{% endif %}
+</div></section>
+
+{% if grades is not None %}<section class="tabpane" id="tab-grades" hidden><div class="card">
+  <h2>Baholar <small>fanlar bo'yicha</small></h2>
+  {% if grades %}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fan</th><th>O'rtacha</th><th>Baholar soni</th><th>Oxirgi baholar</th></tr></thead><tbody>
+    {% for g in grades %}<tr><td><b>{{ g.subject }}</b></td><td><span class="badge">{{ g.avg }}</span></td><td>{{ g.count }}</td><td class="mono">{{ g.last|join:" · " }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<div class="empty">Baho qo'yilmagan</div>{% endif %}
+</div></section>{% endif %}
+
+{% if payments is not None %}<section class="tabpane" id="tab-pay" hidden><div class="card">
+  <h2>To'lovlar{% if 'payments.accept' in panel_can %} <a class="btn primary" style="float:right" href="{% url 'panel:pay' s.pk %}">To'lov qabul qilish</a>{% endif %}</h2>
+  <p>{% if bill.debt %}Qarz: <b style="color:var(--bad)">{{ bill.debt|money }} so'm</b>{% if bill.overdue %} · muddati o'tgan: <b>{{ bill.overdue|money }}</b>{% endif %}{% elif bill.advance %}Avans: <b>{{ bill.advance|money }} so'm</b>{% else %}Qarz yo'q{% endif %}</p>
+  {% if bill.rows %}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Oy</th><th>Hisoblangan</th><th>To'langan</th><th>Qarz</th><th>Chegirma</th></tr></thead><tbody>
+    {% for r in bill.rows %}<tr><td>{{ r.charge.month|date:"F Y" }}</td><td>{{ r.charge.amount|money }}</td><td>{{ r.paid|money }}</td>
+      <td>{% if r.debt %}<span class="badge bad">{{ r.debt|money }}</span>{% if r.overdue %} <small class="muted">muddati o'tgan</small>{% endif %}{% else %}<span class="badge">to'langan</span>{% endif %}</td>
+      <td class="muted">{{ r.charge.discount_label|default:"—" }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<div class="empty">Hisob hali yozilmagan (oylik narx belgilanganmi?)</div>{% endif %}
+</div>
+<div class="card"><h2>To'lovlar tarixi</h2>
+  {% if bill.payments %}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sana</th><th>Summa</th><th>Usul</th><th>Chek</th><th></th></tr></thead><tbody>
+    {% for p in bill.payments %}<tr><td>{{ p.paid_on|date:"d.m.Y" }}</td>
+      <td>{% if p.voided %}<s class="muted">{{ p.amount|money }}</s> <span class="badge bad">bekor</span>{% else %}<b>{{ p.amount|money }}</b>{% endif %}</td>
+      <td>{{ p.get_method_display }}</td><td><a class="mono" href="{% url 'receipt' s.pk p.pk %}">{{ p.receipt_no }}</a></td>
+      <td>{% if not p.voided and 'payments.void' in panel_can %}<form method="post" action="{% url 'panel:payment_void' p.pk %}" style="display:flex;gap:6px" onsubmit="return confirm('To\u2018lov bekor qilinsinmi?')">{% csrf_token %}<input type="text" name="reason" placeholder="Sabab" style="width:130px"><button class="btn">Bekor qilish</button></form>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<div class="empty">To'lovlar yo'q</div>{% endif %}
+</div>
+<div class="card"><h2>Chegirmalar</h2>
+  {% for d in bill.discounts %}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
+    <div><b>{{ d.discount.name }}</b> <span class="badge">−{{ d.discount.percent|floatformat:"-2" }}%</span>{% if not d.discount.is_active %} <span class="badge gray">faolsiz</span>{% endif %}<div class="muted" style="font-size:12.5px">{% if d.valid_from %}{{ d.valid_from|date:"m.Y" }}{% else %}boshidan{% endif %} — {% if d.valid_to %}{{ d.valid_to|date:"m.Y" }}{% else %}muddatsiz{% endif %}{% if d.note %} · {{ d.note }}{% endif %}</div></div>
+    {% if 'payments.discounts' in panel_can %}<form method="post" action="{% url 'panel:student_discount_remove' s.pk d.pk %}">{% csrf_token %}<button class="btn">Olib tashlash</button></form>{% endif %}</div>
+  {% empty %}<div class="empty">Chegirma yo'q</div>{% endfor %}
+  {% if 'payments.discounts' in panel_can %}{% if all_discounts %}
+  <form method="post" action="{% url 'panel:student_discount_add' s.pk %}" class="filters" style="margin-top:12px">{% csrf_token %}
+    <select name="discount" required><option value="">— chegirma tanlang —</option>{% for d in all_discounts %}<option value="{{ d.pk }}">{{ d.name }} (−{{ d.percent|floatformat:"-2" }}%)</option>{% endfor %}</select>
+    <input type="month" name="valid_from" title="Qaysi oydan (ixtiyoriy)"><input type="month" name="valid_to" title="Qaysi oygacha (ixtiyoriy)">
+    <input type="text" name="note" placeholder="Sabab (ixtiyoriy)"><button class="btn primary">Biriktirish</button>
+  </form>
+  <div class="hint">Bir nechta chegirma bo'lsa, eng kattasi qo'llanadi.</div>
+  {% else %}<div class="hint">Avval «To'lovlar → Chegirmalar» bo'limida chegirma turlarini kiriting.</div>{% endif %}{% endif %}
+</div></section>{% endif %}
+
+{% if access_days is not None %}<section class="tabpane" id="tab-access" hidden><div class="card">
+  <h2>Maktabga kelish va ketish <small>so'nggi 14 kun</small></h2>
+  {% if access_days %}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sana</th><th>Keldi</th><th>Ketdi</th></tr></thead><tbody>
+    {% for d in access_days %}<tr><td>{{ d.date|wd }}, {{ d.date|date:"d.m.Y" }}</td><td class="mono">{{ d.arrived|time:"H:i"|default:"—" }}</td><td class="mono">{{ d.left|time:"H:i"|default:"—" }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<div class="empty">Kirish-chiqish ma'lumoti yo'q{% if not s.access_id %} (Face ID kiritilmagan){% endif %}</div>{% endif %}
+</div></section>{% endif %}
+{% endblock %}
+
+{% block js %}
+<script>
+(function(){
+  var btns = document.querySelectorAll('#tabs [data-tab]'), panes = document.querySelectorAll('.tabpane');
+  function show(n){
+    var ok = false;
+    panes.forEach(function(p){ var on = p.id === 'tab-' + n; p.hidden = !on; if (on) ok = true; });
+    if (!ok) return show('info');
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.tab === n); });
+    try { history.replaceState(null, '', '#' + n); } catch(e) {}
+  }
+  btns.forEach(function(b){ b.onclick = function(){ show(b.dataset.tab); }; });
+  show((location.hash || '#info').slice(1));
+})();
+</script>
+{% endblock %}

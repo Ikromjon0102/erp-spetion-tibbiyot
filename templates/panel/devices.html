@@ -1,0 +1,34 @@
+{% extends 'panel/base.html' %}
+{% block title %}Qurilmalar{% endblock %}
+{% block heading %}Qurilmalar va yuz rasmlari{% endblock %}
+{% block actions %}{% if manage %}<a class="btn" href="{% url 'panel:device_add' %}">Qurilma qo'shish</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid g4" style="margin-bottom:18px">
+  <div class="stat"><div class="k">O'quvchilar rasmi</div><div class="v">{{ stats.students_photo }}<small class="muted"> / {{ stats.students }}</small></div><div class="s">rasmi yuklangan</div></div>
+  <div class="stat"><div class="k">Ustozlar rasmi</div><div class="v">{{ stats.teachers_photo }}<small class="muted"> / {{ stats.teachers }}</small></div><div class="s">rasmi yuklangan</div></div>
+  <div class="stat good"><div class="k">Qurilmaga tayyor</div><div class="v">{{ stats.ready }}</div><div class="s">rasm va Face ID bor</div></div>
+</div>
+<div class="card" style="padding:6px 10px"><h2 style="padding:8px 8px 0;margin:0">Qurilmalar</h2>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Qurilma</th><th>Manzil</th><th>Oxirgi signal</th><th>Rasm sync</th><th></th></tr></thead><tbody>
+  {% for r in rows %}<tr>
+    <td><b>{{ r.d.name }}</b> <span class="badge gray">{{ r.d.get_direction_display }}</span>{% if not r.d.is_active %} <span class="badge gray">nofaol</span>{% endif %}</td>
+    <td class="mono">{{ r.d.host|default:"— kiritilmagan —" }}{% if r.d.host %}:{{ r.d.port }}{% endif %}</td>
+    <td class="muted">{{ r.d.last_seen|date:"d.m.Y H:i"|default:"hali signal yo'q" }}</td>
+    <td>{% if r.d.host %}{% if r.pending %}<span class="badge warn">{{ r.pending }} ta yuborilishi kerak</span>{% else %}<span class="badge">hammasi yuborilgan</span>{% endif %}{% if r.failed %} <span class="badge bad">{{ r.failed }} xato</span>{% endif %}
+      {% if r.d.last_sync_at %}<div class="muted" style="font-size:12px">{{ r.d.last_sync_at|date:"d.m H:i" }} · {{ r.d.last_sync_note }}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+    <td style="text-align:right;white-space:nowrap">{% if manage %}
+      <form method="post" action="{% url 'panel:device_test' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn">Tekshirish</button></form>
+      <form method="post" action="{% url 'panel:device_sync' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn primary">Sync</button></form>
+      <a class="btn" href="{% url 'panel:device_edit' r.d.pk %}">Sozlash</a>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5"><div class="empty">Qurilmalar yo'q</div></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if manage and rows %}<form method="post" action="{% url 'panel:devices_sync' %}" style="padding:8px">{% csrf_token %}<button class="btn">Hamma qurilmalarni sync qilish (fonda)</button></form>{% endif %}
+</div>
+{% if errors %}<div class="card" style="padding:6px 10px"><h2 style="padding:8px 8px 0;margin:0">So'nggi xatolar</h2>
+  <div class="tbl-wrap"><table class="tbl stack"><tbody>{% for e in errors %}<tr><td><b>{{ e.user.get_full_name|default:e.user.username }}</b> <span class="muted">· {{ e.device.name }}</span></td><td class="muted">{{ e.error }}</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+{% if manage %}<div class="card"><h2>Rasmlarni ZIP bilan yuklash</h2>
+  <p class="muted">Fayl nomi — Face ID bo'lsin: <span class="mono">1001.jpg</span>, <span class="mono">7001.png</span> (o'quvchi yoki ustoz Face ID si). Bitta rasm uchun o'quvchi/ustoz kartasidan yuklang.</p>
+  <form method="post" action="{% url 'panel:faces_zip' %}" enctype="multipart/form-data" class="filters">{% csrf_token %}<input type="file" name="zip" accept=".zip" required><button class="btn primary">Yuklash</button></form>
+</div>{% endif %}
+<p class="hint">Rasm yuklanganda qurilmalarga o'zi yuboriladi. Qurilma manzili, logini va paroli «Sozlash» orqali kiritiladi; server qurilma bilan bir tarmoqda bo'lishi kerak.</p>
+{% endblock %}

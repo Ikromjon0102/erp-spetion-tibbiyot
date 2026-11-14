@@ -1,0 +1,50 @@
+{% extends 'app/base.html' %}
+{% load app_extras %}
+{% block title %}Farzandlarim — Spetion{% endblock %}
+{% block heading %}Farzandlarim{% endblock %}
+
+{% block head %}
+<style>
+  .kid { display:block; background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow); padding:14px; margin-bottom:12px; }
+  .kid:active { background:var(--tint); }
+  .kid-top { display:flex; align-items:center; gap:12px; }
+  .kid-av { width:48px; height:48px; border-radius:15px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font:800 17px 'Inter',sans-serif; flex-shrink:0; }
+  .kid-name { flex:1; min-width:0; } .kid-name b { display:block; font-size:16.5px; } .kid-name small { color:var(--dim); }
+  .kid .go { color:var(--faint); }
+  .pres { display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--tint); font-weight:600; font-size:13.5px; }
+  .pres .dot { width:9px; height:9px; border-radius:50%; background:var(--faint); flex-shrink:0; }
+  .pres.in .dot { background:#1FBF55; box-shadow:0 0 0 4px rgba(31,191,85,.22); }
+  .pres.out .dot { background:#E0A030; } .pres.wait .dot { background:#E5574B; }
+  .mini { display:flex; gap:10px; margin-top:10px; }
+  .mini div { flex:1; background:var(--bg); border-radius:12px; padding:9px 11px; }
+  .mini small { display:block; color:var(--dim); font-size:11.5px; font-weight:600; } .mini b { font-size:18px; }
+  .g5 { color:#166534; } .g4 { color:#3F8F5A; } .g3 { color:#B36205; } .g2 { color:#C62828; }
+  @media (prefers-color-scheme: dark) { .g5 { color:#7FD49C; } .g4 { color:#6FC48B; } .g3 { color:#F0A84E; } .g2 { color:#EF6B63; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% for c in children %}
+<a class="kid" href="{% url 'student_detail' c.pk %}">
+  <div class="kid-top">
+    <div class="kid-av">{{ c.user|initials }}</div>
+    <div class="kid-name"><b>{{ c.user.last_name }} {{ c.user.first_name }}</b><small>{{ c.group|default:"Guruh biriktirilmagan" }}</small></div>
+    <svg class="ic go"><use href="#i-next"/></svg>
+  </div>
+  <div class="pres {{ c.info.presence.state }}"><span class="dot"></span>{{ c.info.presence.text }}</div>
+  <div class="mini">
+    <div><small>O'rtacha baho</small><b class="{{ c.info.avg_class }}">{{ c.info.avg|default:"—" }}</b></div>
+    <div><small>Davomat (30 kun)</small><b>{% if c.info.rate is not None %}{{ c.info.rate }}%{% else %}—{% endif %}</b></div>
+  </div>
+</a>
+{% empty %}
+<div class="empty">Sizga hali farzand biriktirilmagan.<br>Maktab ma'muriyatiga murojaat qiling.</div>
+{% endfor %}
+
+{% if news %}
+<h2 class="sec">E'lonlar <a href="{% url 'announcements' %}">Barchasi</a></h2>
+{% for a in news %}
+<details class="nw" data-nid="{{ a.pk }}"><summary><span class="t"><b>{{ a.title }}</b><small>{{ a.created_at|date:"d.m.Y" }}{% if a.group %} · {{ a.group }}{% endif %}</small></span>{% if not a.is_read %}<i class="newdot" title="Yangi"></i>{% endif %}<svg class="ic chev"><use href="#i-next"/></svg></summary><div class="body">{{ a.body|linebreaksbr }}</div></details>
+{% endfor %}
+{% endif %}
+{% endblock %}

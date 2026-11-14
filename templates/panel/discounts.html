@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}Chegirmalar{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> Chegirmalar{% endblock %}
+{% block actions %}{% if 'payments.discounts' in panel_can %}<a class="btn primary" href="{% url 'panel:discount_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi chegirma</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="card" style="padding:6px 10px">
+  <p class="muted" style="padding:6px 8px 0">Standart holatda hech kimda chegirma yo'q. Kerakli o'quvchining kartasida chegirma tanlanadi. Bir nechta bo'lsa, eng kattasi qo'llanadi (qo'shilmaydi).</p>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Nomi</th><th>Foiz</th><th>Izoh</th><th>O'quvchilar</th><th></th></tr></thead><tbody>
+  {% for r in rows %}<tr>
+    <td><b>{{ r.d.name }}</b>{% if not r.d.is_active %} <span class="badge gray">faolsiz</span>{% endif %}</td><td><span class="badge">−{{ r.d.percent|floatformat:"-2" }}%</span></td>
+    <td class="muted">{{ r.d.description }}</td><td>{{ r.count }}</td>
+    <td style="text-align:right">{% if 'payments.discounts' in panel_can %}<a class="btn" href="{% url 'panel:discount_edit' r.d.pk %}">Tahrirlash</a>
+      <form method="post" action="{% url 'panel:discount_delete' r.d.pk %}" style="display:inline" onsubmit="return confirm(&quot;Chegirma o'chirilsinmi?&quot;)">{% csrf_token %}<button class="btn">O'chirish</button></form>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5"><div class="empty">Chegirmalar hali kiritilmagan</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

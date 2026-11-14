@@ -1,0 +1,15 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:positions' %}" style="font-weight:600">Lavozimlar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:860px">{% csrf_token %}
+  <div class="formgrid">
+    {% include 'panel/_field.html' with f=form.name %}
+    <div class="field"><label>&nbsp;</label><label class="check">{{ form.is_owner }} {{ form.is_owner.label }}</label>{{ form.is_owner.errors }}</div>
+  </div>
+  <h2>Boshlang'ich ruxsatlar</h2>
+  {% include 'panel/_perms_matrix.html' with locked=False %}
+  <div style="margin-top:18px"><button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:positions' %}">Bekor qilish</a></div>
+  <div class="hint">Bu o'zgarish faqat yangi qo'shiladigan xodimlar uchun namuna; mavjud xodimlarning ruxsatlari o'zgarmaydi.</div>
+</form>
+{% endblock %}

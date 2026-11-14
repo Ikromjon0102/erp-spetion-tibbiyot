@@ -1,0 +1,86 @@
+from django.urls import path
+
+from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students
+
+app_name = 'panel'
+urlpatterns = [
+    path('', views_core.dashboard, name='dashboard'),
+    path('jurnal/', views_core.audit_list, name='audit'),
+
+    path('oquvchilar/', views_students.students, name='students'),
+    path('oquvchilar/yangi/', views_students.student_add, name='student_add'),
+    path('oquvchilar/yuklash/', views_students.students_import, name='students_import'),
+    path('oquvchilar/royxat.csv', views_students.students_csv, name='students_csv'),
+    path('oquvchilar/<int:pk>/', views_students.student_detail, name='student'),
+    path('oquvchilar/<int:pk>/tahrirlash/', views_students.student_edit, name='student_edit'),
+    path('oquvchilar/<int:pk>/ota-ona/', views_students.parent_add, name='parent_add'),
+    path('oquvchilar/<int:pk>/ota-ona/<int:parent_id>/ajratish/', views_students.parent_remove, name='parent_remove'),
+    path('oquvchilar/<int:pk>/ota-ona/<int:parent_id>/parol/', views_students.parent_password, name='parent_password'),
+
+    path('ustozlar/', views_teachers.teachers, name='teachers'),
+    path('ustozlar/yangi/', views_teachers.teacher_add, name='teacher_add'),
+    path('ustozlar/<int:pk>/', views_teachers.teacher_detail, name='teacher'),
+    path('ustozlar/<int:pk>/tahrirlash/', views_teachers.teacher_edit, name='teacher_edit'),
+    path('ustozlar/<int:pk>/dars/', views_teachers.teacher_assign, name='teacher_assign'),
+    path('ustozlar/<int:pk>/dars/<int:teaching_id>/olib-tashlash/', views_teachers.teacher_unassign, name='teacher_unassign'),
+    path('ustozlar/<int:pk>/parol/', views_teachers.teacher_password, name='teacher_password'),
+    path('ustozlar/<int:pk>/holat/', views_teachers.teacher_toggle, name='teacher_toggle'),
+
+    path('jadval/', views_schedule.schedule, name='schedule'),
+    path('jadval/yangi/', views_schedule.lesson_edit, name='lesson_add'),
+    path('jadval/<int:pk>/', views_schedule.lesson_edit, name='lesson_edit'),
+    path('jadval/<int:pk>/olib-tashlash/', views_schedule.lesson_delete, name='lesson_delete'),
+
+    path('ota-onalar/', views_parents.parents, name='parents'),
+    path('ota-onalar/yangi/', views_parents.parent_create, name='parent_create'),
+    path('ota-onalar/<int:pk>/', views_parents.parent_detail, name='parent'),
+    path('ota-onalar/<int:pk>/tahrirlash/', views_parents.parent_edit, name='parent_edit'),
+    path('ota-onalar/<int:pk>/parol/', views_parents.parent_password, name='parent_password_set'),
+    path('ota-onalar/<int:pk>/farzand/<int:student_id>/', views_parents.parent_link, name='parent_link'),
+    path('ota-onalar/<int:pk>/farzand/<int:student_id>/ajratish/', views_parents.parent_unlink, name='parent_unlink'),
+
+    path('qurilmalar/', views_devices.devices, name='devices'),
+    path('qurilmalar/yangi/', views_devices.device_edit, name='device_add'),
+    path('qurilmalar/<int:pk>/', views_devices.device_edit, name='device_edit'),
+    path('qurilmalar/<int:pk>/tekshirish/', views_devices.device_test, name='device_test'),
+    path('qurilmalar/<int:pk>/sync/', views_devices.device_sync, name='device_sync'),
+    path('qurilmalar/sync/', views_devices.device_sync, name='devices_sync'),
+    path('qurilmalar/rasmlar-zip/', views_devices.faces_zip, name='faces_zip'),
+    path('oquvchilar/<int:pk>/rasm/', views_devices.student_photo, name='student_photo'),
+    path('oquvchilar/<int:pk>/rasm/ochirish/', views_devices.student_photo_delete, name='student_photo_delete'),
+    path('ustozlar/<int:pk>/rasm/', views_devices.teacher_photo, name='teacher_photo'),
+    path('ustozlar/<int:pk>/rasm/ochirish/', views_devices.teacher_photo_delete, name='teacher_photo_delete'),
+
+    path('sinflar/', views_groups.groups, name='groups'),
+    path('sinflar/yangi/', views_groups.group_edit, name='group_add'),
+    path('sinflar/<int:pk>/', views_groups.group_edit, name='group_edit'),
+
+    path('elonlar/', views_news.news, name='news'),
+    path('elonlar/yangi/', views_news.news_add, name='news_add'),
+    path('elonlar/<int:pk>/', views_news.news_detail, name='news_detail'),
+    path('elonlar/<int:pk>/tahrirlash/', views_news.news_edit, name='news_edit'),
+    path('elonlar/<int:pk>/ochirish/', views_news.news_delete, name='news_delete'),
+
+    path('tolovlar/', views_finance.finance, name='finance'),
+    path('tolovlar/oquvchi/<int:pk>/', views_finance.pay, name='pay'),
+    path('tolovlar/<int:pk>/bekor/', views_finance.payment_void, name='payment_void'),
+    path('tolovlar/chegirmalar/', views_finance.discounts, name='discounts'),
+    path('tolovlar/chegirmalar/yangi/', views_finance.discount_edit, name='discount_add'),
+    path('tolovlar/chegirmalar/<int:pk>/', views_finance.discount_edit, name='discount_edit'),
+    path('tolovlar/chegirmalar/<int:pk>/ochirish/', views_finance.discount_delete, name='discount_delete'),
+    path('tolovlar/sozlamalar/', views_finance.finance_settings, name='finance_settings'),
+    path('tolovlar/hisobotlar/', views_finance.reports_page, name='reports'),
+    path('tolovlar/hisobotlar/<str:key>.<str:fmt>', views_finance.report_download, name='report_download'),
+    path('oquvchilar/<int:pk>/chegirma/', views_finance.student_discount_add, name='student_discount_add'),
+    path('oquvchilar/<int:pk>/chegirma/<int:sd_id>/olib-tashlash/', views_finance.student_discount_remove, name='student_discount_remove'),
+
+    path('xodimlar/', views_staff.staff_list, name='staff'),
+    path('xodimlar/yangi/', views_staff.staff_add, name='staff_add'),
+    path('xodimlar/<int:pk>/', views_staff.staff_detail, name='staff_detail'),
+    path('xodimlar/<int:pk>/parol/', views_staff.staff_password, name='staff_password'),
+    path('xodimlar/<int:pk>/olib-tashlash/', views_staff.staff_remove, name='staff_remove'),
+    path('lavozimlar/', views_staff.positions, name='positions'),
+    path('lavozimlar/yangi/', views_staff.position_edit, name='position_add'),
+    path('lavozimlar/<int:pk>/', views_staff.position_edit, name='position_edit'),
+    path('lavozimlar/<int:pk>/ochirish/', views_staff.position_delete, name='position_delete'),
+]

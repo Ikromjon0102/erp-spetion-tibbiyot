@@ -1,0 +1,21 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras %}
+{% block title %}Lavozimlar{% endblock %}
+{% block heading %}Lavozimlar{% endblock %}
+{% block actions %}{% if can_manage %}<a class="btn primary" href="{% url 'panel:position_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Lavozim qo'shish</a>{% endif %}{% endblock %}
+{% block content %}
+<p class="muted" style="margin-top:0">Lavozim — yorliq va <b>boshlang'ich ruxsatlar namunasi</b>. Yangi xodimga lavozim tanlanganda shu ruxsatlar qo'yiladi; haqiqiy ruxsatlar har bir xodimda alohida belgilanadi.</p>
+<div class="grid g2">
+  {% for pos in positions %}
+  <div class="card">
+    <h2>{{ pos.name }} {% if pos.is_owner %}<span class="badge">to'liq ruxsat</span>{% endif %}<small>{{ pos.n }} ta xodim</small></h2>
+    {% if pos.is_owner %}<div class="muted">Barcha bo'limlar ochiq.</div>
+    {% else %}<div style="display:flex;flex-wrap:wrap;gap:6px">{% for code in pos.default_perms %}<span class="badge gray">{{ labels|get:code|default:code }}</span>{% empty %}<span class="muted">ruxsat tanlanmagan</span>{% endfor %}</div>{% endif %}
+    {% if can_manage %}<div style="margin-top:14px;display:flex;gap:8px">
+      <a class="btn small" href="{% url 'panel:position_edit' pos.pk %}">Tahrirlash</a>
+      {% if not pos.is_owner and not pos.n %}<form method="post" action="{% url 'panel:position_delete' pos.pk %}" onsubmit="return confirm('Lavozim o\'chirilsinmi?')">{% csrf_token %}<button class="btn small danger">O'chirish</button></form>{% endif %}
+    </div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}Xodim qo'shish{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:staff' %}" style="font-weight:600">Xodimlar</a> <span class="muted">/</span> Yangi xodim{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:700px">{% csrf_token %}
+  <div class="formgrid">
+    {% include 'panel/_field.html' with f=form.last_name %}
+    {% include 'panel/_field.html' with f=form.first_name %}
+    {% include 'panel/_field.html' with f=form.phone %}
+    {% include 'panel/_field.html' with f=form.position %}
+  </div>
+  <p class="hint" style="margin-top:0">Lavozim tanlanganda unga mos boshlang'ich ruxsatlar qo'yiladi; keyin xodim sahifasida har birini alohida o'zgartirasiz.
+  Shu telefon raqami bilan hisob allaqachon bo'lsa (masalan, ustoz), yangi hisob ochilmaydi: unga panel ruxsati beriladi va paroli o'zgarmaydi.
+  Yangi hisobga bir martalik parol beriladi (faqat bir marta ko'rsatiladi).</p>
+  <button class="btn primary">Qo'shish</button> <a class="btn" href="{% url 'panel:staff' %}">Bekor qilish</a>
+</form>
+{% endblock %}

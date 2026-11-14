@@ -1,0 +1,25 @@
+{% extends 'panel/base.html' %}
+{% block title %}Excel'dan yuklash{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:students' %}" style="font-weight:600">O'quvchilar</a> <span class="muted">/</span> Excel'dan yuklash{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:760px">{% csrf_token %}
+  <p class="muted" style="margin-top:0">Faylda ustunlar: <b>O'quvchi F.I.Sh.</b>, <b>Kimning raqami</b> (ona/ota), <b>Telefon raqami</b>. Telefon bo'yicha ota-ona hisobi ochilib, o'quvchiga bog'lanadi. Qayta yuklansa takrorlanmaydi.</p>
+  {% include 'panel/_field.html' with f=form.group %}
+  {% include 'panel/_field.html' with f=form.file %}
+  <button class="btn primary">Yuklash</button>
+</form>
+{% if report %}
+<div class="card" style="max-width:760px">
+  <h2>Natija: {{ report.group }}</h2>
+  <div class="grid g3">
+    <div class="stat good"><div class="k">Yangi o'quvchi</div><div class="v">{{ report.created }}</div></div>
+    <div class="stat"><div class="k">Oldindan bor edi</div><div class="v">{{ report.existing }}</div></div>
+    <div class="stat"><div class="k">Yangi ota-ona hisobi</div><div class="v">{{ report.parents_new }}</div></div>
+  </div>
+  {% if report.no_phone or report.bad_phone %}<h2 style="margin-top:18px">Diqqat</h2><ul>
+    {% for n in report.no_phone %}<li>Telefon yo'q (ota-ona yaratilmadi): {{ n }}</li>{% endfor %}
+    {% for n in report.bad_phone %}<li>Telefon noto'g'ri: {{ n }}</li>{% endfor %}</ul>{% endif %}
+  <p><a class="btn" href="{% url 'panel:students' %}">O'quvchilar ro'yxatiga</a></p>
+</div>
+{% endif %}
+{% endblock %}

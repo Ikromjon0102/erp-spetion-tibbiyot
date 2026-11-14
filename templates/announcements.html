@@ -1,0 +1,18 @@
+{% extends 'app/base.html' %}
+{% block title %}E'lonlar — Spetion{% endblock %}
+{% block heading %}E'lonlar{% endblock %}
+
+{% block content %}
+{% for a in announcements %}
+<details class="nw" data-nid="{{ a.pk }}">
+  <summary>
+    <span class="t"><b>{{ a.title }}</b><small>{{ a.created_at|date:"d.m.Y H:i" }} · {{ a.get_audience_display }}{% if a.group %} · {{ a.group }}{% endif %}</small></span>
+    {% if not a.is_read %}<i class="newdot" title="Yangi"></i>{% endif %}
+    <svg class="ic chev"><use href="#i-next"/></svg>
+  </summary>
+  <div class="body">{{ a.body|linebreaksbr }}</div>
+</details>
+{% empty %}
+<div class="empty">Hozircha e'lon yo'q</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,16 @@
+db.sqlite3
+__pycache__/
+*.pyc
+.env
+.venv/
+teachers_credentials.csv
+.cache/
+db.*.sqlite3
+parents_credentials.csv
+media/
+
+# shaxsiy ma'lumot va maxfiy fayllar
+template.html
+*.xlsx
+tunl.exe
+*.csv

@@ -1,0 +1,29 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}Xodimlar{% endblock %}
+{% block heading %}Xodimlar{% endblock %}
+{% block actions %}{% if can_manage %}<a class="btn primary" href="{% url 'panel:staff_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Xodim qo'shish</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>Xodim</th><th>Lavozim</th><th>Telefon (login)</th><th>Ruxsatlar</th><th>Holat</th><th>Oxirgi kirish</th></tr></thead>
+    <tbody>
+    {% for p in profiles %}<tr>
+      <td><span class="av">{{ p.user|initials }}</span><a class="name" href="{% url 'panel:staff_detail' p.pk %}">{{ p.user.get_full_name|default:p.user.username }}</a>{% if p.user.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
+      <td>{{ p.position.name }}{% if p.is_owner %} <span class="badge">to'liq ruxsat</span>{% endif %}</td>
+      <td class="mono">{{ p.user.phone|default:p.user.username }}</td>
+      <td>{% if p.is_owner %}<span class="muted">hammasi</span>{% else %}{{ p.perms|length }} ta{% endif %}</td>
+      <td>{% if not p.is_active or not p.user.is_active %}<span class="badge gray">nofaol</span>{% elif p.user.must_change_password %}<span class="badge warn">bir martalik parol</span>{% else %}<span class="badge">faol</span>{% endif %}</td>
+      <td class="muted">{{ p.user.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</td>
+    </tr>{% endfor %}
+    {% for u in technical %}<tr>
+      <td><span class="av">{{ u|initials }}</span><b>{{ u.get_full_name|default:u.username }}</b></td>
+      <td>Texnik administrator <span class="badge">to'liq ruxsat</span></td><td class="mono">{{ u.phone|default:u.username }}</td><td class="muted">hammasi</td>
+      <td><span class="badge">faol</span></td><td class="muted">{{ u.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</td>
+    </tr>{% endfor %}
+    {% if not profiles and not technical %}<tr><td colspan="6"><div class="empty">Xodimlar yo'q</div></td></tr>{% endif %}
+    </tbody>
+  </table></div>
+</div>
+<p class="hint">Ustozlar va ota-onalar bu ro'yxatda emas: bu faqat boshqaruv paneliga kiradigan xodimlar. Ustoz ham xodim bo'lishi mumkin (telefon raqami bilan qo'shiladi).</p>
+{% endblock %}

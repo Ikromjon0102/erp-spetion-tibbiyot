@@ -1,0 +1,25 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras %}
+{% block title %}E'lonlar{% endblock %}
+{% block heading %}E'lonlar{% endblock %}
+{% block actions %}{% if 'announcements.add' in panel_can %}<a class="btn primary" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi e'lon</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>Sarlavha</th><th>Kimlar uchun</th><th>Yuborilgan</th><th>O'qilgan</th></tr></thead>
+    <tbody>
+    {% for r in rows %}<tr>
+      <td><a class="name" href="{% url 'panel:news_detail' r.a.pk %}">{{ r.a.title }}</a></td>
+      <td>{{ r.a.get_audience_display }}{% if r.a.group %} <span class="badge gray">{{ r.a.group }}</span>{% endif %}</td>
+      <td class="muted">{{ r.a.created_at|date:"d.m.Y H:i" }}{% if r.a.author %}<br><small>{{ r.a.author.get_full_name|default:r.a.author.username }}</small>{% endif %}</td>
+      <td style="min-width:170px">
+        {% if r.total %}<b style="color:{% if r.read == r.total %}#1b8a3c{% else %}var(--dim){% endif %}">{% if r.read == r.total %}✓✓{% else %}✓{% endif %}</b> <b>{{ r.read }}</b>/{{ r.total }}
+        <div style="height:6px;border-radius:99px;background:var(--line);margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ r.read|pct:r.total }}%;background:var(--accent)"></div></div>
+        {% else %}<span class="muted">qabul qiluvchi yo'q</span>{% endif %}
+      </td>
+    </tr>{% empty %}<tr><td colspan="4"><div class="empty">E'lonlar yo'q</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}

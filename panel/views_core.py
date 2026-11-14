@@ -1,0 +1,80 @@
+from datetime import timedelta
+
+from django.core.paginator import Paginator
+from django.db.models import F, Sum
+from django.shortcuts import render
+from django.utils import timezone
+
+from access.models import AccessEvent, Device
+from academics.models import Lesson
+from accounts.models import Student
+from journal.models import Attendance
+from notices.models import Announcement
+from notices.services import read_summary
+
+from . import audit as audit_helpers
+from .access import perms_of, panel_required
+from .models import AuditLog
+
+DEVICE_ALIVE = timedelta(minutes=10)
+
+
+def real_students():
+    """Panelda ko'rinadigan o'quvchilar: sinov hisobining namunaviy o'quvchilari (sinov_...) chiqarib tashlanadi."""
+    return Student.objects.exclude(user__username__startswith='sinov_')
+
+
+def missing_attendance(today, now):
+    """Boshlangan, lekin davomat olinmagan darslar (sinov ustozlarining darslari hisobga olinmaydi)."""
+    if today.weekday() > 5:
+        return []
+    lessons = (Lesson.objects.filter(active=True, weekday=today.weekday(), start__lte=now.time(),
+                                     teaching__group__students__isnull=False)
+               .exclude(teaching__teacher__is_demo=True)
+               .select_related('teaching__group', 'teaching__subject', 'teaching__teacher').distinct().order_by('start', 'period'))
+    taken = set(Attendance.objects.filter(date=today).values_list('lesson_id', flat=True))
+    return [l for l in lessons if l.id not in taken]
+
+
+@panel_required()
+def dashboard(request):
+    granted = perms_of(request.user)
+    today, now = timezone.localdate(), timezone.localtime()
+    ctx = {'nav': 'dashboard', 'today': today}
+    total = real_students().count()
+    if 'students.view' in granted:
+        ctx['students_total'] = total
+    if 'monitoring.view' in granted:
+        arrived = set(AccessEvent.objects.filter(direction='in', occurred_at__date=today, student__isnull=False)
+                      .exclude(student__user__username__startswith='sinov_').values_list('student_id', flat=True))
+        ctx['arrived'], ctx['not_arrived'] = len(arrived), max(total - len(arrived), 0)
+        missing = missing_attendance(today, now)
+        ctx['missing_count'], ctx['missing'] = len(missing), missing[:8]
+        ctx['devices'] = [{'device': d, 'ok': bool(d.is_active and d.last_seen and now - d.last_seen < DEVICE_ALIVE)}
+                          for d in Device.objects.all()]
+        ctx['devices_down'] = sum(1 for d in ctx['devices'] if d['device'].is_active and not d['ok'])
+    if 'payments.view' in granted:
+        from .views_finance import totals
+        ctx.update(totals())
+    if 'announcements.view' in granted:
+        latest = Announcement.objects.exclude(title__startswith='[Sinov]').order_by('-created_at').first()
+        if latest:
+            total_r, read = read_summary(latest)
+            ctx['latest_news'] = {'a': latest, 'total': total_r, 'read': read}
+    return render(request, 'panel/dashboard.html', ctx)
+
+
+@panel_required('audit.view')
+def audit_list(request):
+    qs = AuditLog.objects.all()
+    who, verb = request.GET.get('kim', '').strip(), request.GET.get('amal', '').strip()
+    if who:
+        qs = qs.filter(actor_name__icontains=who)
+    if verb:
+        qs = qs.filter(verb__icontains=verb)
+    page = Paginator(qs, 40).get_page(request.GET.get('page'))
+    for entry in page:
+        entry.lines = audit_helpers.lines(entry.details)
+    params = request.GET.copy()
+    params.pop('page', None)
+    return render(request, 'panel/audit.html', {'nav': 'audit', 'page': page, 'who': who, 'verb': verb, 'qs': params.urlencode()})

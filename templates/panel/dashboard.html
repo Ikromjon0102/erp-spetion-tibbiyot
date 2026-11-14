@@ -1,0 +1,70 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras app_extras %}
+{% block title %}Bosh sahifa{% endblock %}
+{% block heading %}Assalomu alaykum, {{ user.first_name|default:user.username }}{% endblock %}
+{% block actions %}
+  {% if 'announcements.add' in panel_can %}<a class="btn primary desk-only" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>E'lon yuborish</a>{% endif %}
+  {% if 'students.add' in panel_can %}<a class="btn" href="{% url 'panel:student_add' %}"><svg class="ic"><use href="#p-plus"/></svg>O'quvchi</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<form method="get" action="{% url 'panel:students' %}" class="filters" style="max-width:560px">
+  {% if 'students.view' in panel_can %}<input type="search" name="q" placeholder="O'quvchini qidirish: ism, familiya{% if 'sensitive.phones' in panel_can %}, ota-ona telefoni{% endif %}…" style="flex:1;min-width:0">{% endif %}
+</form>
+
+<div class="grid g4" style="margin-bottom:18px">
+  {% if students_total is not None %}
+  <a class="stat" href="{% url 'panel:students' %}"><div class="k">O'quvchilar</div><div class="v">{{ students_total }}</div><div class="s">jami</div></a>
+  {% endif %}
+  {% if arrived is not None %}
+  <a class="stat good" href="{% url 'panel:students' %}"><div class="k">Bugun maktabda</div><div class="v">{{ arrived }}</div><div class="s">Face ID bo'yicha kelganlar</div></a>
+  <a class="stat {% if not_arrived %}warn{% endif %}" href="{% if 'students.view' in panel_can %}{% url 'panel:students' %}?holat=kelmagan{% else %}#{% endif %}"><div class="k">Hali kelmaganlar</div><div class="v">{{ not_arrived }}</div><div class="s">{{ today|date:"j F" }}</div></a>
+  <div class="stat {% if missing_count %}warn{% else %}good{% endif %}"><div class="k">Davomat olinmagan</div><div class="v">{{ missing_count }}</div><div class="s">boshlangan darslar</div></div>
+  {% endif %}
+  {% if debtors is not None %}
+  <div class="stat {% if debtors %}warn{% endif %}"><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm{% if overdue_total %} · muddati o'tgan {{ overdue_total|money }}{% endif %}</div></div>
+  {% endif %}
+  {% if devices_down is not None %}
+  <div class="stat {% if devices_down %}warn{% else %}good{% endif %}"><div class="k">Qurilmalar</div><div class="v">{{ devices|length|add:"0" }}{% if devices_down %}<span style="font-size:15px"> · {{ devices_down }} ta signalsiz</span>{% endif %}</div><div class="s">Face ID terminallari</div></div>
+  {% endif %}
+</div>
+
+<div class="grid g2">
+  {% if missing is not None %}
+  <div class="card">
+    <h2>Davomat olinmagan darslar <small>bugun, boshlanganlari</small></h2>
+    {% if missing %}
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Vaqt</th><th>Sinf</th><th>Fan</th><th>Ustoz</th></tr></thead><tbody>
+      {% for l in missing %}<tr><td class="mono">{{ l.start|time:"H:i" }}</td><td>{{ l.teaching.group }}</td><td>{{ l.teaching.subject }}</td><td>{{ l.teaching.teacher|default:"—" }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% if missing_count > 8 %}<div class="hint">Yana {{ missing_count|add:"-8" }} ta dars…</div>{% endif %}
+    {% else %}<div class="empty">Hamma boshlangan darsda davomat olingan ✓</div>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if devices is not None %}
+  <div class="card">
+    <h2>Face ID qurilmalari <small>oxirgi signal</small></h2>
+    {% if devices %}
+    <div class="tbl-wrap"><table class="tbl"><tbody>
+      {% for d in devices %}<tr>
+        <td><span class="dot {% if d.ok %}in{% else %}wait{% endif %}"></span><b>{{ d.device.name }}</b> <span class="muted">· {{ d.device.get_direction_display }}</span></td>
+        <td class="muted">{% if d.device.last_seen %}{{ d.device.last_seen|timesince }} oldin{% else %}hali signal bermagan{% endif %}</td>
+        <td>{% if not d.device.is_active %}<span class="badge gray">o'chirilgan</span>{% elif d.ok %}<span class="badge">ishlayapti</span>{% else %}<span class="badge bad">signal yo'q</span>{% endif %}</td>
+      </tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="empty">Qurilma qo'shilmagan</div>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if latest_news %}
+  <div class="card">
+    <h2>Oxirgi e'lon</h2>
+    <a href="{% url 'panel:news_detail' latest_news.a.pk %}"><b>{{ latest_news.a.title }}</b></a>
+    <div class="muted" style="margin:4px 0 12px">{{ latest_news.a.created_at|date:"d.m.Y H:i" }} · {{ latest_news.a.get_audience_display }}</div>
+    <div style="height:10px;border-radius:99px;background:var(--line);overflow:hidden"><div style="height:100%;width:{{ latest_news.read|pct:latest_news.total }}%;background:var(--accent)"></div></div>
+    <div class="hint"><b>{{ latest_news.read }}</b> / {{ latest_news.total }} ta qabul qiluvchi o'qigan ({{ latest_news.read|pct:latest_news.total }}%)</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

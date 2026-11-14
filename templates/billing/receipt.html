@@ -1,0 +1,46 @@
+{% load app_extras %}<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chek {{ p.receipt_no }}</title>
+<style>
+  :root { --ink:#14201A; --dim:#66786B; --line:#E3EBE4; --accent:#166534; --bad:#C62828; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#F3F6F3; color:var(--ink); font:15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif; padding:20px 14px; }
+  .rc { max-width:460px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:18px; padding:24px 22px; position:relative; overflow:hidden; box-shadow:0 8px 24px rgba(20,32,26,.08); }
+  .brand svg { height:26px; width:auto; } .brand svg path { fill:var(--accent); }
+  .school { color:var(--dim); font-size:12.5px; margin:6px 0 18px; }
+  h1 { margin:0; font-size:20px; } .no { font-family:ui-monospace,Consolas,monospace; color:var(--dim); margin-bottom:18px; }
+  .amount { font-size:34px; font-weight:800; color:var(--accent); margin:4px 0 16px; }
+  dl { display:grid; grid-template-columns:120px 1fr; gap:8px 14px; margin:0; } dt { color:var(--dim); } dd { margin:0; font-weight:600; }
+  .stamp { position:absolute; inset:auto 18px 70px auto; transform:rotate(-14deg); border:3px solid var(--bad); color:var(--bad); font-weight:800; padding:6px 14px; border-radius:10px; font-size:18px; letter-spacing:.06em; opacity:.85; }
+  .foot { margin-top:22px; padding-top:14px; border-top:1px dashed var(--line); color:var(--dim); font-size:12.5px; }
+  .actions { max-width:460px; margin:16px auto 0; display:flex; gap:10px; }
+  .actions a, .actions button { flex:1; text-align:center; padding:12px; border-radius:12px; border:1.5px solid #C9D6CD; background:#fff; font:600 15px system-ui,sans-serif; color:var(--ink); text-decoration:none; cursor:pointer; }
+  .actions .primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  @media print { body { background:#fff; padding:0; } .rc { border:0; box-shadow:none; } .actions { display:none; } }
+</style>
+</head>
+<body>
+<div class="rc">
+  <div class="brand">{% include 'teacher/_logo.svg' %}</div>
+  <div class="school">Tibbiyotga ixtisoslashgan Spetion xususiy maktabi</div>
+  <h1>To'lov cheki</h1>
+  <div class="no">{{ p.receipt_no }}</div>
+  <div class="amount">{{ p.amount|money }} so'm</div>
+  <dl>
+    <dt>Sana</dt><dd>{{ p.paid_on|date:"d.m.Y" }}</dd>
+    <dt>O'quvchi</dt><dd>{{ student.user.last_name }} {{ student.user.first_name }}</dd>
+    <dt>Sinf</dt><dd>{{ student.group|default:"—" }}</dd>
+    <dt>To'lov usuli</dt><dd>{{ p.get_method_display }}</dd>
+    <dt>Qabul qilgan</dt><dd>{% if p.received_by %}{{ p.received_by.get_full_name|default:p.received_by.username }}{% else %}—{% endif %}</dd>
+    {% if p.note %}<dt>Izoh</dt><dd>{{ p.note }}</dd>{% endif %}
+  </dl>
+  {% if p.voided %}<div class="stamp">BEKOR QILINGAN</div>
+  <div class="foot">Bekor qilingan: {{ p.voided_at|date:"d.m.Y H:i" }}{% if p.void_reason %} · {{ p.void_reason }}{% endif %}</div>
+  {% else %}<div class="foot">Rahmat! Bu chek to'lov qabul qilinganini tasdiqlaydi.</div>{% endif %}
+</div>
+<div class="actions"><a href="{{ back }}">← Orqaga</a><button class="primary" onclick="window.print()">Chop etish / PDF</button></div>
+</body>
+</html>

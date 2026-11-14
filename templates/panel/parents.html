@@ -1,0 +1,26 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}Ota-onalar{% endblock %}
+{% block heading %}Ota-onalar <span class="muted" style="font-weight:500">· {{ total }}</span>{% endblock %}
+{% block actions %}{% if 'parents.add' in panel_can %}<a class="btn primary" href="{% url 'panel:parent_create' %}"><svg class="ic"><use href="#p-plus"/></svg>Ota-ona qo'shish</a>{% endif %}{% endblock %}
+{% block content %}
+<form method="get" class="filters" data-live>
+  <input type="search" name="q" value="{{ q }}" placeholder="Ota-ona yoki farzand ismi, telefon…" autofocus>
+  <select name="holat"><option value="">Hammasi</option><option value="farzandsiz" {% if holat == 'farzandsiz' %}selected{% endif %}>Farzandi biriktirilmagan</option></select>
+</form>
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>Ota-ona</th><th>Telefon (login)</th><th>Farzandlari</th><th>Holat</th><th>Oxirgi kirish</th></tr></thead>
+    <tbody>
+    {% for u in page %}<tr>
+      <td><span class="av">{{ u|initials }}</span><a class="name" href="{% url 'panel:parent' u.pk %}">{{ u.get_full_name|default:u.username }}</a>{% if u.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
+      <td class="mono">{{ u.phone|default:"—" }}</td>
+      <td>{% for c in u.children.all %}{{ c.user.last_name }} {{ c.user.first_name }}{% if c.group %} <span class="muted">({{ c.group }})</span>{% endif %}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="badge warn">biriktirilmagan</span>{% endfor %}</td>
+      <td>{% if not u.is_active %}<span class="badge gray">nofaol</span>{% elif u.must_change_password %}<span class="badge warn">birinchi kirish kutilmoqda</span>{% elif not u.has_usable_password %}<span class="badge warn">parol berilmagan</span>{% else %}<span class="badge">faol</span>{% endif %}</td>
+      <td class="muted">{{ u.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</td>
+    </tr>{% empty %}<tr><td colspan="5"><div class="empty">Ota-onalar topilmadi</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}

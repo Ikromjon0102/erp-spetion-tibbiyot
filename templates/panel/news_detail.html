@@ -1,0 +1,34 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras %}
+{% block title %}{{ a.title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:news' %}" style="font-weight:600">E'lonlar</a> <span class="muted">/</span> {{ a.title }}{% endblock %}
+{% block actions %}
+  {% if 'announcements.change' in granted %}
+  <a class="btn" href="{% url 'panel:news_edit' a.pk %}">Tahrirlash</a>
+  <form method="post" action="{% url 'panel:news_delete' a.pk %}" onsubmit="return confirm('E\'lon o\'chirilsinmi? Bu qaytarilmaydi.')">{% csrf_token %}<button class="btn danger">O'chirish</button></form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid g2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)">
+  <div class="card">
+    <h2>E'lon</h2>
+    <div class="muted" style="margin-bottom:10px">{{ a.created_at|date:"d.m.Y H:i" }} · {{ a.get_audience_display }}{% if a.group %} · {{ a.group }}{% endif %}{% if a.author %} · {{ a.author.get_full_name|default:a.author.username }}{% endif %}</div>
+    <div style="white-space:pre-wrap;line-height:1.6">{{ a.body }}</div>
+  </div>
+  <div class="card">
+    <h2>Kim o'qidi <small><b>{{ read }}</b> / {{ total }}</small></h2>
+    {% if rows %}
+    <div style="height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:10px"><div style="height:100%;width:{{ read|pct:total }}%;background:var(--accent)"></div></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Ism</th><th>Rol</th><th>O'qilgan vaqt</th></tr></thead><tbody>
+    {% for r in rows %}<tr>
+      <td>{% if r.read_at %}<b style="color:#1b8a3c" title="O'qildi">✓✓</b>{% else %}<b style="color:var(--faint)" title="Yuborildi">✓</b>{% endif %}</td>
+      <td>{{ r.u.get_full_name|default:r.u.username }}</td>
+      <td class="muted">{{ r.u.get_role_display }}{% if r.both %}, ota-ona{% endif %}</td>
+      <td>{% if r.read_at %}<span class="mono">{{ r.read_at|date:"d.m.Y H:i" }}</span>{% else %}<span class="muted">hali ochmagan</span>{% endif %}</td>
+    </tr>{% endfor %}
+    </tbody></table></div>
+    <div class="hint">✓ yuborildi · ✓✓ o'qildi. Paroli yo'q (hali kirmagan) hisoblar va ma'muriyat sanalmaydi.</div>
+    {% else %}<div class="empty">Qabul qiluvchi yo'q (yoki hali hech kimda parol yo'q)</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

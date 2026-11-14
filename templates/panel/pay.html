@@ -1,0 +1,20 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}To'lov qabul qilish{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> To'lov qabul qilish{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px">
+  <h2>{{ student.user.last_name }} {{ student.user.first_name }} <small>{{ student.group|default:"" }}</small></h2>
+  <p>{% if bill.debt %}Qarz: <b style="color:var(--bad)">{{ bill.debt|money }} so'm</b>{% if bill.overdue %} (shundan muddati o'tgan: {{ bill.overdue|money }}){% endif %}
+     {% elif bill.advance %}Avans: <b>{{ bill.advance|money }} so'm</b>{% else %}Qarz yo'q{% endif %}
+     {% for d in bill.discounts %}<br><span class="badge">{{ d.discount.name }} −{{ d.discount.percent|floatformat:"-2" }}%</span>{% endfor %}</p>
+  <form method="post">{% csrf_token %}
+    {% include 'panel/_field.html' with f=form.amount %}
+    {% include 'panel/_field.html' with f=form.method %}
+    {% include 'panel/_field.html' with f=form.paid_on %}
+    {% include 'panel/_field.html' with f=form.note %}
+    <div class="hint" style="margin-bottom:12px">Qisman to'lov mumkin. Qarzdan ortiqcha summa keyingi oylar hisobiga o'tadi.</div>
+    <button class="btn primary">Qabul qilish va chek chiqarish</button> <a class="btn" href="{% url 'panel:finance' %}">Bekor qilish</a>
+  </form>
+</div>
+{% endblock %}

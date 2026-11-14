@@ -1,0 +1,11 @@
+{% extends 'app/base.html' %}
+{% block title %}Ruxsat yo'q — Spetion{% endblock %}
+{% block heading %}Ruxsat yo'q{% endblock %}
+{% block mainclass %} nonav{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:24px auto">
+  <h1 style="font-size:20px;margin:0 0 8px">Bu sahifaga kirish ruxsatingiz yo'q</h1>
+  <p class="muted" style="margin:0 0 16px">{{ exception|default:"Kerak bo'lsa, maktab ma'muriyatiga murojaat qiling." }}</p>
+  <a class="btn" href="{% url 'home' %}">Bosh sahifaga</a>
+</div>
+{% endblock %}

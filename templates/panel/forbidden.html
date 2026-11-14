@@ -1,0 +1,10 @@
+{% extends 'panel/base.html' %}
+{% block title %}Ruxsat yo'q{% endblock %}
+{% block heading %}Ruxsat yo'q{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px">
+  <h2>Bu bo'limga kirish ruxsatingiz yo'q</h2>
+  <p class="muted">Kerak bo'lsa, maktab egasi yoki xodimlarni boshqaruvchi shaxsga murojaat qiling: ruxsatlar har bir xodimga alohida beriladi.</p>
+  <a class="btn" href="{% url 'panel:dashboard' %}">← Bosh sahifaga</a>
+</div>
+{% endblock %}

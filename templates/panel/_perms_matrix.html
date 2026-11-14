@@ -1,0 +1,12 @@
+{% for m in matrix %}
+<div class="perm-mod">
+  <div class="mname">{{ m.name }}</div>
+  <div class="perm-acts">
+    {% for a in m.actions %}
+    <label class="{% if not a.enabled %}off{% endif %}" title="{% if not a.enabled and not locked %}Sizda bu ruxsat yo'q, shuning uchun bera olmaysiz{% endif %}">
+      <input type="checkbox" name="perms" value="{{ a.code }}" {% if a.checked %}checked{% endif %} {% if not a.enabled %}disabled{% endif %}>{{ a.label }}
+    </label>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}

@@ -1,0 +1,607 @@
+{% extends 'app/base.html' %}
+{% block title %}Spetion — Ustoz{% endblock %}
+{% block topbar_actions %}{% include 'app/_usermenu.html' %}{% endblock %}
+
+{% block head %}
+<style>
+  .pane[hidden] { display:none; }
+
+  /* ---------- hero ---------- */
+  .hero { color:#fff; border-radius:22px; padding:16px; margin-bottom:12px; background:linear-gradient(135deg,#14532D 0%,#166534 60%,#1B7F3B 100%); box-shadow:0 8px 22px rgba(22,101,52,.28); }
+  .hero.warn { background:linear-gradient(135deg,#8A4B00 0%,#B36205 100%); box-shadow:0 8px 22px rgba(179,98,5,.28); }
+  .hero.calm { background:var(--card); color:var(--ink); border:1px solid var(--line); box-shadow:var(--shadow); }
+  .hero .lbl { font:700 11px 'Space Mono',monospace; letter-spacing:.08em; text-transform:uppercase; opacity:.85; }
+  .hero .big { font-size:30px; font-weight:800; line-height:1.1; margin:6px 0 2px; }
+  .hero .sub { opacity:.9; font-size:15px; }
+  .hero .acts { display:flex; gap:8px; margin-top:14px; }
+  .hero .acts button { flex:1; padding:14px 10px; border-radius:14px; border:0; font-weight:800; font-size:15.5px; }
+  .hero .acts .p { background:#fff; color:#14532D; }
+  .hero.warn .acts .p { color:#8A4B00; }
+  .hero .acts .s { background:rgba(255,255,255,.18); color:#fff; flex:0 0 38%; }
+  .hello { display:flex; justify-content:space-between; align-items:baseline; margin:2px 4px 12px; }
+  .hello b { font-size:19px; } .hello span { color:var(--dim); font-size:13.5px; }
+
+  /* farzandlarim (ustoz o'zi ham ota-ona bo'lsa): tepada ixcham tugmalar */
+  .kidchips { display:flex; gap:8px; overflow-x:auto; margin:0 -14px 12px; padding:2px 14px; scrollbar-width:none; }
+  .kidchips::-webkit-scrollbar { display:none; }
+  .kchip { flex-shrink:0; display:flex; align-items:center; gap:8px; background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:8px 12px; box-shadow:var(--shadow); }
+  .kchip:active { background:var(--tint); }
+  .kchip .dot { width:10px; height:10px; border-radius:50%; background:var(--faint); flex-shrink:0; }
+  .kchip.in .dot { background:#1FBF55; box-shadow:0 0 0 4px rgba(31,191,85,.22); }
+  .kchip.out .dot { background:#E0A030; } .kchip.wait .dot { background:#E5574B; }
+  .kchip b { font-size:14px; } .kchip small { color:var(--dim); font-size:12px; }
+
+  /* ---------- ro'yxat ---------- */
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .row { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:var(--shadow); }
+  button.row:active { background:var(--tint); }
+  .row .time { font:700 14px 'Space Mono',monospace; width:50px; flex-shrink:0; }
+  .row .time small { display:block; font-weight:400; font-size:10.5px; color:var(--faint); margin-top:1px; }
+  .row .info { flex:1; min-width:0; }
+  .row .info b { display:block; font-size:16px; }
+  .row .info small { display:block; color:var(--dim); font-size:12.5px; margin-top:1px; }
+  .row.now { border-color:var(--accent); background:var(--tint); }
+  .row.gap { background:transparent; box-shadow:none; border-style:dashed; color:var(--faint); font-size:13px; justify-content:center; padding:8px; }
+  .tag { font:700 10.5px 'Space Mono',monospace; padding:4px 8px; border-radius:8px; flex-shrink:0; text-transform:uppercase; }
+  .tag.ok { background:var(--tint); color:var(--accent-deep); }
+  .tag.bad { background:var(--bad-tint); color:var(--bad); }
+  .tag.warn { background:var(--late-tint); color:var(--late); }
+  .tag.now { background:var(--accent); color:var(--on-accent); }
+  .empty { text-align:center; color:var(--dim); border:1.5px dashed var(--line); border-radius:16px; padding:28px 16px; }
+  h1.page { margin-bottom:12px; }
+
+  /* ---------- kun / sinf tanlash ---------- */
+  .daychips { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:12px; }
+  .daychips button { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:9px 0 7px; text-align:center; font-weight:800; font-size:14px; position:relative; }
+  .daychips button small { display:block; font:400 9.5px 'Space Mono',monospace; color:var(--faint); margin-top:1px; }
+  .daychips button.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .daychips button.on small { color:rgba(255,255,255,.8); }
+  .daychips button.today:not(.on)::after { content:""; position:absolute; top:5px; right:5px; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  .hchips { display:flex; gap:8px; overflow-x:auto; margin:0 -14px 12px; padding:2px 14px; scrollbar-width:none; }
+  .hchips::-webkit-scrollbar { display:none; }
+  .hchips button { flex-shrink:0; padding:9px 16px; border-radius:99px; background:var(--card); border:1.5px solid var(--line); font-weight:700; color:var(--dim); }
+  .hchips button.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+
+  /* ---------- pastki varaq (sheet) ---------- */
+  .ov { position:fixed; inset:0; z-index:60; background:rgba(8,26,12,.5); display:none; align-items:flex-end; justify-content:center; overscroll-behavior:contain; }
+  .ov.show { display:flex; }
+  .sheet { background:var(--card); width:100%; max-width:520px; max-height:92vh; border-radius:22px 22px 0 0; display:flex; flex-direction:column; animation:up .22s ease; }
+  @keyframes up { from { transform:translateY(40px); opacity:.6; } to { transform:none; opacity:1; } }
+  .grab { width:38px; height:4px; background:var(--line-strong); border-radius:2px; margin:9px auto 0; flex-shrink:0; }
+  .sh-head { display:flex; align-items:flex-start; gap:8px; padding:10px 16px 8px; flex-shrink:0; }
+  .sh-head .meta { font:700 11px 'Space Mono',monospace; color:var(--accent-deep); letter-spacing:.04em; }
+  .sh-head .title { font-size:22px; font-weight:800; line-height:1.15; margin-top:2px; }
+  .sh-head .sub { color:var(--dim); font-size:13.5px; }
+  .sh-head .grow { flex:1; min-width:0; }
+  .xbtn { width:36px; height:36px; border-radius:12px; border:0; background:var(--bg); display:grid; place-items:center; color:var(--dim); flex-shrink:0; }
+  .seg { display:flex; gap:4px; background:var(--bg); border-radius:14px; padding:4px; margin:4px 16px 8px; flex-shrink:0; }
+  .seg button { flex:1; border:0; background:none; border-radius:11px; padding:10px; font-weight:800; font-size:14.5px; color:var(--dim); }
+  .seg button.on { background:var(--card); color:var(--accent-deep); box-shadow:var(--shadow); }
+  .sh-body { overflow-y:auto; flex:1; min-height:0; padding:4px 16px 12px; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .sh-bar { flex-shrink:0; padding:10px 16px calc(12px + env(safe-area-inset-bottom,0)); border-top:1px solid var(--line); display:flex; gap:8px; background:var(--card); }
+  .note { background:var(--late-tint); color:var(--late); border-radius:12px; padding:10px 12px; font-size:13.5px; font-weight:600; margin-bottom:10px; }
+  .btn.big { padding:16px; font-size:17px; border-radius:16px; }
+  .btn.ghost { background:var(--bg); color:var(--ink); }
+  .btn:disabled { opacity:.5; }
+
+  /* davomat qatorlari */
+  .sumrow { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .sumrow .s { padding:7px 12px; border-radius:99px; font-weight:700; font-size:13.5px; }
+  .sumrow .s.ok { background:var(--tint); color:var(--accent-deep); } .sumrow .s.bad { background:var(--bad-tint); color:var(--bad); }
+  .sumrow .lnk { margin-left:auto; background:none; border:0; color:var(--accent-deep); font-weight:800; font-size:14px; padding:8px 4px; }
+  .stu { background:var(--card); border:1.5px solid var(--line); border-radius:16px; margin-bottom:8px; overflow:hidden; }
+  .stu.bad { border-color:var(--bad); } .stu.late { border-color:var(--late); } .stu.exc { border-color:var(--exc); }
+  .stu-main { display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:10px 12px; background:none; border:0; text-align:left; font-size:16px; font-weight:600; }
+  .stu-main .n { font:400 11px 'Space Mono',monospace; color:var(--faint); width:20px; flex-shrink:0; }
+  .stu-main .nm { flex:1; min-width:0; }
+  .pill { font:700 11px 'Space Mono',monospace; text-transform:uppercase; padding:6px 10px; border-radius:9px; min-width:76px; text-align:center; }
+  .pill.ok { background:var(--tint); color:var(--accent-deep); } .pill.bad { background:var(--bad); color:#fff; }
+  .pill.late { background:var(--late); color:#fff; } .pill.exc { background:var(--exc); color:#fff; }
+  .opts { display:flex; gap:6px; padding:0 12px 12px 44px; }
+  .opts button { flex:1; padding:10px 4px; border-radius:11px; border:1.5px solid var(--line-strong); background:var(--card); font-weight:700; font-size:13.5px; color:var(--dim); }
+  .opts button.on.bad { background:var(--bad); border-color:var(--bad); color:#fff; }
+  .opts button.on.late { background:var(--late); border-color:var(--late); color:#fff; }
+  .opts button.on.exc { background:var(--exc); border-color:var(--exc); color:#fff; }
+  .stu.plain .stu-main { cursor:default; }
+
+  /* baho */
+  .kindseg { display:flex; gap:6px; margin-bottom:10px; }
+  .kindseg button { flex:1; padding:9px 4px; border-radius:11px; border:1.5px solid var(--line-strong); background:var(--card); font-weight:700; font-size:13px; color:var(--dim); }
+  .kindseg button.on { background:var(--tint); border-color:var(--accent); color:var(--accent-deep); }
+  .gchips { display:flex; gap:4px; }
+  .gc { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; color:#fff; font-weight:800; font-size:13px; }
+  .g5 { background:#166534; } .g4 { background:#3F8F5A; } .g3 { background:#B36205; } .g2, .g1 { background:#C62828; }
+  .stu.open { border-color:var(--accent); }
+  .f-in { width:100%; font:500 16px 'Inter',sans-serif; padding:13px 14px; border-radius:14px; border:1.5px solid var(--line-strong); background:var(--card); color:var(--ink); margin-bottom:10px; }
+  .f-in:focus { outline:none; border-color:var(--accent); }
+  textarea.f-in { resize:vertical; min-height:96px; line-height:1.5; }
+  .flbl { display:block; font-weight:700; font-size:13px; color:var(--dim); margin:2px 2px 6px; }
+  .recent-t { font:700 10.5px 'Space Mono',monospace; text-transform:uppercase; color:var(--dim); letter-spacing:.05em; margin:14px 2px 8px; }
+  .hwt { background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:12px 13px; margin-bottom:8px; }
+  .hwt.edit { border-color:var(--accent); background:var(--tint); }
+  .hwt .top { display:flex; align-items:center; gap:8px; margin-bottom:7px; flex-wrap:wrap; }
+  .hwt .due { font:700 11px 'Space Mono',monospace; padding:5px 9px; border-radius:8px; background:var(--tint); color:var(--accent-deep); }
+  .hwt .when { color:var(--dim); font-size:12px; margin-left:auto; }
+  .hwt .txt { white-space:pre-wrap; font-size:15px; line-height:1.5; word-break:break-word; }
+  .hwt .acts2 { display:flex; gap:8px; margin-top:10px; }
+  .hwt .acts2 button { flex:1; padding:10px; border-radius:11px; border:1.5px solid var(--line-strong); background:var(--card); font-weight:700; font-size:13.5px; color:var(--ink); }
+  .hwt .acts2 button.danger { color:var(--bad); border-color:var(--bad); }
+  .hwt .acts2 button.danger.sure { background:var(--bad); color:#fff; }
+  .scores { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; padding:0 12px 12px; }
+  .scores button { padding:15px 0; border-radius:13px; border:0; color:#fff; font-weight:800; font-size:22px; }
+  .scores button:active { transform:scale(.94); }
+  .scores button.sel { outline:3px solid var(--ink); outline-offset:2px; }
+
+  .tabbar .badge { position:absolute; top:10px; left:calc(50% + 8px); width:9px; height:9px; border-radius:50%; background:var(--bad); border:2px solid var(--card); }
+  .tabbar button { position:relative; }
+
+  .toast { white-space:nowrap; position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0)); z-index:90; background:var(--ink); color:var(--bg); padding:11px 16px; border-radius:14px; font-weight:700; font-size:14px; display:flex; gap:14px; align-items:center; max-width:92vw; box-shadow:0 8px 24px rgba(0,0,0,.3); }
+  .toast button { background:none; border:0; color:#7FD49C; font-weight:800; font-size:14px; padding:0; }
+  body.sheet-open { overflow:hidden; }
+  body.sheet-open .toast { bottom:calc(90px + env(safe-area-inset-bottom,0)); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ============ BUGUN ============ -->
+<section class="pane" id="pane-today"></section>
+
+<!-- ============ HAFTA ============ -->
+<section class="pane" id="pane-week" hidden>
+  <h1 class="page">Haftalik jadval</h1>
+  <div class="daychips" id="weekDays"></div>
+  <div id="weekList"></div>
+</section>
+
+<!-- ============ SINFLAR ============ -->
+<section class="pane" id="pane-classes" hidden>
+  <h1 class="page">Sinflar jadvali</h1>
+  <div class="hchips" id="classChips"></div>
+  <div class="daychips" id="classDays"></div>
+  <div id="classList"></div>
+</section>
+
+<!-- ============ E'LONLAR ============ -->
+<section class="pane" id="pane-news" hidden>
+  <h1 class="page">E'lonlar</h1>
+  <div id="newsBox"></div>
+</section>
+
+<!-- davomat / baho varag'i -->
+<div class="ov" id="sheetOv"><div class="sheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="sh-head">
+    <div class="grow"><div class="meta" id="shMeta"></div><div class="title" id="shTitle"></div><div class="sub" id="shSub"></div></div>
+    <button class="xbtn" id="shClose" aria-label="Yopish"><svg class="ic"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="seg" id="shSeg"><button data-k="att">Davomat</button><button data-k="grade">Baho</button><button data-k="hw">Vazifa</button></div>
+  <div class="sh-body" id="shBody"></div>
+  <div class="sh-bar" id="shBar"></div>
+</div></div>
+{% endblock %}
+
+{% block bottomnav %}
+<nav class="tabbar" aria-label="Bo'limlar"><div class="tabbar-in">
+  <button data-tab="today"><span class="pill"><svg class="ic"><use href="#i-home"/></svg></span>Bugun</button>
+  <button data-tab="week"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>Hafta</button>
+  <button data-tab="classes"><span class="pill"><svg class="ic"><use href="#i-users"/></svg></span>Sinflar</button>
+  <button data-tab="news"><span class="pill"><svg class="ic"><use href="#i-bell"/></svg></span>E'lonlar<i class="badge" id="newsBadge" hidden></i></button>
+</div></nav>
+{% endblock %}
+
+{% block js %}
+{{ school|json_script:"school-data" }}
+{% verbatim %}
+<script>
+const S = JSON.parse(document.getElementById('school-data').textContent);
+const DAYS = S.days;
+const ST = {present: ['Keldi', 'ok'], absent: ['Kelmadi', 'bad'], late: ['Kech', 'late'], excused: ['Sababli', 'exc']};
+const ERR = {
+  time: "Davomatni faqat dars kuni, dars boshlangandan keyin belgilash mumkin",
+  grade_time: "Baho faqat dars kuni, dars boshlangandan keyin qo'yiladi",
+  bad_score: "Baho 1 dan 5 gacha bo'lishi kerak",
+  bad_rows: "Ma'lumot noto'g'ri",
+  bad_text: "Vazifa matnini yozing (2000 belgigacha)",
+  bad_date: "Topshirish sanasini kiriting",
+  past_date: "Topshirish sanasi o'tib ketgan bo'lmasligi kerak",
+  locked: "Vazifani faqat berilgan kunning oxirigacha o'zgartirish mumkin",
+};
+const errText = (e, kind) => (kind === 'grade' && e === 'time') ? ERR.grade_time : (ERR[e] || "Xatolik. Internetni tekshirib, qayta urinib ko'ring");
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+const pad2 = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const mins = hhmm => { const p = hhmm.split(':'); return +p[0] * 60 + +p[1]; };
+const vib = () => { try { navigator.vibrate && navigator.vibrate(8); } catch(e) {} };
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e) {} },
+};
+const byId = Object.fromEntries(S.lessons.map(l => [l.id, l]));
+const meId = String(S.me.id);
+
+// ---------- vaqt ----------
+let now, todayIdx, nowMin;
+function tick(){ now = new Date(); todayIdx = now.getDay() === 0 ? null : now.getDay() - 1; nowMin = now.getHours() * 60 + now.getMinutes(); }
+tick();
+const todayStr = () => ymd(now);
+// Hafta dushanbadan boshlanadi; yakshanba kuni (dars yo'q) keyingi haftani ko'rsatamiz
+function dateFor(i){ const d = new Date(now); d.setDate(now.getDate() - ((now.getDay() + 6) % 7) + (now.getDay() === 0 ? 7 : 0) + i); return ymd(d); }
+
+// ---------- holat ----------
+let selClass = store.get('spetion_class'); if (!S.classes.includes(selClass)) selClass = S.classes[0] || null;
+let weekDay = todayIdx !== null ? todayIdx : 0, classDay = weekDay;
+let tab = 'today';
+const marks = {};           // sana -> {darsId: {absent}}
+
+// ---------- server bilan aloqa ----------
+class AuthError extends Error {}
+async function api(url, body){
+  const headers = {};
+  if (body !== undefined){ headers['Content-Type'] = 'application/json'; headers['X-CSRFToken'] = S.csrf; }
+  const r = await fetch(url, body === undefined ? {headers} : {method: 'POST', headers, body: JSON.stringify(body)});
+  let data = null; try { data = await r.json(); } catch(e) {}
+  if (r.status === 401 || (data && data.err === 'auth')){   // sessiya tugagan: qayta kirish
+    location.href = '/login/?next=' + encodeURIComponent(location.pathname);
+    throw new AuthError();
+  }
+  if (!data) throw new Error('http ' + r.status);
+  return data;
+}
+function toast(msg, label, fn, ms){
+  const old = document.querySelector('.toast'); if (old) old.remove();
+  const el = document.createElement('div'); el.className = 'toast';
+  el.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : '');
+  if (label) el.querySelector('button').onclick = () => { el.remove(); fn(); };
+  document.body.appendChild(el); setTimeout(() => el.remove(), ms || 2400);
+}
+function overlay(id, open){
+  $(id).classList.toggle('show', open);
+  document.body.classList.toggle('sheet-open', !!document.querySelector('.ov.show'));
+}
+
+// ---------- darslar ----------
+const lessonsOf = (day, pred) => S.lessons.filter(l => l.day === DAYS[day] && pred(l)).sort((a, b) => mins(a.start) - mins(b.start) || a.period - b.period);
+const mine = day => lessonsOf(day, l => String(l.teacherId) === meId);
+const state = l => nowMin >= mins(l.end) ? 'past' : nowMin >= mins(l.start) ? 'now' : 'next';
+
+async function loadMarks(date){
+  try {
+    const r = await api('/ustoz/api/status/?date=' + date);
+    marks[date] = r.marks || {};
+    if (!document.querySelector('.ov.show')) renderAll();
+  } catch(e) {}
+}
+function tagFor(l, date){
+  const m = (marks[date] || {})[l.id];
+  if (m) return m.absent ? `<span class="tag bad">${m.absent} ta yo'q</span>` : '<span class="tag ok">✓ Hammasi</span>';
+  if (date === todayStr() && state(l) !== 'next') return '<span class="tag warn">Olinmagan</span>';
+  return '';
+}
+function rowHTML(l, date, asClass){
+  const isToday = date === todayStr(), now_ = isToday && state(l) === 'now';
+  const primary = asClass ? l.subject : l['class'], secondary = asClass ? (l.teacher || 'Ustoz biriktirilmagan') : l.subject;
+  const inner = `<div class="time">${l.start}<small>${l.end}</small></div>
+    <div class="info"><b>${esc(primary)}</b><small>${esc(secondary)}</small></div>
+    ${asClass ? '' : tagFor(l, date)}${now_ ? '<span class="tag now">HOZIR</span>' : ''}`;
+  return asClass ? `<div class="row">${inner}</div>` : `<button class="row ${now_ ? 'now' : ''}" data-lid="${l.id}" data-date="${date}">${inner}</button>`;
+}
+function listHTML(ls, date, asClass){
+  let html = '', prev = null;
+  ls.forEach(l => {
+    if (prev && mins(l.start) - mins(prev.end) >= 20) html += `<div class="row gap">${asClass ? '🍲 Tushlik' : "Bo'sh vaqt"} · ${prev.end} – ${l.start}</div>`;
+    html += rowHTML(l, date, asClass); prev = l;
+  });
+  return html;
+}
+
+// ---------- BUGUN ----------
+const KID_LABEL = {in: 'Maktabda', out: 'Ketdi', wait: 'Kelmagan', none: '', off: ''};
+function kidsHTML(){
+  if (!S.kids.length) return '';
+  return '<div class="kidchips">' + S.kids.map(k => {
+    const first = k.name.split(' ').slice(1).join(' ') || k.name;   // "Familiya Ism" -> "Ism"
+    return `<a class="kchip ${esc(k.state)}" href="${esc(k.url)}" title="${esc(k.text)}"><span class="dot"></span><b>${esc(first)}</b>${KID_LABEL[k.state] ? `<small>${KID_LABEL[k.state]}</small>` : ''}</a>`;
+  }).join('') + '</div>';
+}
+function renderToday(){
+  const el = $('pane-today');
+  const date = todayStr(), ls = todayIdx === null ? [] : mine(todayIdx);
+  const cur = ls.find(l => state(l) === 'now'), next = ls.find(l => state(l) === 'next');
+  const m = marks[date] || {}, pending = ls.filter(l => state(l) !== 'next' && !m[l.id]);
+  let hero;
+  const acts = (l, primaryLabel) => `<div class="acts"><button class="p" data-act="att" data-lid="${l.id}">${primaryLabel}</button><button class="s" data-act="grade" data-lid="${l.id}">Baho</button></div>`;
+  if (cur){
+    hero = `<div class="hero"><div class="lbl">Hozir · ${cur.period}-dars · ${cur.start}–${cur.end}</div><div class="big">${esc(cur['class'])}</div><div class="sub">${esc(cur.subject)}</div>${acts(cur, m[cur.id] ? "Davomatni ko'rish" : 'Davomat olish')}</div>`;
+  } else if (pending.length){
+    const p = pending[0];
+    hero = `<div class="hero warn"><div class="lbl">Davomat olinmagan · ${pending.length} ta dars</div><div class="big">${esc(p['class'])}</div><div class="sub">${esc(p.subject)} · ${p.start}–${p.end}</div>${acts(p, 'Davomat olish')}</div>`;
+  } else if (next){
+    const left = mins(next.start) - nowMin;
+    hero = `<div class="hero"><div class="lbl">Keyingi dars · ${next.period}-dars</div><div class="big">${esc(next['class'])}</div><div class="sub">${esc(next.subject)} · ${next.start} da (${left >= 60 ? Math.floor(left / 60) + ' soat ' + (left % 60) + ' daq' : left + ' daqiqadan'} keyin)</div></div>`;
+  } else if (ls.length){
+    hero = '<div class="hero calm"><div class="lbl" style="color:var(--accent-deep)">Bugun</div><div class="big">Darslar tugadi ✓</div><div class="sub" style="color:var(--dim)">Hamma darsda davomat olingan. Rahmat!</div></div>';
+  } else {
+    hero = `<div class="hero calm"><div class="big">${todayIdx === null ? 'Dam olish kuni' : "Bugun dars yo'q"}</div><div class="sub" style="color:var(--dim)">Yaxshi dam oling</div></div>`;
+  }
+  const dt = now.getDate() + ' ' + ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'][now.getMonth()];
+  el.innerHTML = `<div class="hello"><b>Assalomu alaykum, ${esc(S.me.name)}</b><span>${dt}</span></div>${kidsHTML()}${hero}
+    ${ls.length ? `<h2 class="sec">Bugungi darslar <small>${ls.length} ta</small></h2><div class="list" id="todayRows">${listHTML(ls, date, false)}</div>` : ''}`;
+}
+$('pane-today').onclick = e => {
+  const a = e.target.closest('[data-act]');
+  if (a){ const l = byId[a.dataset.lid]; return openSheet(l, todayStr(), a.dataset.act); }
+  const r = e.target.closest('[data-lid]'); if (r){ const l = byId[r.dataset.lid]; openSheet(l, r.dataset.date, 'att'); }
+};
+
+// ---------- HAFTA / SINFLAR ----------
+function dayChips(elId, sel, onPick){
+  $(elId).innerHTML = DAYS.map((d, i) => `<button data-d="${i}" class="${i === sel ? 'on' : ''} ${i === todayIdx ? 'today' : ''}">${d}<small>${S.dayNames[d].slice(0, 3)}</small></button>`).join('');
+  $(elId).onclick = e => { const b = e.target.closest('[data-d]'); if (b){ onPick(+b.dataset.d); vib(); } };
+}
+function renderWeek(){
+  dayChips('weekDays', weekDay, i => { weekDay = i; loadMarks(dateFor(i)); renderWeek(); });
+  const date = dateFor(weekDay), ls = mine(weekDay);
+  $('weekList').innerHTML = ls.length ? `<div class="list">${listHTML(ls, date, false)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
+}
+$('weekList').onclick = e => { const r = e.target.closest('[data-lid]'); if (r){ const l = byId[r.dataset.lid]; openSheet(l, r.dataset.date, 'att'); } };
+function renderClasses(){
+  $('classChips').innerHTML = S.classes.map(c => `<button data-c="${esc(c)}" class="${c === selClass ? 'on' : ''}">${esc(c)}</button>`).join('');
+  $('classChips').onclick = e => { const b = e.target.closest('[data-c]'); if (b){ selClass = b.dataset.c; store.set('spetion_class', selClass); renderClasses(); } };
+  dayChips('classDays', classDay, i => { classDay = i; renderClasses(); });
+  const ls = lessonsOf(classDay, l => l['class'] === selClass);
+  $('classList').innerHTML = ls.length ? `<div class="list">${listHTML(ls, dateFor(classDay), true)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
+}
+
+// ---------- E'LONLAR ----------
+let newsItems = null;
+function updateNewsBadge(){ $('newsBadge').hidden = !(newsItems && newsItems.some(a => !a.read)); }
+async function loadNews(show){
+  try {
+    const r = await api('/ustoz/api/elonlar/');
+    newsItems = r.items;
+    updateNewsBadge();                       // o'qilmagan e'lon bo'lsa — qizil nuqta (serverdagi holat bo'yicha)
+    if (tab === 'news') renderNews();
+  } catch(e) {}
+}
+function renderNews(){
+  const box = $('newsBox');
+  if (newsItems === null){ box.innerHTML = '<div class="empty">Yuklanmoqda…</div>'; return; }
+  box.innerHTML = newsItems.length ? newsItems.map(a => `<details class="nw" data-nid="${a.id}"><summary><span class="t"><b>${esc(a.title)}</b><small>${esc(a.date)} · ${esc(a.audience)}${a.group ? ' · ' + esc(a.group) : ''}</small></span>${a.read ? '' : '<i class="newdot" title="Yangi"></i>'}<svg class="ic chev"><use href="#i-next"/></svg></summary><div class="body">${esc(a.body).replace(/\n/g, '<br>')}</div></details>`).join('')
+    : '<div class="empty">Hozircha e\'lon yo\'q</div>';
+}
+
+// e'lon ochilganda uni o'qilgan deb belgilaymiz (serverga yuborishni umumiy skript qiladi)
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (!d.matches || !d.matches('details.nw[data-nid]') || !d.open || !newsItems) return;
+  const a = newsItems.find(x => String(x.id) === d.dataset.nid);
+  if (a && !a.read){ a.read = true; updateNewsBadge(); }
+}, true);
+
+// ---------- tablar ----------
+function showTab(name){
+  tab = name;
+  document.querySelectorAll('.pane').forEach(p => { p.hidden = p.id !== 'pane-' + name; });
+  document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+  window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + name); } catch(e) {}
+  if (name === 'week') loadMarks(dateFor(weekDay));
+  if (name === 'news'){ renderNews(); loadNews(); }
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function renderAll(){ renderToday(); renderWeek(); renderClasses(); if (tab === 'news') renderNews(); }
+
+// ---------- davomat / baho varag'i ----------
+let sh = null;
+function openSheet(l, date, kind){
+  if (!l || String(l.teacherId) !== meId) return;
+  sh = {l, date, kind, stage: 'loading', students: [], m: [], editable: false, saved: false, given: {}, gkind: 'current', open: null,
+        hw: {items: [], text: '', due: '', editId: null, confirmId: null}};
+  $('shMeta').textContent = `${date.slice(8)}.${date.slice(5, 7)} · ${l.period}-dars · ${l.start}–${l.end}`;
+  $('shTitle').textContent = l['class']; $('shSub').textContent = l.subject;
+  overlay('sheetOv', true); loadSheet();
+}
+function closeSheet(){ sh = null; overlay('sheetOv', false); renderAll(); }
+$('shClose').onclick = closeSheet;
+$('sheetOv').addEventListener('click', e => { if (e.target.id === 'sheetOv') closeSheet(); });
+$('shSeg').onclick = e => { const b = e.target.closest('[data-k]'); if (b && sh && b.dataset.k !== sh.kind){ sh.kind = b.dataset.k; loadSheet(); } };
+
+async function loadSheet(){
+  const c = sh; c.stage = 'loading'; renderSheet();
+  try {
+    const url = c.kind === 'hw' ? '/ustoz/api/vazifa/' + c.l.id + '/'
+      : (c.kind === 'att' ? '/ustoz/api/dars/' : '/ustoz/api/baho/') + c.l.id + '/?date=' + c.date;
+    const r = await api(url);
+    if (sh !== c || !r.ok) return;
+    if (c.kind === 'hw'){ c.hw.items = r.items; if (!c.hw.due) c.hw.due = r.suggested; }
+    else {
+      c.students = r.students; c.editable = r.editable;
+      if (c.kind === 'att'){ c.m = r.students.map(s => s.s); c.saved = r.saved; }
+      else { c.given = r.given || {}; c.open = c.editable && r.students.length ? r.students[0].id : null; }
+    }
+    c.stage = 'ready';
+  } catch(e) {
+    if (e instanceof AuthError || sh !== c) return;
+    c.stage = 'error';
+  }
+  renderSheet();
+}
+function renderSheet(){
+  const c = sh; if (!c) return;
+  document.querySelectorAll('#shSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === c.kind));
+  const body = $('shBody'), bar = $('shBar'), top = body.scrollTop;
+  if (c.stage !== 'ready'){
+    body.innerHTML = `<div class="empty">${c.stage === 'loading' ? 'Yuklanmoqda…' : errText()}</div>`;
+    bar.innerHTML = '<button class="btn big ghost" id="shDone">Yopish</button>'; $('shDone').onclick = closeSheet; return;
+  }
+  if (c.kind === 'hw'){ renderHw(c, body, bar); body.scrollTop = top; return; }
+  const noStudents = c.students.length ? '' : '<div class="note">Bu sinfda hali o\'quvchi yo\'q. Ma\'muriyatga murojaat qiling.</div>';
+  if (c.kind === 'att') renderAtt(c, body, bar, noStudents); else renderGrade(c, body, bar, noStudents);
+  body.scrollTop = top;
+}
+
+// --- davomat: hamma "Keldi" bilan boshlanadi; kelmaganni bosing
+function renderAtt(c, body, bar, noStudents){
+  const absent = c.m.filter(x => x !== 'present').length, present = c.m.length - absent;
+  const roster = c.editable || c.saved;
+  const note = c.editable ? '' : `<div class="note">${c.saved ? 'Saqlangan davomat. ' : ''}${errText('time')}.</div>`;
+  const rows = c.students.map((s, i) => {
+    const st = c.m[i], ui = ST[st];
+    if (!roster) return `<div class="stu plain"><div class="stu-main"><span class="n">${pad2(i + 1)}</span><span class="nm">${esc(s.name)}</span></div></div>`;
+    const opts = (c.editable && st !== 'present')
+      ? `<div class="opts">${['absent', 'late', 'excused'].map(k => `<button class="${ST[k][1]} ${st === k ? 'on' : ''}" data-i="${i}" data-s="${k}">${ST[k][0]}</button>`).join('')}</div>` : '';
+    return `<div class="stu ${st === 'present' ? '' : ui[1]}"><button class="stu-main" data-i="${i}" ${c.editable ? '' : 'disabled'}><span class="n">${pad2(i + 1)}</span><span class="nm">${esc(s.name)}</span><span class="pill ${ui[1]}">${ui[0]}</span></button>${opts}</div>`;
+  }).join('');
+  body.innerHTML = note + noStudents + (roster && c.students.length
+    ? `<div class="sumrow"><span class="s ok">Keldi ${present}</span><span class="s bad">Yo'q ${absent}</span>${c.editable && absent ? '<button class="lnk" id="allBtn">Hammasi keldi</button>' : ''}</div>` : '') + rows;
+  const canSave = c.editable && c.students.length;
+  bar.innerHTML = canSave
+    ? `<button class="btn big" id="saveBtn">${absent ? 'Saqlash · ' + absent + " ta yo'q" : 'Hammasi keldi — saqlash'}</button>`
+    : '<button class="btn big ghost" id="shDone">Yopish</button>';
+  if (!canSave){ $('shDone').onclick = closeSheet; return; }
+  $('saveBtn').onclick = saveAtt;
+  if ($('allBtn')) $('allBtn').onclick = () => { c.m = c.m.map(() => 'present'); renderSheet(); };
+  body.onclick = e => {
+    const o = e.target.closest('.opts button');
+    if (o){ c.m[+o.dataset.i] = o.dataset.s; vib(); return renderSheet(); }
+    const b = e.target.closest('.stu-main'); if (!b || b.disabled) return;
+    const i = +b.dataset.i; c.m[i] = c.m[i] === 'present' ? 'absent' : 'present'; vib(); renderSheet();
+  };
+}
+async function saveAtt(){
+  const c = sh, btn = $('saveBtn'); btn.disabled = true; btn.textContent = 'Saqlanmoqda…';
+  try {
+    const r = await api(`/ustoz/api/dars/${c.l.id}/saqlash/`, {date: c.date, rows: c.students.map((s, i) => ({id: s.id, s: c.m[i]}))});
+    if (!r.ok){ btn.disabled = false; renderSheet(); toast(errText(r.err)); return; }
+    (marks[c.date] = marks[c.date] || {})[c.l.id] = {absent: r.absent};
+    toast(r.absent ? `Saqlandi · ${r.absent} ta yo'q` : 'Saqlandi ✓'); closeSheet();
+  } catch(e) {
+    if (e instanceof AuthError) return;
+    btn.disabled = false; renderSheet(); toast("Saqlanmadi. Internetni tekshiring");
+  }
+}
+
+// --- baho: o'quvchini bosing -> baho tugmasini bosing (saqlanadi). Keyingi o'quvchi avtomatik ochiladi.
+const KINDS = [['current', 'Joriy'], ['test', 'Nazorat'], ['exam', 'Imtihon']];
+const gcls = n => n >= 5 ? 'g5' : n === 4 ? 'g4' : n === 3 ? 'g3' : 'g2';
+function renderGrade(c, body, bar, noStudents){
+  const note = c.editable ? '' : `<div class="note">${ERR.grade_time}.</div>`;
+  const kinds = c.editable ? `<div class="kindseg">${KINDS.map(([k, t]) => `<button data-kind="${k}" class="${c.gkind === k ? 'on' : ''}">${t}</button>`).join('')}</div>` : '';
+  const rows = c.students.map((s, i) => {
+    const g = c.given[s.id], open = c.open === s.id && c.editable;
+    const chips = g ? `<span class="gc ${gcls(g.score)}">${g.score}</span>` : '';
+    const scores = open ? `<div class="scores">${[5, 4, 3, 2, 1].map(n => `<button class="${gcls(n)}${g && g.score === n ? ' sel' : ''}" data-sid="${s.id}" data-n="${n}">${n}</button>`).join('')}</div>` : '';
+    return `<div class="stu ${open ? 'open' : ''}" data-row="${s.id}"><button class="stu-main" data-open="${s.id}"><span class="n">${pad2(i + 1)}</span><span class="nm">${esc(s.name)}</span>${chips}</button>${scores}</div>`;
+  }).join('');
+  const hint = c.editable && c.students.length ? '<div class="hint" style="margin:-2px 2px 10px">Bir darsga bitta baho: qayta bossangiz, baho almashadi.</div>' : '';
+  body.innerHTML = note + noStudents + kinds + hint + rows;
+  bar.innerHTML = '<button class="btn big ghost" id="shDone">Tayyor</button>'; $('shDone').onclick = closeSheet;
+  body.onclick = e => {
+    const k = e.target.closest('[data-kind]'); if (k){ c.gkind = k.dataset.kind; return renderSheet(); }
+    const o = e.target.closest('[data-open]'); if (o){ const id = +o.dataset.open; c.open = c.open === id ? null : id; return renderSheet(); }
+    const s = e.target.closest('[data-n]'); if (s) giveGrade(+s.dataset.sid, +s.dataset.n);
+  };
+}
+function advanceGrade(c, sid){
+  const i = c.students.findIndex(x => x.id === sid), nxt = c.students[i + 1];
+  c.open = nxt ? nxt.id : null;                         // keyingi o'quvchi avtomatik ochiladi
+  renderSheet();
+  const el = $('shBody').querySelector('.stu.open'); if (el) el.scrollIntoView({block: 'center', behavior: 'smooth'});
+}
+async function giveGrade(sid, score){
+  const c = sh; vib();
+  const cur = c.given[sid];
+  if (cur && cur.score === score){ advanceGrade(c, sid); return; }   // o'sha baho: o'zgarish yo'q
+  try {
+    const r = await api(`/ustoz/api/baho/${c.l.id}/saqlash/`, {date: c.date, student: sid, score, kind: c.gkind});
+    if (sh !== c) return;
+    if (!r.ok){ toast(errText(r.err, 'grade')); return; }
+    c.given[sid] = {id: r.grade.id, score};
+    advanceGrade(c, sid);
+    const name = c.students.find(x => x.id === sid).name.split(' ')[0];
+    toast(r.created ? `${name} — ${score} ✓` : `${name}: ${r.previous} → ${score} ✓`, 'Bekor qilish',
+          () => undoGrade(c, sid, r.grade.id, r.created ? null : r.previous), 4500);
+  } catch(e) {
+    if (e instanceof AuthError) return;
+    toast('Saqlanmadi. Internetni tekshiring');
+  }
+}
+async function undoGrade(c, sid, gid, restore){
+  try {
+    const r = await api(`/ustoz/api/baho/${c.l.id}/ochirish/`, {id: gid, restore});
+    if (!r.ok && r.err === 'time'){ toast(errText('time', 'grade')); return; }
+    if (r.ok){
+      if (restore === null) delete c.given[sid]; else c.given[sid] = {id: gid, score: restore};
+      c.open = sid; if (sh === c) renderSheet(); toast(restore === null ? 'Baho bekor qilindi' : 'Oldingi baho qaytarildi');
+    }
+  } catch(e) { if (!(e instanceof AuthError)) toast('Bekor qilib bo\'lmadi'); }
+}
+
+// --- vazifa: matn + topshirish sanasi; ota-onalar ko'radi. Tahrirlash/o'chirish faqat berilgan kunning oxirigacha.
+const WD = ['Ya', 'Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh'];
+function fmtDay(iso){ const d = new Date(iso + 'T12:00:00'); return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + ' (' + WD[d.getDay()] + ')'; }
+function renderHw(c, body, bar){
+  const h = c.hw, editing = h.editId !== null;
+  const items = h.items.length ? h.items.map(it => {
+    const editable = it.editable, isEdit = h.editId === it.id, sure = h.confirmId === it.id;
+    return `<div class="hwt ${isEdit ? 'edit' : ''}"><div class="top"><span class="due">Topshirish: ${fmtDay(it.due)}</span><span class="when">${it.assigned === todayStr() ? 'Bugun berildi' : fmtDay(it.assigned) + ' berildi'}</span></div>
+      <div class="txt">${esc(it.text)}</div>
+      ${editable ? `<div class="acts2"><button data-edit="${it.id}">${isEdit ? 'Tahrirlanmoqda…' : 'Tahrirlash'}</button><button class="danger ${sure ? 'sure' : ''}" data-del="${it.id}">${sure ? 'Aniq o\'chiraymi?' : 'O\'chirish'}</button></div>` : ''}</div>`;
+  }).join('') : '<div class="empty">Hali vazifa berilmagan</div>';
+  body.innerHTML = `<label class="flbl" for="hwText">${editing ? 'Vazifani tahrirlash' : 'Yangi vazifa'}</label>
+    <textarea class="f-in" id="hwText" maxlength="2000" placeholder="Vazifa matni…">${esc(h.text)}</textarea>
+    <label class="flbl" for="hwDue">Topshirish sanasi</label>
+    <input class="f-in" type="date" id="hwDue" min="${todayStr()}" value="${esc(h.due)}">
+    <div class="hint">Ota-onalar farzandining jadvalida ko'radi. Berilgan kunning oxirigacha tahrirlash yoki o'chirish mumkin.</div>
+    <div class="recent-t">Berilgan vazifalar</div>${items}`;
+  bar.innerHTML = `<button class="btn big" id="hwSave">${editing ? 'Saqlash' : 'Yuborish'}</button>` + (editing ? '<button class="btn big ghost" id="hwCancel" style="flex:0 0 34%">Bekor</button>' : '');
+  $('hwText').oninput = e => { h.text = e.target.value; };
+  $('hwDue').onchange = e => { h.due = e.target.value; };
+  $('hwSave').onclick = () => saveHw(c);
+  if ($('hwCancel')) $('hwCancel').onclick = () => { h.editId = null; h.text = ''; renderSheet(); };
+  body.onclick = e => {
+    const ed = e.target.closest('[data-edit]');
+    if (ed){ const it = h.items.find(x => x.id === +ed.dataset.edit); h.editId = it.id; h.text = it.text; h.due = it.due; h.confirmId = null; renderSheet(); $('shBody').scrollTop = 0; return; }
+    const del = e.target.closest('[data-del]');
+    if (del){ const id = +del.dataset.del; if (h.confirmId === id) deleteHw(c, id); else { h.confirmId = id; renderSheet(); } return; }
+    if (h.confirmId !== null && !e.target.closest('.hwt')){ h.confirmId = null; renderSheet(); }
+  };
+}
+async function saveHw(c){
+  const h = c.hw, btn = $('hwSave'); btn.disabled = true; btn.textContent = 'Saqlanmoqda…';
+  const editing = h.editId !== null;
+  const url = editing ? `/ustoz/api/vazifa/${c.l.id}/${h.editId}/yangilash/` : `/ustoz/api/vazifa/${c.l.id}/saqlash/`;
+  try {
+    const r = await api(url, {text: h.text, due: h.due});
+    if (sh !== c) return;
+    if (!r.ok){ btn.disabled = false; btn.textContent = editing ? 'Saqlash' : 'Yuborish'; toast(errText(r.err)); return; }
+    if (editing) h.items = h.items.map(x => x.id === r.item.id ? r.item : x); else h.items.unshift(r.item);
+    h.editId = null; h.text = ''; h.confirmId = null;
+    renderSheet(); toast(editing ? 'Vazifa saqlandi ✓' : 'Vazifa yuborildi ✓');
+  } catch(e) {
+    if (e instanceof AuthError) return;
+    btn.disabled = false; btn.textContent = editing ? 'Saqlash' : 'Yuborish'; toast('Saqlanmadi. Internetni tekshiring');
+  }
+}
+async function deleteHw(c, id){
+  try {
+    const r = await api(`/ustoz/api/vazifa/${c.l.id}/${id}/ochirish/`, {});
+    if (sh !== c) return;
+    if (!r.ok){ c.hw.confirmId = null; renderSheet(); toast(errText(r.err)); return; }
+    c.hw.items = c.hw.items.filter(x => x.id !== id); c.hw.confirmId = null;
+    if (c.hw.editId === id){ c.hw.editId = null; c.hw.text = ''; }
+    renderSheet(); toast('Vazifa o\'chirildi');
+  } catch(e) { if (!(e instanceof AuthError)) toast('O\'chirib bo\'lmadi'); }
+}
+
+// ---------- ishga tushirish ----------
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ tick(); renderAll(); loadMarks(todayStr()); } });
+setInterval(() => { tick(); if (!document.querySelector('.ov.show')) renderAll(); }, 60000);
+setInterval(() => { if (!document.hidden && !document.querySelector('.ov.show')) loadMarks(todayStr()); }, 45000);
+const start = (location.hash || '#today').slice(1);
+renderAll(); loadMarks(todayStr()); loadNews(false);
+showTab(['today', 'week', 'classes', 'news'].includes(start) ? start : 'today');
+</script>
+{% endverbatim %}
+{% endblock %}

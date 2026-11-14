@@ -1,0 +1,48 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}O'quvchilar{% endblock %}
+{% block heading %}O'quvchilar <span class="muted" style="font-weight:500;font-size:15px">· {{ page.paginator.count }}</span>{% endblock %}
+{% block actions %}
+  <a class="btn" href="{% url 'panel:students_csv' %}?{{ qs }}">Yuklab olish (CSV)</a>
+  {% if 'students.import' in panel_can %}<a class="btn" href="{% url 'panel:students_import' %}">Excel'dan yuklash</a>{% endif %}
+  {% if 'students.add' in panel_can %}<a class="btn primary" href="{% url 'panel:student_add' %}"><svg class="ic"><use href="#p-plus"/></svg>O'quvchi qo'shish</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<form method="get" class="filters" id="filters" data-live>
+  <input type="search" name="q" value="{{ q }}" placeholder="Ism, familiya{% if show_phone %}, telefon{% endif %}, Face ID…" autofocus>
+  <select name="sinf">
+    <option value="">Barcha sinflar</option>
+    {% for g in groups %}<option value="{{ g.pk }}" {% if sinf == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>{% endfor %}
+  </select>
+  {% if show_state or show_debt %}
+  <select name="holat">
+    <option value="">Hammasi</option>
+    {% if show_state %}<option value="kelmagan" {% if holat == 'kelmagan' %}selected{% endif %}>Bugun kelmaganlar</option>{% endif %}
+    {% if show_debt %}<option value="qarz" {% if holat == 'qarz' %}selected{% endif %}>Qarzdorlar</option>{% endif %}
+  </select>
+  {% endif %}
+  <button class="btn" type="submit">Qidirish</button>
+  {% if q or sinf or holat %}<a class="btn" href="{% url 'panel:students' %}">Tozalash</a>{% endif %}
+</form>
+
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>O'quvchi</th><th>Sinf</th><th>Ota-ona</th>{% if show_state %}<th>Bugun</th>{% endif %}{% if show_debt %}<th>Qarz</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
+        <td>{{ r.s.group|default:"—" }}</td>
+        <td>{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <span class="muted mono">{{ r.parent.phone }}</span>{% endif %}{% if r.extra_parents %} <span class="badge gray">+{{ r.extra_parents }}</span>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
+        {% if show_state %}<td>{% if r.state %}<span class="dot {{ r.state.0 }}"></span>{{ r.state.1 }}{% endif %}</td>{% endif %}
+        {% if show_debt %}<td>{% if r.debt %}<span class="badge bad">{{ r.debt|money }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>{% endif %}
+      </tr>
+    {% empty %}
+      <tr><td colspan="5"><div class="empty">Hech narsa topilmadi</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}

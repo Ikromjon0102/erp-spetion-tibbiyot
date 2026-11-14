@@ -1,0 +1,42 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}{{ u.get_full_name }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:teachers' %}" style="font-weight:600">Ustozlar</a> <span class="muted">/</span> {{ u.last_name }} {{ u.first_name }}{% endblock %}
+{% block actions %}{% if 'teachers.change' in panel_can %}<a class="btn" href="{% url 'panel:teacher_edit' u.pk %}">Tahrirlash</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid g2">
+  <div class="card"><h2>Yuz rasmi <small class="muted">(Hikvision)</small></h2>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        {% if u.photo %}<img src="{% url 'face_photo' u.pk %}" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:14px;border:1px solid var(--line)">{% else %}<div class="empty" style="width:110px;height:110px;display:flex;align-items:center;justify-content:center">rasm yo'q</div>{% endif %}
+        <div><div class="muted">Face ID: <b class="mono">{{ u.access_id|default:"—" }}</b></div>
+        {% if 'teachers.change' in panel_can %}<form method="post" action="{% url 'panel:teacher_photo' u.pk %}" enctype="multipart/form-data" style="margin-top:8px">{% csrf_token %}<input type="file" name="photo" accept="image/*" required> <button class="btn primary">Yuklash</button></form>
+        {% if u.photo %}<form method="post" action="{% url 'panel:teacher_photo_delete' u.pk %}" style="margin-top:6px">{% csrf_token %}<button class="btn">Rasmni o'chirish</button></form>{% endif %}
+        <div class="hint">Yuz aniq ko'ringan, old tomondan olingan rasm (JPG/PNG). Qurilmalarga avtomatik yuboriladi.</div>{% endif %}</div>
+      </div></div>
+  
+  <div class="card"><h2>Ma'lumotlar</h2>
+    <p><span class="muted">Telefon (login):</span> <b class="mono">{{ u.phone|default:"—" }}</b></p>
+    <p><span class="muted">Holat:</span> {% if not u.is_active %}<span class="badge gray">nofaol</span>{% elif u.must_change_password %}<span class="badge warn">birinchi kirish kutilmoqda</span>{% else %}<span class="badge">faol</span>{% endif %}</p>
+    <p><span class="muted">Oxirgi kirish:</span> {{ u.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</p>
+    <p><span class="muted">Haftalik darslar:</span> <b>{{ lessons }}</b> ta</p>
+    {% if children %}<p><span class="muted">Farzandlari (ota-ona sifatida):</span> {% for c in children %}<a class="name" href="{% if 'students.view' in panel_can %}{% url 'panel:student' c.pk %}{% else %}#{% endif %}">{{ c.user.last_name }} {{ c.user.first_name }}</a>{% if c.group %} <span class="muted">({{ c.group }})</span>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+    {% if 'teachers.change' in panel_can %}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <form method="post" action="{% url 'panel:teacher_password' u.pk %}" onsubmit="return confirm(&quot;Parol telefonning oxirgi 4 raqamiga qaytarilsinmi?&quot;)">{% csrf_token %}<button class="btn">Parolni tiklash</button></form>
+      <form method="post" action="{% url 'panel:teacher_toggle' u.pk %}">{% csrf_token %}<button class="btn">{% if u.is_active %}Nofaol qilish{% else %}Faollashtirish{% endif %}</button></form>
+    </div>
+    <div class="hint">Parol tiklansa, boshlang'ich parol — telefonning oxirgi 4 raqami; ustoz kirgach yangisini qo'yadi.</div>
+    {% endif %}
+  </div>
+  <div class="card"><h2>O'qitadigan fan va sinflar</h2>
+    {% for t in teachings %}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
+      <div><b>{{ t.subject }}</b> <span class="muted">— {{ t.group }}</span></div>
+      {% if 'teachers.change' in panel_can %}<form method="post" action="{% url 'panel:teacher_unassign' u.pk t.pk %}">{% csrf_token %}<button class="btn">Olib tashlash</button></form>{% endif %}</div>
+    {% empty %}<div class="empty">Hali dars biriktirilmagan</div>{% endfor %}
+    {% if 'teachers.change' in panel_can %}
+    <form method="post" action="{% url 'panel:teacher_assign' u.pk %}" class="filters" style="margin-top:12px">{% csrf_token %}
+      {{ assign.subject }} {{ assign.group }} <button class="btn primary">Biriktirish</button>
+    </form>{% endif %}
+  </div>
+</div>
+{% endblock %}

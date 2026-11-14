@@ -1,0 +1,49 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}{{ p.user.get_full_name }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:staff' %}" style="font-weight:600">Xodimlar</a> <span class="muted">/</span> {{ p.user.get_full_name|default:p.user.username }}{% endblock %}
+{% block content %}
+{% if is_self %}<div class="msg">Bu — sizning hisobingiz. O'z ruxsatlaringizni o'zingiz o'zgartira olmaysiz.</div>
+{% elif not editable %}<div class="msg">Bu xodimning ruxsatlarini faqat ko'ra olasiz.</div>{% endif %}
+
+<div class="grid g2" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
+  <form method="post" class="card">{% csrf_token %}
+    <h2>Lavozim va ruxsatlar</h2>
+    <div class="formgrid">
+      <div class="field"><label>Lavozim</label>
+        <select name="position" {% if not editable %}disabled{% endif %}>{% for pos in positions %}<option value="{{ pos.pk }}" {% if pos.pk == p.position_id %}selected{% endif %}>{{ pos.name }}</option>{% endfor %}
+          {% if not editable %}<option selected>{{ p.position.name }}</option>{% endif %}</select></div>
+      <div class="field"><label>Panelga kirishi</label>
+        <label class="check"><input type="checkbox" name="is_active" {% if p.is_active %}checked{% endif %} {% if not editable %}disabled{% endif %}> Faol</label></div>
+    </div>
+    {% if p.is_owner %}<div class="msg">Bu lavozim — to'liq ruxsat: barcha bo'limlar ochiq, uni cheklab bo'lmaydi.</div>{% endif %}
+    {% include 'panel/_perms_matrix.html' with locked=p.is_owner %}
+    {% if editable %}
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn primary">Saqlash</button>
+      <button class="btn" name="apply_preset" value="1" title="Tanlangan lavozimning boshlang'ich ruxsatlarini qo'yadi">Lavozim namunasini qo'llash</button>
+    </div>
+    <div class="hint">Siz bera olmaydigan (o'zingizda yo'q) ruxsatlar o'chirilgan ko'rinadi.</div>
+    {% endif %}
+  </form>
+
+  <div>
+    <div class="card"><h2>Xodim</h2><dl class="kv" style="grid-template-columns:120px 1fr">
+      <dt>Ism</dt><dd>{{ p.user.get_full_name|default:p.user.username }}</dd>
+      <dt>Telefon</dt><dd class="mono">{{ p.user.phone|default:p.user.username }}</dd>
+      <dt>Hisob turi</dt><dd>{{ p.user.get_role_display }}{% if p.user.has_children %} · ota-ona{% endif %}</dd>
+      <dt>Oxirgi kirish</dt><dd>{{ p.user.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</dd>
+      <dt>Parol</dt><dd>{% if p.user.must_change_password %}<span class="badge warn">bir martalik</span>{% elif p.user.has_usable_password %}<span class="badge">o'rnatilgan</span>{% else %}<span class="badge gray">yo'q</span>{% endif %}</dd>
+    </dl>
+    {% if editable %}
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <form method="post" action="{% url 'panel:staff_password' p.pk %}">{% csrf_token %}<button class="btn small">Bir martalik parol berish</button></form>
+      <form method="post" action="{% url 'panel:staff_remove' p.pk %}" onsubmit="return confirm('Xodimdan panel ruxsati olib tashlansinmi?')">{% csrf_token %}<button class="btn small danger">Paneldan olib tashlash</button></form>
+    </div>{% endif %}</div>
+    <div class="card"><h2>Oxirgi o'zgarishlar</h2>
+      {% for e in recent %}<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>{{ e.verb }}</b><div class="muted">{{ e.actor_name }} · {{ e.created_at|date:"d.m.Y H:i" }}</div></div>
+      {% empty %}<div class="muted">Hali yozuv yo'q</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

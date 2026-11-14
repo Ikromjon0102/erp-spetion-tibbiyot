@@ -1,0 +1,16 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:students' %}" style="font-weight:600">O'quvchilar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:760px">{% csrf_token %}
+  <div class="formgrid">
+    {% include 'panel/_field.html' with f=form.last_name %}
+    {% include 'panel/_field.html' with f=form.first_name %}
+    {% include 'panel/_field.html' with f=form.group %}
+    {% include 'panel/_field.html' with f=form.birth_date %}
+    {% include 'panel/_field.html' with f=form.access_id cls='wide' %}
+  </div>
+  <button class="btn primary">Saqlash</button>
+  <a class="btn" href="{% if student %}{% url 'panel:student' student.pk %}{% else %}{% url 'panel:students' %}{% endif %}">Bekor qilish</a>
+</form>
+{% endblock %}

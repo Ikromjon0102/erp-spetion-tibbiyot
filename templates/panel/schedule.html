@@ -1,0 +1,29 @@
+{% extends 'panel/base.html' %}
+{% block title %}Dars jadvali{% endblock %}
+{% block heading %}Dars jadvali{% endblock %}
+{% block actions %}{% if 'schedule.change' in panel_can %}<a class="btn primary" href="{% url 'panel:lesson_add' %}{% if group %}?sinf={{ group.pk }}{% endif %}"><svg class="ic"><use href="#p-plus"/></svg>Dars qo'shish</a>{% endif %}{% endblock %}
+{% block content %}
+<form method="get" class="filters" data-live>
+  <select name="sinf"><option value="">— sinf bo'yicha —</option>{% for g in groups %}<option value="{{ g.pk }}" {% if group.pk == g.pk %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+  <select name="ustoz"><option value="">— ustoz bo'yicha —</option>{% for t in teachers %}<option value="{{ t.pk }}" {% if teacher.pk == t.pk %}selected{% endif %}>{{ t.last_name }} {{ t.first_name }}</option>{% endfor %}</select>
+</form>
+<div class="card" style="padding:6px 10px">
+  <h2 style="padding:8px 8px 0;margin:0">{% if group %}{{ group.name }} sinfi{% elif teacher %}{{ teacher.last_name }} {{ teacher.first_name }}{% else %}Jadval{% endif %} <small class="muted">· haftasiga {{ total }} ta dars</small></h2>
+  <div class="tbl-wrap"><table class="tbl" style="min-width:760px">
+    <thead><tr><th style="width:90px">Soat</th>{% for d, name in days %}<th>{{ name }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in grid %}<tr>
+      <td><b>{{ row.period }}-soat</b>{% if row.time %}<br><span class="muted mono" style="font-size:12px">{{ row.time.0 }}–{{ row.time.1 }}</span>{% endif %}</td>
+      {% for cell in row.days %}<td style="vertical-align:top">
+        {% for les in cell %}<div style="margin-bottom:6px;padding:6px 8px;border-radius:10px;background:var(--tint)">
+          {% if 'schedule.change' in panel_can %}<a href="{% url 'panel:lesson_edit' les.pk %}" class="name"><b>{{ les.teaching.subject }}</b></a>{% else %}<b>{{ les.teaching.subject }}</b>{% endif %}
+          <div class="muted" style="font-size:12px">{% if group %}{{ les.teaching.teacher.last_name|default:"ustozsiz" }}{% else %}{{ les.teaching.group }}{% endif %}{% if les.room %} · {{ les.room }}{% endif %}</div>
+          <div class="muted mono" style="font-size:11.5px">{{ les.start|time:"H:i" }}–{{ les.end|time:"H:i" }}</div>
+        </div>{% endfor %}
+        {% if 'schedule.change' in panel_can and group %}<a class="muted" style="font-size:12px" href="{% url 'panel:lesson_add' %}?sinf={{ group.pk }}&kun={{ forloop.counter0 }}&soat={{ row.period }}">+ dars</a>{% endif %}
+      </td>{% endfor %}
+    </tr>{% empty %}<tr><td colspan="7"><div class="empty">Bu tanlov uchun dars yo'q</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

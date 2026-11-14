@@ -1,0 +1,476 @@
+{% extends 'app/base.html' %}
+{% load app_extras %}
+{% block title %}{{ student.user.first_name }} — Spetion{% endblock %}
+{% block heading %}{{ student.user.first_name }}{% endblock %}
+
+{% block head %}
+<style>
+  .tabpane[hidden] { display:none; }
+  /* vazifa belgisi, varaq va tab nuqtasi */
+  .tabbar button { position:relative; }
+  .tabbar .badge { position:absolute; top:10px; left:calc(50% + 8px); width:9px; height:9px; border-radius:50%; background:var(--bad); border:2px solid var(--card); }
+  .row.tap { cursor:pointer; }
+  .row.tap:active { background:var(--tint); }
+  .hwb { display:inline-flex; align-items:center; gap:6px; font:700 10.5px 'Space Mono',monospace; text-transform:uppercase; background:var(--late-tint); color:var(--late); padding:4px 8px; border-radius:8px; flex-shrink:0; }
+  .hwb .newdot { width:8px; height:8px; }
+  .ov { position:fixed; inset:0; z-index:60; background:rgba(8,26,12,.5); display:none; align-items:flex-end; justify-content:center; overscroll-behavior:contain; }
+  .ov.show { display:flex; }
+  .sheet { background:var(--card); width:100%; max-width:520px; max-height:88vh; border-radius:22px 22px 0 0; display:flex; flex-direction:column; animation:up .22s ease; }
+  @keyframes up { from { transform:translateY(40px); opacity:.6; } to { transform:none; opacity:1; } }
+  .grab { width:38px; height:4px; background:var(--line-strong); border-radius:2px; margin:9px auto 0; flex-shrink:0; }
+  .sh-head { display:flex; align-items:flex-start; gap:8px; padding:10px 16px 8px; flex-shrink:0; }
+  .sh-head .grow { flex:1; min-width:0; }
+  .sh-head .meta { font:700 11px 'Space Mono',monospace; color:var(--accent-deep); letter-spacing:.04em; }
+  .sh-head .title { font-size:22px; font-weight:800; line-height:1.15; margin-top:2px; }
+  .xbtn { width:36px; height:36px; border-radius:12px; border:0; background:var(--bg); display:grid; place-items:center; color:var(--dim); flex-shrink:0; }
+  .sh-body { overflow-y:auto; flex:1; min-height:0; padding:4px 16px calc(18px + env(safe-area-inset-bottom,0)); overscroll-behavior:contain; }
+  .hwi { background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:13px 14px; margin-bottom:10px; }
+  .hwi.past { opacity:.65; }
+  .hwi .top { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .due { font:700 11px 'Space Mono',monospace; padding:5px 9px; border-radius:8px; background:var(--tint); color:var(--accent-deep); }
+  .due.soon { background:var(--late-tint); color:var(--late); }
+  .due.over { background:var(--bad-tint); color:var(--bad); }
+  .hwi .meta2 { color:var(--dim); font-size:12px; margin-left:auto; }
+  .hwi .txt { white-space:pre-wrap; font-size:15.5px; line-height:1.55; word-break:break-word; }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:2px 0 12px; margin:0 -14px; padding-left:14px; padding-right:14px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex-shrink:0; padding:8px 16px; border-radius:99px; background:var(--card); border:1.5px solid var(--line); font-weight:700; font-size:14px; color:var(--dim); }
+  .chip.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+
+  /* hero */
+  .hero { background:linear-gradient(135deg,#14532D 0%,#166534 60%,#1B7F3B 100%); color:#fff; border-radius:22px; padding:16px; margin-bottom:12px; box-shadow:0 8px 22px rgba(22,101,52,.28); }
+  .hero-top { display:flex; align-items:center; gap:12px; }
+  .hero-av { width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.18); display:grid; place-items:center; font:800 19px 'Inter',sans-serif; flex-shrink:0; }
+  .hero-name { font-weight:800; font-size:18px; line-height:1.2; }
+  .hero-sub { opacity:.85; font-size:13.5px; margin-top:2px; }
+  .presence { margin-top:14px; display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.14); border-radius:14px; padding:11px 13px; font-weight:700; font-size:14.5px; }
+  .presence small { display:block; font-weight:500; opacity:.85; font-size:12px; }
+  .presence .dot { width:10px; height:10px; border-radius:50%; background:#9AA89F; flex-shrink:0; }
+  .presence.in .dot { background:#5CFF8F; box-shadow:0 0 0 4px rgba(92,255,143,.25); }
+  .presence.out .dot { background:#FFD479; }
+  .presence.wait .dot { background:#FF8A80; }
+
+  /* ko'rsatkichlar */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:10px; margin-bottom:6px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:12px 10px; text-align:left; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:2px; }
+  .stat:active { background:var(--tint); }
+  .stat .k { font-size:11.5px; color:var(--dim); font-weight:600; }
+  .stat .v { font-size:22px; font-weight:800; line-height:1.15; }
+  .stat .s { font-size:11.5px; color:var(--dim); }
+  .stat.warn .v { color:var(--bad); font-size:17px; padding-top:3px; }
+  .stat.good .v { color:var(--accent-deep); }
+
+  /* ro'yxat qatorlari */
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .row { display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:11px 12px; box-shadow:var(--shadow); }
+  .row .time { font:700 14px 'Space Mono',monospace; width:50px; flex-shrink:0; }
+  .row .time small { display:block; font-weight:400; font-size:10.5px; color:var(--faint); margin-top:1px; }
+  .row .info { flex:1; min-width:0; }
+  .row .info b { display:block; font-weight:700; }
+  .row .info small { display:block; color:var(--dim); font-size:12.5px; margin-top:1px; }
+  .row.now { border-color:var(--accent); background:var(--tint); }
+  .tag-now { font:700 9.5px 'Space Mono',monospace; background:var(--accent); color:var(--on-accent); border-radius:6px; padding:3px 7px; }
+  .tag-now[hidden] { display:none; }
+  .st { font:700 11px 'Space Mono',monospace; padding:4px 9px; border-radius:8px; text-transform:uppercase; flex-shrink:0; }
+  .st.ok { background:var(--tint); color:var(--accent-deep); }
+  .st.bad { background:var(--bad-tint); color:var(--bad); }
+  .st.late { background:var(--late-tint); color:var(--late); }
+  .st.exc { background:var(--exc-tint); color:var(--exc); }
+
+  /* baho nishonlari */
+  .score { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; color:#fff; font-weight:800; font-size:16px; flex-shrink:0; }
+  .g5 { background:#166534; } .g4 { background:#3F8F5A; } .g3 { background:#B36205; } .g2, .g1 { background:#C62828; }
+  .score.sm { width:26px; height:26px; border-radius:8px; font-size:13px; }
+  .score.avg { width:auto; min-width:46px; padding:0 9px; height:32px; font-size:15px; }
+
+  .big-avg { display:flex; align-items:center; gap:14px; }
+  .big-avg .num { font-size:44px; font-weight:800; line-height:1; }
+  .big-avg .cap { color:var(--dim); font-size:13.5px; }
+
+  details.subj { background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin-bottom:8px; overflow:hidden; }
+  details.subj summary { list-style:none; display:flex; align-items:center; gap:10px; padding:12px; cursor:pointer; }
+  details.subj summary::-webkit-details-marker { display:none; }
+  details.subj .nm { flex:1; min-width:0; }
+  details.subj .nm b { display:block; }
+  details.subj .dots { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+  details.subj .chev { transition:transform .2s; color:var(--faint); }
+  details.subj[open] .chev { transform:rotate(90deg); }
+  .g-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-top:1px solid var(--line); font-size:13.5px; }
+  .g-item .d { font:400 11.5px 'Space Mono',monospace; color:var(--dim); width:44px; flex-shrink:0; }
+  .g-item .t { flex:1; min-width:0; } .g-item .t small { display:block; color:var(--dim); font-size:12px; }
+
+  /* davomat */
+  .pills { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  .pill-s { border-radius:14px; padding:10px 6px; text-align:center; }
+  .pill-s b { display:block; font-size:20px; font-weight:800; } .pill-s span { font-size:11px; font-weight:600; }
+  .pill-s.ok { background:var(--tint); color:var(--accent-deep); } .pill-s.bad { background:var(--bad-tint); color:var(--bad); }
+  .pill-s.late { background:var(--late-tint); color:var(--late); } .pill-s.exc { background:var(--exc-tint); color:var(--exc); }
+  .day-row { display:flex; align-items:center; gap:12px; padding:11px 2px; border-bottom:1px solid var(--line); }
+  .day-row:last-child { border-bottom:0; }
+  .day-row .wd { width:34px; text-align:center; flex-shrink:0; } .day-row .wd b { display:block; font-size:12px; color:var(--dim); } .day-row .wd span { font:700 15px 'Inter',sans-serif; }
+  .day-row .io { flex:1; display:flex; gap:16px; }
+  .io div small { display:block; font-size:11px; color:var(--dim); font-weight:600; }
+  .io div b { font:700 15px 'Space Mono',monospace; }
+  .io .in b { color:var(--accent-deep); }
+
+  /* jadval */
+  .daychips { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:12px; }
+  .daychips button { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:9px 0 7px; text-align:center; font-weight:800; font-size:14px; position:relative; }
+  .daychips button small { display:block; font:400 9.5px 'Space Mono',monospace; color:var(--faint); margin-top:1px; }
+  .daychips button.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .daychips button.on small { color:rgba(255,255,255,.8); }
+  .daychips button.today:not(.on)::after { content:""; position:absolute; top:5px; right:5px; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  .daypane[hidden] { display:none; }
+  .num { font:700 11px 'Space Mono',monospace; color:var(--faint); width:14px; flex-shrink:0; }
+
+  /* to'lov */
+  .pay-hero { text-align:center; padding:20px 14px; }
+  .disc { font-size:12.5px; color:var(--accent-deep); background:var(--tint); display:inline-block; padding:3px 9px; border-radius:8px; margin-top:6px; font-weight:600; }
+  a.payrow { display:block; } a.payrow:active { background:var(--tint); } .payrow.void { opacity:.55; } .payrow.void .top span:first-child { text-decoration:line-through; }
+  .pay-hero .lbl { color:var(--dim); font-size:13px; font-weight:600; }
+  .pay-hero .amt { font-size:34px; font-weight:800; margin:4px 0 2px; }
+  .pay-hero .amt.bad { color:var(--bad); } .pay-hero .amt.ok { color:var(--accent-deep); }
+  .pay { padding:12px 0; border-bottom:1px solid var(--line); }
+  .pay:last-child { border-bottom:0; }
+  .pay .top { display:flex; justify-content:space-between; align-items:center; font-weight:700; }
+  .pay .sub { display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); margin-top:3px; }
+  .bar { height:7px; border-radius:99px; background:var(--line); margin-top:8px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--accent); border-radius:99px; }
+  .bar.part i { background:var(--late); }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ====================== BOSH ====================== -->
+<section class="tabpane" id="tab-home">
+  {% if siblings %}
+  <div class="chips">
+    {% for s in siblings %}<a class="chip {% if s.pk == student.pk %}on{% endif %}" href="{% url 'student_detail' s.pk %}">{{ s.user.first_name }}</a>{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-av">{{ student.user|initials }}</div>
+      <div>
+        <div class="hero-name">{{ student.user.last_name }} {{ student.user.first_name }}</div>
+        <div class="hero-sub">{{ student.group|default:"Guruh biriktirilmagan" }}</div>
+      </div>
+    </div>
+    <div class="presence {{ presence.state }}">
+      <span class="dot"></span>
+      <div>{{ presence.text }}{% if presence.sub %}<small>{{ presence.sub }}</small>{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <button class="stat {% if att_stats.rate is not None and att_stats.rate >= 90 %}good{% endif %}" data-go="attendance">
+      <span class="k">Davomat</span><span class="v">{% if att_stats.rate is not None %}{{ att_stats.rate }}%{% else %}—{% endif %}</span><span class="s">so'nggi 30 kun</span>
+    </button>
+    <button class="stat" data-go="grades">
+      <span class="k">O'rtacha baho</span><span class="v">{{ avg|default:"—" }}</span><span class="s">{{ n_grades }} ta baho</span>
+    </button>
+    {% if payments is not None %}
+    <button class="stat {% if debt %}warn{% else %}good{% endif %}" data-go="payments">
+      <span class="k">To'lov</span>
+      <span class="v">{% if debt %}{{ debt|money }}{% elif bill.advance %}+{{ bill.advance|money }}{% else %}Joyida{% endif %}</span>
+      <span class="s">{% if debt %}{% if bill.overdue %}muddati o'tgan{% else %}so'm qarz{% endif %}{% elif bill.advance %}avans{% else %}qarz yo'q{% endif %}</span>
+    </button>
+    {% endif %}
+  </div>
+
+  <h2 class="sec">Bugungi darslar <small>{{ today|date:"j F" }}</small></h2>
+  {% if today_lessons %}
+  <div class="list" id="todayList">
+    {% for l in today_lessons %}
+    <div class="row{% if l.hw %} tap{% endif %}" data-start="{{ l.start }}" data-end="{{ l.end }}" data-subject="{{ l.subject }}">
+      <div class="time">{{ l.start }}<small>{{ l.end }}</small></div>
+      <div class="info"><b>{{ l.subject }}</b><small>{{ l.teacher|default:"—" }}{% if l.room %} · {{ l.room }}-xona{% endif %}</small></div>
+      {% if l.hw %}<span class="hwb" data-hwb="{{ l.subject }}">Vazifa{% if l.hw_unread %}<i class="newdot"></i>{% endif %}</span>{% endif %}
+      {% if l.mark %}<span class="st {{ l.mark.1 }}">{{ l.mark.0 }}</span>{% endif %}
+      <span class="tag-now" hidden>HOZIR</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">{% if today_idx is None %}Bugun dam olish kuni{% else %}Bugun dars yo'q{% endif %}</div>
+  {% endif %}
+
+  {% if recent_grades %}
+  <h2 class="sec">So'nggi baholar <button data-go="grades">Barchasi</button></h2>
+  <div class="list">
+    {% for g in recent_grades %}
+    <div class="row">
+      <div class="score {% if g.score >= 5 %}g5{% elif g.score == 4 %}g4{% elif g.score == 3 %}g3{% else %}g2{% endif %}">{{ g.score }}</div>
+      <div class="info"><b>{{ g.subject }}</b><small>{{ g.kind }}</small></div>
+      <small class="muted" style="font-family:'Space Mono',monospace;font-size:11.5px">{{ g.date|date:"d.m" }}</small>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if news %}
+  <h2 class="sec">E'lonlar <a href="{% url 'announcements' %}">Barchasi</a></h2>
+  {% for a in news %}
+  <details class="nw" data-nid="{{ a.id }}"><summary><span class="t"><b>{{ a.title }}</b><small>{{ a.date|date:"d.m.Y" }}{% if a.group %} · {{ a.group }}{% endif %}</small></span>{% if not a.read %}<i class="newdot" title="Yangi"></i>{% endif %}<svg class="ic chev"><use href="#i-next"/></svg></summary><div class="body">{{ a.body|linebreaksbr }}</div></details>
+  {% endfor %}
+  {% endif %}
+</section>
+
+<!-- ====================== BAHOLAR ====================== -->
+<section class="tabpane" id="tab-grades" hidden>
+  <h1 class="page">Baholar</h1>
+  {% if subjects %}
+  <div class="card big-avg">
+    <div class="score avg {{ avg_class }}" style="width:70px;height:70px;border-radius:20px;font-size:30px">{{ avg }}</div>
+    <div><div style="font-weight:800;font-size:17px">O'rtacha baho</div><div class="cap">{{ n_grades }} ta baho · {{ subjects|length }} ta fan</div></div>
+  </div>
+  <h2 class="sec">Fanlar bo'yicha <small>bosib batafsil ko'ring</small></h2>
+  {% for s in subjects %}
+  <details class="subj">
+    <summary>
+      <div class="nm"><b>{{ s.name }}</b>
+        <div class="dots">{% for sc in s.recent %}<span class="score sm {% if sc >= 5 %}g5{% elif sc == 4 %}g4{% elif sc == 3 %}g3{% else %}g2{% endif %}">{{ sc }}</span>{% endfor %}</div>
+      </div>
+      <span class="score avg {{ s.avg_class }}">{{ s.avg }}</span>
+      <svg class="ic chev"><use href="#i-next"/></svg>
+    </summary>
+    {% for g in s.items %}
+    <div class="g-item">
+      <span class="d">{{ g.date|date:"d.m" }}</span>
+      <span class="t">{{ g.kind }}{% if g.comment %}<small>{{ g.comment }}</small>{% endif %}</span>
+      <span class="score sm {% if g.score >= 5 %}g5{% elif g.score == 4 %}g4{% elif g.score == 3 %}g3{% else %}g2{% endif %}">{{ g.score }}</span>
+    </div>
+    {% endfor %}
+  </details>
+  {% endfor %}
+  {% else %}
+  <div class="empty">Hozircha baho qo'yilmagan</div>
+  {% endif %}
+</section>
+
+<!-- ====================== DAVOMAT ====================== -->
+<section class="tabpane" id="tab-attendance" hidden>
+  <h1 class="page">Davomat</h1>
+
+  <h2 class="sec" style="margin-top:6px">Maktabga kelish va ketish <small>so'nggi 14 kun</small></h2>
+  {% if access_days %}
+  <div class="card" style="padding:4px 14px">
+    {% for d in access_days %}
+    <div class="day-row">
+      <div class="wd"><b>{{ d.date|wd }}</b><span>{{ d.date|date:"d" }}</span></div>
+      <div class="io">
+        <div class="in"><small>Keldi</small><b>{{ d.arrived|time:"H:i"|default:"—" }}</b></div>
+        <div><small>Ketdi</small><b>{{ d.left|time:"H:i"|default:"—" }}</b></div>
+      </div>
+      <small class="muted">{{ d.date|date:"F" }}</small>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">So'nggi 14 kunda kirish-chiqish ma'lumoti yo'q</div>
+  {% endif %}
+
+  <h2 class="sec">Darslardagi davomat <small>so'nggi 30 kun</small></h2>
+  {% if att_stats.total %}
+  <div class="pills">
+    <div class="pill-s ok"><b>{{ att_stats.present }}</b><span>Keldi</span></div>
+    <div class="pill-s bad"><b>{{ att_stats.absent }}</b><span>Kelmadi</span></div>
+    <div class="pill-s late"><b>{{ att_stats.late }}</b><span>Kech</span></div>
+    <div class="pill-s exc"><b>{{ att_stats.excused }}</b><span>Sababli</span></div>
+  </div>
+  {% if issues %}
+  <div class="list">
+    {% for i in issues %}
+    <div class="row">
+      <div class="time" style="width:44px">{{ i.date|date:"d.m" }}<small>{{ i.date|wd }}</small></div>
+      <div class="info"><b>{{ i.subject }}</b><small>{{ i.period }}-dars</small></div>
+      <span class="st {{ i.cls }}">{{ i.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">Qoldirilgan yoki kechikilgan dars yo'q</div>
+  {% endif %}
+  {% else %}
+  <div class="empty">Darslardagi davomat hali belgilanmagan</div>
+  {% endif %}
+</section>
+
+<!-- ====================== JADVAL ====================== -->
+<section class="tabpane" id="tab-schedule" hidden>
+  <h1 class="page">Dars jadvali</h1>
+  <div class="daychips" id="dayChips">
+    {% for d in days %}<button data-day="{{ d.idx }}" class="{% if d.is_today %}today{% endif %}">{{ d.code }}<small>{{ d.name|slice:":3" }}</small></button>{% endfor %}
+  </div>
+  {% for d in days %}
+  <div class="daypane" data-day="{{ d.idx }}" hidden>
+    {% if d.lessons %}
+    <div class="list">
+      {% for l in d.lessons %}
+      <div class="row{% if l.hw %} tap{% endif %}" {% if d.is_today %}data-start="{{ l.start }}" data-end="{{ l.end }}"{% endif %} data-subject="{{ l.subject }}">
+        <span class="num">{{ l.period }}</span>
+        <div class="time">{{ l.start }}<small>{{ l.end }}</small></div>
+        <div class="info"><b>{{ l.subject }}</b><small>{{ l.teacher|default:"—" }}{% if l.room %} · {{ l.room }}-xona{% endif %}</small></div>
+        {% if l.hw %}<span class="hwb" data-hwb="{{ l.subject }}">Vazifa{% if l.hw_unread %}<i class="newdot"></i>{% endif %}</span>{% endif %}
+        {% if d.is_today %}<span class="tag-now" hidden>HOZIR</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty">Bu kuni dars yo'q</div>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+
+<!-- ====================== TO'LOV ====================== -->
+{% if payments is not None %}
+<section class="tabpane" id="tab-payments" hidden>
+  <h1 class="page">To'lov</h1>
+  <div class="card pay-hero">
+    {% if bill.debt %}
+      <div class="lbl">Umumiy qarz</div><div class="amt bad">{{ bill.debt|money }} so'm</div>
+      <div class="lbl">{% if bill.overdue %}Shundan muddati o'tgan: <b>{{ bill.overdue|money }} so'm</b>{% else %}To'lovni maktab kassasiga amalga oshiring{% endif %}</div>
+    {% elif bill.advance %}
+      <div class="lbl">Oldindan to'langan (avans)</div><div class="amt ok">{{ bill.advance|money }} so'm</div>
+      <div class="lbl">Keyingi oylar hisobiga o'tadi</div>
+    {% else %}
+      <div class="lbl">Holat</div><div class="amt ok">Qarz yo'q</div><div class="lbl">Barcha oylar to'langan</div>
+    {% endif %}
+  </div>
+  {% if bill.discounts %}
+  <div class="card" style="padding:12px 14px"><div class="lbl" style="color:var(--dim);font-weight:600;font-size:13px">Chegirma</div>
+    {% for d in bill.discounts %}<div style="font-weight:700">{{ d.discount.name }} <span class="due">−{{ d.discount.percent|floatformat:"-2" }}%</span></div>
+    {% if d.note %}<div class="muted" style="font-size:12.5px">{{ d.note }}</div>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+  {% if bill.rows %}
+  <h2 class="sec">Oylar bo'yicha</h2>
+  <div class="card" style="padding:4px 14px">
+    {% for r in bill.rows reversed %}
+    <div class="pay">
+      <div class="top"><span>{{ r.charge.month|date:"F Y" }}</span>
+        {% if r.status == 'paid' %}<span class="st ok">To'langan</span>{% elif r.status == 'partial' %}<span class="st late">Qisman</span>{% else %}<span class="st bad">To'lanmagan</span>{% endif %}</div>
+      <div class="sub"><span>To'langan: {{ r.paid|money }}</span><span>Hisoblangan: {{ r.charge.amount|money }}</span></div>
+      {% if r.charge.discount_label %}<div class="disc">{{ r.charge.discount_label }} · asosiy narx {{ r.charge.base_price|money }}</div>{% endif %}
+      <div class="bar {% if r.status == 'partial' %}part{% endif %}"><i style="width:{{ r.pct }}%"></i></div>
+      {% if r.debt %}<div class="sub" style="margin-top:6px"><span>{% if r.overdue %}<b style="color:var(--bad)">Muddati o'tgan ({{ r.due|date:"d.m" }})</b>{% else %}To'lov muddati: {{ r.due|date:"d.m" }}{% endif %}</span><span>Qoldi: <b>{{ r.debt|money }}</b></span></div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="empty">Hisob hali yozilmagan</div>{% endif %}
+
+  {% if bill.payments %}
+  <h2 class="sec">To'lovlar tarixi</h2>
+  <div class="card" style="padding:4px 14px">
+    {% for p in bill.payments %}
+    <a class="pay payrow {% if p.voided %}void{% endif %}" href="{% url 'receipt' student.pk p.pk %}">
+      <div class="top"><span>{{ p.amount|money }} so'm</span>{% if p.voided %}<span class="st bad">Bekor qilingan</span>{% else %}<span class="st ok">Chek</span>{% endif %}</div>
+      <div class="sub"><span>{{ p.paid_on|date:"d.m.Y" }} · {{ p.get_method_display }}</span><span class="mono">{{ p.receipt_no }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}
+
+{% block bottomnav %}
+<div class="ov" id="hwOv"><div class="sheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="sh-head">
+    <div class="grow"><div class="meta">UY VAZIFASI</div><div class="title" id="hwTitle"></div></div>
+    <button class="xbtn" id="hwClose" aria-label="Yopish"><svg class="ic"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="sh-body" id="hwBody"></div>
+</div></div>
+<nav class="tabbar" aria-label="Bo'limlar"><div class="tabbar-in">
+  <button data-tab="home"><span class="pill"><svg class="ic"><use href="#i-home"/></svg></span>Bosh</button>
+  <button data-tab="grades"><span class="pill"><svg class="ic"><use href="#i-star"/></svg></span>Baholar</button>
+  <button data-tab="attendance"><span class="pill"><svg class="ic"><use href="#i-check"/></svg></span>Davomat</button>
+  <button data-tab="schedule"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>Jadval{% if hw_unread %}<i class="badge" id="hwBadge" title="Yangi vazifa"></i>{% endif %}</button>
+  {% if payments is not None %}<button data-tab="payments"><span class="pill"><svg class="ic"><use href="#i-wallet"/></svg></span>To'lov</button>{% endif %}
+</div></nav>
+{% endblock %}
+
+{% block js %}
+{{ homework|json_script:"hw-data" }}
+<script>
+(function(){
+  // ---------- vazifalar: jadvalda fan ustiga bosilsa shu fandan berilgan vazifalar ochiladi ----------
+  var HW = JSON.parse(document.getElementById('hw-data').textContent);
+  var ov = document.getElementById('hwOv'), body = document.getElementById('hwBody');
+  function esc(t){ return String(t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function dueClass(h){ return h.days_left < 0 ? 'over' : h.days_left <= 1 ? 'soon' : ''; }
+  function dueText(h){
+    var left = h.days_left === 0 ? 'bugun' : h.days_left === 1 ? 'ertaga' : h.days_left < 0 ? "muddati o'tgan" : h.days_left + ' kundan keyin';
+    return 'Topshirish: ' + h.due + ' (' + h.due_wd + ') · ' + left;
+  }
+  function openHw(subject){
+    var items = HW[subject]; if (!items || !items.length) return;
+    document.getElementById('hwTitle').textContent = subject;
+    body.innerHTML = items.map(function(h){
+      return '<div class="hwi' + (h.past ? ' past' : '') + '"><div class="top"><span class="due ' + dueClass(h) + '">' + esc(dueText(h)) + '</span>'
+        + '<span class="meta2">' + esc(h.assigned) + ' berildi' + (h.teacher ? ' · ' + esc(h.teacher) : '') + '</span></div><div class="txt">' + esc(h.text) + '</div></div>';
+    }).join('');
+    ov.classList.add('show'); document.body.style.overflow = 'hidden';
+    markRead(subject, items);
+  }
+  function closeHw(){ ov.classList.remove('show'); document.body.style.overflow = ''; }
+  document.getElementById('hwClose').onclick = closeHw;
+  ov.addEventListener('click', function(e){ if (e.target === ov) closeHw(); });
+  function markRead(subject, items){
+    var ids = items.filter(function(h){ return !h.read; }).map(function(h){ return h.id; });
+    if (!ids.length) return;
+    items.forEach(function(h){ h.read = true; });
+    document.querySelectorAll('.hwb[data-hwb]').forEach(function(b){
+      if (b.dataset.hwb === subject){ var d = b.querySelector('.newdot'); if (d) d.remove(); }
+    });
+    var anyLeft = Object.keys(HW).some(function(k){ return HW[k].some(function(h){ return !h.read; }); });
+    var badge = document.getElementById('hwBadge'); if (badge && !anyLeft) badge.remove();
+    var m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    fetch('/vazifa/oqildi/', {method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': m ? decodeURIComponent(m[1]) : ''}, body: JSON.stringify({ids: ids})}).catch(function(){});
+  }
+  document.addEventListener('click', function(e){
+    var r = e.target.closest('.row.tap[data-subject]'); if (r) openHw(r.dataset.subject);
+  });
+})();
+(function(){
+  var panes = document.querySelectorAll('.tabpane'), btns = document.querySelectorAll('[data-tab]');
+  function show(name, noScroll){
+    var found = false;
+    panes.forEach(function(p){ var on = p.id === 'tab-' + name; p.hidden = !on; if (on) found = true; });
+    if (!found) return show('home', noScroll);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.tab === name); });
+    if (!noScroll) window.scrollTo(0, 0);
+    try { history.replaceState(null, '', '#' + name); } catch(e) {}
+  }
+  btns.forEach(function(b){ b.onclick = function(){ show(b.dataset.tab); }; });
+  document.querySelectorAll('[data-go]').forEach(function(b){ b.onclick = function(){ show(b.dataset.go); }; });
+  show((location.hash || '#home').slice(1), true);
+
+  // dars jadvali: kun tanlash
+  var chips = document.querySelectorAll('#dayChips button'), dayPanes = document.querySelectorAll('.daypane');
+  function showDay(i){
+    chips.forEach(function(c){ c.classList.toggle('on', c.dataset.day === String(i)); });
+    dayPanes.forEach(function(p){ p.hidden = p.dataset.day !== String(i); });
+  }
+  chips.forEach(function(c){ c.onclick = function(){ showDay(c.dataset.day); }; });
+  showDay({{ default_day }});
+
+  // "HOZIR" belgisi (bugungi darslar uchun)
+  function mins(s){ var p = s.split(':'); return +p[0] * 60 + +p[1]; }
+  function markNow(){
+    var n = new Date(), cur = n.getHours() * 60 + n.getMinutes();
+    document.querySelectorAll('.row[data-start]').forEach(function(r){
+      var on = cur >= mins(r.dataset.start) && cur < mins(r.dataset.end);
+      r.classList.toggle('now', on);
+      var t = r.querySelector('.tag-now'); if (t) t.hidden = !on;
+    });
+  }
+  markNow(); setInterval(markNow, 60000);
+})();
+</script>
+{% endblock %}

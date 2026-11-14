@@ -1,0 +1,8 @@
+{% if page.paginator.num_pages > 1 %}
+<div class="pager">
+  <span class="muted" style="border:0;background:none">{{ page.start_index }}–{{ page.end_index }} / {{ page.paginator.count }}</span>
+  {% if page.has_previous %}<a href="?{% if qs %}{{ qs }}&{% endif %}page={{ page.previous_page_number }}">‹</a>{% else %}<span class="dis">‹</span>{% endif %}
+  <span class="cur">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?{% if qs %}{{ qs }}&{% endif %}page={{ page.next_page_number }}">›</a>{% else %}<span class="dis">›</span>{% endif %}
+</div>
+{% endif %}

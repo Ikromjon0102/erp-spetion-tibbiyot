@@ -1,0 +1,27 @@
+{% extends 'panel/base.html' %}
+{% block title %}Faoliyat jurnali{% endblock %}
+{% block heading %}Faoliyat jurnali{% endblock %}
+{% block content %}
+<form method="get" class="filters" data-live>
+  <input type="search" name="kim" value="{{ who }}" placeholder="Kim (ism)…">
+  <input type="search" name="amal" value="{{ verb }}" placeholder="Amal…" style="min-width:200px">
+  <button class="btn">Qidirish</button>{% if who or verb %}<a class="btn" href="{% url 'panel:audit' %}">Tozalash</a>{% endif %}
+</form>
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>Vaqt</th><th>Kim</th><th>Amal</th><th>Obyekt</th><th>Tafsilot</th></tr></thead>
+    <tbody>
+    {% for e in page %}<tr>
+      <td class="mono" style="white-space:nowrap">{{ e.created_at|date:"d.m.Y H:i" }}</td>
+      <td><b>{{ e.actor_name|default:"—" }}</b></td>
+      <td>{{ e.verb }}</td>
+      <td>{{ e.target_label|default:"—" }}</td>
+      <td>{% if e.lines %}<details class="diff"><summary>ko'rish</summary>
+        {% for k, text in e.lines %}<div><span class="muted">{{ k }}:</span> {{ text }}</div>{% endfor %}
+      </details>{% else %}<span class="muted">—</span>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="5"><div class="empty">Yozuvlar yo'q</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}
