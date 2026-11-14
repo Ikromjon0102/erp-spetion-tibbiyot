@@ -3,8 +3,8 @@
 {% block title %}O'quvchilar{% endblock %}
 {% block heading %}O'quvchilar <span class="muted" style="font-weight:500;font-size:15px">· {{ page.paginator.count }}</span>{% endblock %}
 {% block actions %}
-  <a class="btn" href="{% url 'panel:students_csv' %}?{{ qs }}">Yuklab olish (CSV)</a>
-  {% if 'students.import' in panel_can %}<a class="btn" href="{% url 'panel:students_import' %}">Excel'dan yuklash</a>{% endif %}
+  <a class="btn" href="{% url 'panel:students_csv' %}?{{ qs }}"><svg class="ic"><use href="#p-download"/></svg>Yuklab olish (CSV)</a>
+  {% if 'students.import' in panel_can %}<a class="btn" href="{% url 'panel:students_import' %}"><svg class="ic"><use href="#p-sheet"/></svg>Excel'dan yuklash</a>{% endif %}
   {% if 'students.add' in panel_can %}<a class="btn primary" href="{% url 'panel:student_add' %}"><svg class="ic"><use href="#p-plus"/></svg>O'quvchi qo'shish</a>{% endif %}
 {% endblock %}
 
@@ -22,7 +22,7 @@
     {% if show_debt %}<option value="qarz" {% if holat == 'qarz' %}selected{% endif %}>Qarzdorlar</option>{% endif %}
   </select>
   {% endif %}
-  <button class="btn" type="submit">Qidirish</button>
+  <button class="btn" type="submit"><svg class="ic"><use href="#p-search"/></svg>Qidirish</button>
   {% if q or sinf or holat %}<a class="btn" href="{% url 'panel:students' %}">Tozalash</a>{% endif %}
 </form>
 

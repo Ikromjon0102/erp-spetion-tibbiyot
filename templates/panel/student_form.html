@@ -10,7 +10,7 @@
     {% include 'panel/_field.html' with f=form.birth_date %}
     {% include 'panel/_field.html' with f=form.access_id cls='wide' %}
   </div>
-  <button class="btn primary">Saqlash</button>
-  <a class="btn" href="{% if student %}{% url 'panel:student' student.pk %}{% else %}{% url 'panel:students' %}{% endif %}">Bekor qilish</a>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
+  <a class="btn" href="{% if student %}{% url 'panel:student' student.pk %}{% else %}{% url 'panel:students' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

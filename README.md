@@ -45,6 +45,11 @@ mumkin. Django admin (`/admin/`) endi faqat texnik administrator uchun (panel me
 - Texnik administrator (superuser) panelda hamma narsani ko'radi. Sinov hisobining namunaviy ma'lumotlari (`sinov_...`, `[Sinov]`) panelda ko'rinmaydi.
 
 
+## Dizayn (Liquid Glass)
+- Umumiy dizayn tizimi: `templates/ui/_glass.html` (panel va ilova ikkalasida ulangan). Logotipdagi to'q yashil asos, shisha (blur) yuzalar, suzuvchi yon menyu va pastki tab paneli, ikonkalar to'plami (SVG sprite).
+- Kun/tun rejimi: panelda yon menyu pastida / "Ko'proq"da, ilovada profil menyusida (tanlov brauzerda eslab qolinadi; standart — qurilma sozlamasi).
+- Ranglarni o'zgartirish: `_glass.html` boshidagi `:root` o'zgaruvchilari (`--accent`, `--bg-img`, `--card`...).
+
 ## Ustozlar, ota-onalar, dars jadvali va yuz rasmlari (panel)
 - **Ustozlar / Ota-onalar:** ro'yxat (avtomatik qidiruv), karta, qo'shish, tahrirlash, parolni tiklash. Ota-ona kartasida farzand biriktirish/ajratish.
   Ustoz kartasida fan va sinf biriktirish. Ustoz boshlang'ich paroli — telefonning oxirgi 4 raqami; ota-onaga bir martalik parol beriladi.

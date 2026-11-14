@@ -9,7 +9,7 @@
   </div>
   <h2>Boshlang'ich ruxsatlar</h2>
   {% include 'panel/_perms_matrix.html' with locked=False %}
-  <div style="margin-top:18px"><button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:positions' %}">Bekor qilish</a></div>
+  <div style="margin-top:18px"><button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a></div>
   <div class="hint">Bu o'zgarish faqat yangi qo'shiladigan xodimlar uchun namuna; mavjud xodimlarning ruxsatlari o'zgarmaydi.</div>
 </form>
 {% endblock %}

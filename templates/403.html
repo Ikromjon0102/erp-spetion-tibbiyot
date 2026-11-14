@@ -4,6 +4,7 @@
 {% block mainclass %} nonav{% endblock %}
 {% block content %}
 <div class="card" style="max-width:520px;margin:24px auto">
+  <div style="width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:var(--bad-tint);color:var(--bad);margin-bottom:12px"><svg class="ic" style="width:26px;height:26px"><use href="#i-lock"/></svg></div>
   <h1 style="font-size:20px;margin:0 0 8px">Bu sahifaga kirish ruxsatingiz yo'q</h1>
   <p class="muted" style="margin:0 0 16px">{{ exception|default:"Kerak bo'lsa, maktab ma'muriyatiga murojaat qiling." }}</p>
   <a class="btn" href="{% url 'home' %}">Bosh sahifaga</a>

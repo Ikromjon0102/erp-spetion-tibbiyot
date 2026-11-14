@@ -16,11 +16,11 @@
     {% include 'panel/_field.html' with f=form.end %}
   </div>
   {% include 'panel/_field.html' with f=form.room %}
-  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:schedule' %}">Bekor qilish</a>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:schedule' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% if lesson %}
 <form method="post" action="{% url 'panel:lesson_delete' lesson.pk %}" style="margin-top:14px" onsubmit="return confirm(&quot;Dars jadvaldan olib tashlansinmi?&quot;)">{% csrf_token %}
-  <button class="btn">Jadvaldan olib tashlash</button> <span class="muted">Davomat va baho tarixi saqlanadi.</span></form>
+  <button class="btn"><svg class="ic"><use href="#p-trash"/></svg>Jadvaldan olib tashlash</button> <span class="muted">Davomat va baho tarixi saqlanadi.</span></form>
 {% endif %}
 {% endblock %}
 {% block js %}

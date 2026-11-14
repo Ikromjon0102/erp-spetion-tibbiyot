@@ -4,8 +4,8 @@
 {% block heading %}<a class="muted" href="{% url 'panel:news' %}" style="font-weight:600">E'lonlar</a> <span class="muted">/</span> {{ a.title }}{% endblock %}
 {% block actions %}
   {% if 'announcements.change' in granted %}
-  <a class="btn" href="{% url 'panel:news_edit' a.pk %}">Tahrirlash</a>
-  <form method="post" action="{% url 'panel:news_delete' a.pk %}" onsubmit="return confirm('E\'lon o\'chirilsinmi? Bu qaytarilmaydi.')">{% csrf_token %}<button class="btn danger">O'chirish</button></form>
+  <a class="btn" href="{% url 'panel:news_edit' a.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
+  <form method="post" action="{% url 'panel:news_delete' a.pk %}" onsubmit="return confirm('E\'lon o\'chirilsinmi? Bu qaytarilmaydi.')">{% csrf_token %}<button class="btn danger"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>
   {% endif %}
 {% endblock %}
 {% block content %}

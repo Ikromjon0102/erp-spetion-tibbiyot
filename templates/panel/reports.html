@@ -7,14 +7,14 @@
     <select name="r" onchange="this.form.submit()">{% for k, t, d in catalog %}<option value="{{ k }}" {% if k == key %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
     {% if key == 'qarzdorlar' %}<select name="sinf"><option value="">Barcha sinflar</option>{% for g in groups %}<option value="{{ g.pk }}" {% if p.sinf == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>{% endif %}
     {% if key == 'tushum' %}<input type="date" name="dan" value="{{ p.dan }}"><input type="date" name="gacha" value="{{ p.gacha }}">{% endif %}
-    <button class="btn primary">Ko'rsatish</button>
+    <button class="btn primary"><svg class="ic"><use href="#p-eye"/></svg>Ko'rsatish</button>
   </form>
   {% if not report %}<div class="tbl-wrap"><table class="tbl"><tbody>{% for k, t, d in catalog %}<tr><td><a class="name" href="?r={{ k }}">{{ t }}</a></td><td class="muted">{{ d }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
 </div>
 {% if report %}
 <div class="card">
   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><h2 style="margin:0">{{ report.title }}</h2><div class="muted">{{ report.subtitle }}</div></div>
-    <div><a class="btn" href="{% url 'panel:report_download' key 'xlsx' %}?{{ query }}">Excel</a> <a class="btn primary" href="{% url 'panel:report_download' key 'pdf' %}?{{ query }}">PDF</a></div></div>
+    <div><a class="btn" href="{% url 'panel:report_download' key 'xlsx' %}?{{ query }}"><svg class="ic"><use href="#p-sheet"/></svg>Excel</a> <a class="btn primary" href="{% url 'panel:report_download' key 'pdf' %}?{{ query }}"><svg class="ic"><use href="#p-pdf"/></svg>PDF</a></div></div>
   <div class="tbl-wrap"><table class="tbl"><thead><tr>{% for h in report.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>
     {% for row in report.display %}<tr>{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ report.headers|length }}"><div class="empty">Ma'lumot yo'q</div></td></tr>{% endfor %}
     {% if report.totals_display %}<tr style="font-weight:800;background:var(--tint)">{% for c in report.totals_display %}<td>{{ c }}</td>{% endfor %}</tr>{% endif %}

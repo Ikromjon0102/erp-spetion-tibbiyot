@@ -9,8 +9,8 @@
   {% for r in rows %}<tr>
     <td><b>{{ r.d.name }}</b>{% if not r.d.is_active %} <span class="badge gray">faolsiz</span>{% endif %}</td><td><span class="badge">−{{ r.d.percent|floatformat:"-2" }}%</span></td>
     <td class="muted">{{ r.d.description }}</td><td>{{ r.count }}</td>
-    <td style="text-align:right">{% if 'payments.discounts' in panel_can %}<a class="btn" href="{% url 'panel:discount_edit' r.d.pk %}">Tahrirlash</a>
-      <form method="post" action="{% url 'panel:discount_delete' r.d.pk %}" style="display:inline" onsubmit="return confirm(&quot;Chegirma o'chirilsinmi?&quot;)">{% csrf_token %}<button class="btn">O'chirish</button></form>{% endif %}</td>
+    <td style="text-align:right">{% if 'payments.discounts' in panel_can %}<a class="btn" href="{% url 'panel:discount_edit' r.d.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
+      <form method="post" action="{% url 'panel:discount_delete' r.d.pk %}" style="display:inline" onsubmit="return confirm(&quot;Chegirma o'chirilsinmi?&quot;)">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>{% endif %}</td>
   </tr>{% empty %}<tr><td colspan="5"><div class="empty">Chegirmalar hali kiritilmagan</div></td></tr>{% endfor %}
   </tbody></table></div>
 </div>

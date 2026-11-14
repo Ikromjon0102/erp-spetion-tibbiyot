@@ -12,6 +12,6 @@
   {% include 'panel/_field.html' with f=form.password %}
   <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
   {% if obj %}<div class="hint" style="margin-bottom:12px">Hodisalarni qabul qilish manzili (qurilmada HTTP listening uchun): <span class="mono">{{ request.scheme }}://{{ request.get_host }}{{ obj.push_path }}</span></div>{% endif %}
-  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:devices' %}">Bekor qilish</a>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

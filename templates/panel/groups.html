@@ -11,7 +11,7 @@
     <div class="s">{{ g.n }} ta o'quvchi</div>
     <div style="margin-top:12px;display:flex;gap:8px">
       {% if 'students.view' in panel_can %}<a class="btn small" href="{% url 'panel:students' %}?sinf={{ g.pk }}">O'quvchilar</a>{% endif %}
-      {% if 'groups.change' in panel_can %}<a class="btn small" href="{% url 'panel:group_edit' g.pk %}">Tahrirlash</a>{% endif %}
+      {% if 'groups.change' in panel_can %}<a class="btn small" href="{% url 'panel:group_edit' g.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>{% endif %}
     </div>
   </div>
   {% empty %}<div class="empty" style="grid-column:1/-1">Sinflar yo'q</div>{% endfor %}

@@ -1,0 +1,256 @@
+<style>
+/* ==========================================================================
+   Spetion — "Liquid Glass" dizayn tizimi (panel va ilova uchun umumiy)
+   Asos: logotipdagi to'q yashil (#166534). Yorug' va qorong'i rejimlar.
+   Bu blok har bir asosiy shablondan KEYIN ulanadi va ranglar/shisha effektini umumiy qiladi.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --bg:#E8F2EA;
+  --card:rgba(255,255,255,.58);            /* shisha yuza */
+  --card-strong:rgba(255,255,255,.88);     /* menyu, varaq kabi ustma-ust ochiladiganlar */
+  --card-solid:#FFFFFF;
+  --line:rgba(22,101,52,.13);
+  --line-strong:rgba(22,101,52,.26);
+  --ink:#0E2217; --dim:#53695B; --faint:#8AA192;
+  --accent:#166534; --accent-deep:#14532D; --accent-2:#0F766E; --on-accent:#FFFFFF;
+  --accent-grad:linear-gradient(180deg,#1E8A4B 0%,#166534 100%);
+  --tint:rgba(22,101,52,.09); --tint-line:rgba(22,101,52,.30);
+  --bad:#C62828; --bad-tint:rgba(198,40,40,.10);
+  --late:#A85A00; --late-tint:rgba(224,140,20,.16);
+  --exc:#2F66E0; --exc-tint:rgba(47,102,224,.10);
+  --glow:34,160,90;
+  --blur:22px;
+  --bar-bg:rgba(232,242,234,.62);
+  --input-bg:rgba(255,255,255,.62);
+  --spec:inset 0 1px 0 rgba(255,255,255,.85), inset 0 -1px 0 rgba(255,255,255,.18);
+  --shadow:var(--spec), 0 10px 34px rgba(11,70,35,.10), 0 2px 6px rgba(11,70,35,.06);
+  --shadow-lift:var(--spec), 0 18px 44px rgba(11,70,35,.18), 0 4px 10px rgba(11,70,35,.08);
+  --bg-img:
+    radial-gradient(820px 560px at 6% -6%, rgba(52,211,120,.40), transparent 62%),
+    radial-gradient(760px 520px at 100% 2%, rgba(15,118,110,.26), transparent 58%),
+    radial-gradient(880px 640px at 72% 112%, rgba(22,101,52,.26), transparent 62%),
+    linear-gradient(180deg,#F2F9F4 0%,#E3F0E7 100%);
+  --cross:rgba(22,101,52,.07);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#06110B;
+    --card:rgba(24,44,33,.50); --card-strong:rgba(18,34,25,.90); --card-solid:#13231A;
+    --line:rgba(150,230,185,.12); --line-strong:rgba(150,230,185,.26);
+    --ink:#E7F4EB; --dim:#9AB6A5; --faint:#5F7A6A;
+    --accent:#2C9459; --accent-deep:#86E0A6; --accent-2:#2DD4BF;
+    --accent-grad:linear-gradient(180deg,#34A866 0%,#1F7A45 100%);
+    --tint:rgba(110,225,160,.10); --tint-line:rgba(110,225,160,.32);
+    --bad:#F0736B; --bad-tint:rgba(240,115,107,.14);
+    --late:#F2AC55; --late-tint:rgba(242,172,85,.16);
+    --exc:#86A8FF; --exc-tint:rgba(134,168,255,.14);
+    --glow:60,200,120;
+    --bar-bg:rgba(6,17,11,.58); --input-bg:rgba(255,255,255,.06);
+    --spec:inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 0 rgba(255,255,255,.02);
+    --shadow:var(--spec), 0 12px 40px rgba(0,0,0,.42);
+    --shadow-lift:var(--spec), 0 20px 50px rgba(0,0,0,.55);
+    --bg-img:
+      radial-gradient(820px 560px at 6% -6%, rgba(34,170,96,.30), transparent 62%),
+      radial-gradient(760px 520px at 100% 2%, rgba(15,118,110,.26), transparent 58%),
+      radial-gradient(880px 640px at 72% 112%, rgba(20,100,60,.32), transparent 62%),
+      linear-gradient(180deg,#07150E 0%,#040C08 100%);
+    --cross:rgba(150,230,185,.045);
+  }
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:#06110B;
+    --card:rgba(24,44,33,.50); --card-strong:rgba(18,34,25,.90); --card-solid:#13231A;
+    --line:rgba(150,230,185,.12); --line-strong:rgba(150,230,185,.26);
+    --ink:#E7F4EB; --dim:#9AB6A5; --faint:#5F7A6A;
+    --accent:#2C9459; --accent-deep:#86E0A6; --accent-2:#2DD4BF;
+    --accent-grad:linear-gradient(180deg,#34A866 0%,#1F7A45 100%);
+    --tint:rgba(110,225,160,.10); --tint-line:rgba(110,225,160,.32);
+    --bad:#F0736B; --bad-tint:rgba(240,115,107,.14);
+    --late:#F2AC55; --late-tint:rgba(242,172,85,.16);
+    --exc:#86A8FF; --exc-tint:rgba(134,168,255,.14);
+    --glow:60,200,120;
+    --bar-bg:rgba(6,17,11,.58); --input-bg:rgba(255,255,255,.06);
+    --spec:inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 0 rgba(255,255,255,.02);
+    --shadow:var(--spec), 0 12px 40px rgba(0,0,0,.42);
+    --shadow-lift:var(--spec), 0 20px 50px rgba(0,0,0,.55);
+    --bg-img:
+      radial-gradient(820px 560px at 6% -6%, rgba(34,170,96,.30), transparent 62%),
+      radial-gradient(760px 520px at 100% 2%, rgba(15,118,110,.26), transparent 58%),
+      radial-gradient(880px 640px at 72% 112%, rgba(20,100,60,.32), transparent 62%),
+      linear-gradient(180deg,#07150E 0%,#040C08 100%);
+    --cross:rgba(150,230,185,.045);
+}
+
+/* ---------- fon: yumshoq yashil nur + juda xira tibbiy "+" naqsh ---------- */
+html { background:var(--bg); }
+body { background:transparent !important; position:relative; -webkit-font-smoothing:antialiased; letter-spacing:-.005em; }
+body::before { content:""; position:fixed; inset:0; z-index:-2; background:var(--bg-img); }
+body::after { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.9;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M32 25v14M25 32h14' stroke='%23166534' stroke-opacity='.10' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent 70%); mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent 70%); }
+:root[data-theme="dark"] body::after { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M32 25v14M25 32h14' stroke='%2386E0A6' stroke-opacity='.07' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body::after { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M32 25v14M25 32h14' stroke='%2386E0A6' stroke-opacity='.07' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"); } }
+::selection { background:rgba(var(--glow),.28); }
+
+/* ---------- shisha yuzalar ---------- */
+.card, .stat, .row, .kchip, .kid, .stu, .hwi, .hwt, .chip, details.nw, details.subj, .hero.calm, .pay-hero,
+.tbl-wrap, .perm-mod, .sh-bar {
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(170%); backdrop-filter:blur(var(--blur)) saturate(170%);
+}
+.card, .stat, .row, .kchip, .kid, .stu, .hwi, .hwt, details.nw, details.subj, .hero.calm {
+  background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); border-radius:20px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .2s, background .2s;
+}
+.card { padding:20px; }
+.card h2 { letter-spacing:-.01em; }
+a.stat:hover, a.row:hover, .card.lift:hover { transform:translateY(-2px); box-shadow:var(--shadow-lift); border-color:var(--tint-line); }
+button.row:active, a.row:active, a.stat:active { transform:scale(.985); }
+
+.menu, .sheet, .msheet, .modal { background:var(--card-strong) !important; -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--line-strong); box-shadow:var(--shadow-lift); }
+.menu { border-radius:18px; }
+
+/* ---------- panel: suzuvchi yon menyu ---------- */
+.side { background:linear-gradient(185deg,rgba(11,58,34,.94) 0%,rgba(6,34,20,.96) 100%) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(160%); backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.06), 0 24px 60px rgba(4,30,16,.35); }
+@media (min-width:961px) {
+  .side { inset:12px auto 12px 12px; width:248px; border-radius:26px; padding:18px 12px 14px; }
+  .main { margin-left:272px; }
+}
+.side .brand { padding:6px 12px 20px; }
+.side .brand svg path { fill:#8FE5AE; }
+.side .sec { color:#6FA586; letter-spacing:.12em; }
+.side a.item { border:1px solid transparent; transition:background .2s, transform .15s, border-color .2s; }
+.side a.item:hover { background:rgba(255,255,255,.07); transform:translateX(2px); }
+.side a.item.on { background:linear-gradient(135deg,rgba(63,220,130,.30),rgba(22,120,64,.62)); border-color:rgba(255,255,255,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 8px 22px rgba(10,80,40,.50); color:#fff; }
+.side a.item .ic { opacity:.92; }
+.side .me { border-top:1px solid rgba(255,255,255,.10); margin-top:8px; padding-top:10px; }
+.side .me .themebtn { display:flex; align-items:center; gap:8px; color:#B5CCBC !important; padding:6px 0; } .side .me .themebtn:hover { color:#fff !important; }
+.side .me .themebtn .ic { width:16px; height:16px; }
+.side .grow { min-height:4px; }
+
+/* ---------- yuqori panel ---------- */
+/* Diqqat: .bar ichida suzuvchi (fixed) tugma bor, shuning uchun filtr .bar'ning o'ziga emas, uning ::before qatlamiga beriladi
+   (backdrop-filter elementni "fixed" bolalar uchun tayanch qilib qo'yadi va tugma yuqoriga ketib qolardi). */
+.bar { background:transparent !important; isolation:isolate; border-bottom:1px solid var(--line) !important; }
+.bar::before { content:""; position:absolute; inset:0; z-index:-1; background:var(--bar-bg); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); }
+.topbar { background:var(--bar-bg) !important; -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--line) !important; }
+.bar h1 { letter-spacing:-.02em; }
+svg.brand-logo path { fill:var(--accent-deep); }
+
+/* ---------- tugmalar ---------- */
+.btn { transition:transform .15s, box-shadow .2s, border-color .2s, background .2s, filter .2s; }
+.btn:hover { transform:translateY(-1px); }
+.btn:active { transform:scale(.97); }
+.btn.primary, .shell-app .btn:not(.ghost) {
+  background:var(--accent-grad) !important; color:#fff !important; border:1px solid rgba(255,255,255,.18) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38), 0 8px 20px rgba(22,101,52,.34), 0 1px 3px rgba(22,101,52,.4); }
+.btn.primary:hover, .shell-app .btn:not(.ghost):hover { filter:brightness(1.07); box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 12px 26px rgba(22,101,52,.42); }
+.shell-panel .btn:not(.primary) { background:var(--card); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-color:var(--line-strong); box-shadow:var(--spec); }
+.shell-panel .btn:not(.primary):hover { border-color:var(--accent); background:var(--tint); }
+.btn .ic { width:17px; height:17px; }
+.btn.danger { color:var(--bad); border-color:var(--bad); }
+
+/* ---------- maydonlar ---------- */
+input[type=text], input[type=search], input[type=tel], input[type=date], input[type=time], input[type=month], input[type=number], input[type=password], input[type=file], select, textarea,
+.field input {
+  background:var(--input-bg) !important; border:1.5px solid var(--line-strong); border-radius:14px; color:var(--ink);
+  box-shadow:inset 0 1px 2px rgba(11,60,30,.06); transition:border-color .2s, box-shadow .2s, background .2s; }
+input:focus, select:focus, textarea:focus, .field input:focus { outline:none; border-color:var(--accent) !important; box-shadow:0 0 0 4px rgba(var(--glow),.20) !important; }
+input::placeholder, textarea::placeholder { color:var(--faint); }
+
+/* ---------- nishonlar, jadval, tablar ---------- */
+.badge { border:1px solid var(--tint-line); background:var(--tint); backdrop-filter:blur(6px); }
+.badge.bad { border-color:rgba(198,40,40,.35); } .badge.warn { border-color:rgba(224,140,20,.4); }
+.badge.gray { border-color:var(--line); } .badge.blue { border-color:rgba(47,102,224,.35); }
+.tbl-wrap { border-radius:14px; }
+.tbl th { background:transparent; }
+.tbl tbody tr { transition:background .15s; }
+.tbl tbody tr:hover { background:var(--tint); }
+.tbl td, .tbl th { border-bottom-color:var(--line) !important; }
+.tabs { border-bottom-color:var(--line); }
+.tabs button.on { border-bottom-color:var(--accent); }
+.av { background:var(--accent-grad); box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(22,101,52,.28); }
+.avatar { background:var(--accent-grad); box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(22,101,52,.28); }
+.empty { border-color:var(--line-strong); background:var(--tint); }
+.msg { backdrop-filter:blur(14px); box-shadow:var(--spec); border-radius:14px; }
+.msg.error { background:var(--bad-tint); }
+
+/* ---------- statistika kartalari: ikonka chipi ---------- */
+.stat { position:relative; overflow:hidden; }
+.stat .ico { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; margin-bottom:12px; color:var(--accent-deep);
+  background:linear-gradient(145deg,rgba(var(--glow),.26),rgba(var(--glow),.08)); border:1px solid var(--tint-line); box-shadow:var(--spec); }
+.stat .ico .ic { width:20px; height:20px; }
+.stat.warn .ico { color:var(--bad); background:linear-gradient(145deg,rgba(198,40,40,.22),rgba(198,40,40,.06)); border-color:rgba(198,40,40,.35); }
+.stat::after { content:""; position:absolute; right:-30px; top:-30px; width:110px; height:110px; border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--glow),.18),transparent 70%); pointer-events:none; }
+.stat.warn::after { background:radial-gradient(circle,rgba(198,40,40,.14),transparent 70%); }
+.stat .v { letter-spacing:-.03em; }
+
+/* ---------- pastki navigatsiya: suzuvchi shisha ---------- */
+.tabbar { background:transparent !important; border:0 !important; pointer-events:none; padding:0 12px calc(10px + env(safe-area-inset-bottom,0)); }
+.tabbar-in { pointer-events:auto; max-width:496px; border-radius:28px; background:var(--card-strong); -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%);
+  border:1px solid var(--line-strong); box-shadow:var(--shadow-lift); padding:0 6px; }
+.tabbar button .pill, .mtab .pill { transition:background .25s, transform .25s; }
+.tabbar button.on .pill, .mtab .on .pill { background:linear-gradient(145deg,rgba(var(--glow),.30),rgba(var(--glow),.12)); box-shadow:var(--spec); transform:translateY(-1px); }
+@media (max-width:960px) {
+  .mtab { left:12px !important; right:12px !important; bottom:calc(10px + env(safe-area-inset-bottom,0)) !important; padding-bottom:0 !important; border-radius:28px;
+    background:var(--card-strong) !important; -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%);
+    border:1px solid var(--line-strong) !important; box-shadow:var(--shadow-lift); }
+  .bar .acts .btn.primary { bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0)) !important; box-shadow:0 14px 30px rgba(22,101,52,.45), inset 0 1px 0 rgba(255,255,255,.4); }
+  .content { padding-bottom:calc(var(--nav-h) + 120px + env(safe-area-inset-bottom,0)) !important; }
+}
+main.app { padding-bottom:calc(var(--nav-h) + 44px + env(safe-area-inset-bottom,0)); }
+main.app.nonav { padding-bottom:32px; }
+
+/* ---------- ustoz sahifasidagi "hero" ---------- */
+.hero { position:relative; overflow:hidden; }
+.hero:not(.calm) { border:1px solid rgba(255,255,255,.22); box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 18px 40px rgba(14,80,40,.34) !important;
+  background:linear-gradient(135deg,#0F4A27 0%,#166534 55%,#1F8F4D 100%) !important; }
+.hero.warn { background:linear-gradient(135deg,#7A4200 0%,#B36205 100%) !important; }
+.hero:not(.calm)::before { content:""; position:absolute; inset:-40% -10% auto auto; width:75%; height:120%; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.24),transparent 62%); pointer-events:none; }
+.hero:not(.calm)::after { content:""; position:absolute; left:0; right:0; top:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent); }
+.hero .acts .p { box-shadow:0 6px 16px rgba(0,0,0,.18); }
+.hero .acts .s { backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.22); }
+
+/* ---------- kirish animatsiyasi ---------- */
+@keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .content > *, main.app > * { animation:rise .45s cubic-bezier(.2,.8,.2,1) both; }
+  .content > *:nth-child(2), main.app > *:nth-child(2) { animation-delay:.04s; }
+  .content > *:nth-child(3), main.app > *:nth-child(3) { animation-delay:.08s; }
+  .content > *:nth-child(4), main.app > *:nth-child(4) { animation-delay:.12s; }
+  .content > *:nth-child(n+5), main.app > *:nth-child(n+5) { animation-delay:.16s; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+
+/* ---------- yengil aylantirish paneli ---------- */
+* { scrollbar-width:thin; scrollbar-color:rgba(var(--glow),.35) transparent; }
+
+/* backdrop-filter qo'llab-quvvatlanmasa — oddiy yarim shaffof fon */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  :root { --card:var(--card-strong); }
+}
+</style>
+<script>
+/* Katta raqamlar kartaga sig'masa, shrift o'zi kichrayadi */
+(function(){
+  function fit(){
+    document.querySelectorAll('.stat .v').forEach(function(v){
+      v.style.fontSize = ''; v.style.whiteSpace = 'nowrap'; v.style.display = 'inline-block';
+      var p = v.parentElement, cs = getComputedStyle(p);
+      var limit = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var size = parseFloat(getComputedStyle(v).fontSize);
+      while (v.offsetWidth > limit && size > 15) { size -= 1; v.style.fontSize = size + 'px'; }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', fit); window.addEventListener('resize', fit); window.addEventListener('load', fit);
+})();
+</script>

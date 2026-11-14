@@ -2,7 +2,7 @@
 {% load app_extras %}
 {% block title %}{{ p.get_full_name|default:p.username }}{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:parents' %}" style="font-weight:600">Ota-onalar</a> <span class="muted">/</span> {{ p.get_full_name|default:p.username }}{% endblock %}
-{% block actions %}{% if 'parents.change' in panel_can %}<a class="btn" href="{% url 'panel:parent_edit' p.pk %}">Tahrirlash</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'parents.change' in panel_can %}<a class="btn" href="{% url 'panel:parent_edit' p.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="grid g2">
   <div class="card"><h2>Ma'lumotlar</h2>
@@ -11,20 +11,20 @@
       {% if p.is_teacher %}<span class="badge blue">ustoz ham</span>{% endif %}</p>
     <p><span class="muted">Oxirgi kirish:</span> {{ p.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</p>
     {% if 'parents.change' in panel_can %}{% if can_reset %}
-    <form method="post" action="{% url 'panel:parent_password_set' p.pk %}" onsubmit="return confirm(&quot;Yangi bir martalik parol berilsinmi? Eskisi ishlamay qoladi.&quot;)">{% csrf_token %}<button class="btn">Bir martalik parol berish</button></form>
+    <form method="post" action="{% url 'panel:parent_password_set' p.pk %}" onsubmit="return confirm(&quot;Yangi bir martalik parol berilsinmi? Eskisi ishlamay qoladi.&quot;)">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol berish</button></form>
     {% else %}<div class="hint">Bu hisob ustoz yoki xodimga tegishli — parolini o'z kartasidan boshqaring.</div>{% endif %}{% endif %}
   </div>
   <div class="card"><h2>Farzandlari</h2>
     {% for c in children %}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
       <div>{% if 'students.view' in panel_can %}<a class="name" href="{% url 'panel:student' c.pk %}">{{ c.user.last_name }} {{ c.user.first_name }}</a>{% else %}<b>{{ c.user.last_name }} {{ c.user.first_name }}</b>{% endif %} <span class="muted">{{ c.group|default:"" }}</span></div>
-      {% if 'parents.change' in panel_can %}<form method="post" action="{% url 'panel:parent_unlink' p.pk c.pk %}">{% csrf_token %}<button class="btn">Ajratish</button></form>{% endif %}</div>
+      {% if 'parents.change' in panel_can %}<form method="post" action="{% url 'panel:parent_unlink' p.pk c.pk %}">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-unlink"/></svg>Ajratish</button></form>{% endif %}</div>
     {% empty %}<div class="empty">Farzand biriktirilmagan</div>{% endfor %}
     {% if 'parents.change' in panel_can %}
     <h2 style="margin-top:16px">Farzand biriktirish</h2>
     <form method="get" class="filters" data-live><input type="search" name="q" value="{{ q }}" placeholder="O'quvchi ismi, familiyasi yoki sinfi…"></form>
     {% for s in found %}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
       <div><b>{{ s.user.last_name }} {{ s.user.first_name }}</b> <span class="muted">{{ s.group|default:"" }}</span></div>
-      <form method="post" action="{% url 'panel:parent_link' p.pk s.pk %}">{% csrf_token %}<button class="btn primary">Biriktirish</button></form></div>
+      <form method="post" action="{% url 'panel:parent_link' p.pk s.pk %}">{% csrf_token %}<button class="btn primary"><svg class="ic"><use href="#p-link"/></svg>Biriktirish</button></form></div>
     {% empty %}{% if q %}<div class="empty">Topilmadi</div>{% endif %}{% endfor %}
     {% endif %}
   </div>

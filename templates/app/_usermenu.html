@@ -8,6 +8,7 @@
       {% if panel_access %}<a href="{% url 'panel:dashboard' %}" class="{% if mode == 'panel' %}on{% endif %}">Boshqaruv paneli</a>{% endif %}
     </div>
   {% endif %}
+  <button type="button" data-theme-toggle>Kun / tun rejimi</button>
   <a href="{% url 'change_password' %}">Parolni o'zgartirish</a>
   <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="out">Chiqish</button></form>
 </div>

@@ -7,6 +7,6 @@
   {% include 'panel/_field.html' with f=form.percent %}
   {% include 'panel/_field.html' with f=form.description %}
   <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
-  <button class="btn primary">Saqlash</button> <a class="btn" href="{% url 'panel:discounts' %}">Bekor qilish</a>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:discounts' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

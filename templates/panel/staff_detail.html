@@ -20,7 +20,7 @@
     {% include 'panel/_perms_matrix.html' with locked=p.is_owner %}
     {% if editable %}
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn primary">Saqlash</button>
+      <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
       <button class="btn" name="apply_preset" value="1" title="Tanlangan lavozimning boshlang'ich ruxsatlarini qo'yadi">Lavozim namunasini qo'llash</button>
     </div>
     <div class="hint">Siz bera olmaydigan (o'zingizda yo'q) ruxsatlar o'chirilgan ko'rinadi.</div>
@@ -37,7 +37,7 @@
     </dl>
     {% if editable %}
     <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <form method="post" action="{% url 'panel:staff_password' p.pk %}">{% csrf_token %}<button class="btn small">Bir martalik parol berish</button></form>
+      <form method="post" action="{% url 'panel:staff_password' p.pk %}">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol berish</button></form>
       <form method="post" action="{% url 'panel:staff_remove' p.pk %}" onsubmit="return confirm('Xodimdan panel ruxsati olib tashlansinmi?')">{% csrf_token %}<button class="btn small danger">Paneldan olib tashlash</button></form>
     </div>{% endif %}</div>
     <div class="card"><h2>Oxirgi o'zgarishlar</h2>

@@ -14,7 +14,7 @@
     {% include 'panel/_field.html' with f=form.paid_on %}
     {% include 'panel/_field.html' with f=form.note %}
     <div class="hint" style="margin-bottom:12px">Qisman to'lov mumkin. Qarzdan ortiqcha summa keyingi oylar hisobiga o'tadi.</div>
-    <button class="btn primary">Qabul qilish va chek chiqarish</button> <a class="btn" href="{% url 'panel:finance' %}">Bekor qilish</a>
+    <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Qabul qilish va chek chiqarish</button> <a class="btn" href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
   </form>
 </div>
 {% endblock %}

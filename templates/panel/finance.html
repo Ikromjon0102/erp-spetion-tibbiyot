@@ -3,23 +3,23 @@
 {% block title %}To'lovlar{% endblock %}
 {% block heading %}To'lovlar{% endblock %}
 {% block actions %}
-  {% if 'payments.reports' in panel_can %}<a class="btn" href="{% url 'panel:reports' %}">Hisobotlar</a>{% endif %}
-  <a class="btn" href="{% url 'panel:discounts' %}">Chegirmalar</a>
-  {% if 'payments.settings' in panel_can %}<a class="btn" href="{% url 'panel:finance_settings' %}">Sozlamalar</a>{% endif %}
+  {% if 'payments.reports' in panel_can %}<a class="btn" href="{% url 'panel:reports' %}"><svg class="ic"><use href="#p-sheet"/></svg>Hisobotlar</a>{% endif %}
+  <a class="btn" href="{% url 'panel:discounts' %}"><svg class="ic"><use href="#p-percent"/></svg>Chegirmalar</a>
+  {% if 'payments.settings' in panel_can %}<a class="btn" href="{% url 'panel:finance_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar</a>{% endif %}
 {% endblock %}
 {% block content %}
 {% if not cfg.monthly_price %}<div class="card" style="border-color:#E0A800">Oylik narx belgilanmagan — hisob yozilmaydi.{% if 'payments.settings' in panel_can %} <a href="{% url 'panel:finance_settings' %}"><b>Narxni belgilash →</b></a>{% endif %}</div>{% endif %}
 <div class="grid g4" style="margin-bottom:18px">
-  <div class="stat"><div class="k">Bugungi tushum</div><div class="v">{{ today_sum|money }}</div><div class="s">so'm</div></div>
-  <div class="stat"><div class="k">Shu oy tushumi</div><div class="v">{{ month_sum|money }}</div><div class="s">so'm</div></div>
-  <div class="stat {% if debtors %}warn{% endif %}"><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm</div></div>
-  <div class="stat {% if overdue_total %}warn{% endif %}"><div class="k">Muddati o'tgan</div><div class="v">{{ overdue_total|money }}</div><div class="s">so'm</div></div>
+  <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Bugungi tushum</div><div class="v">{{ today_sum|money }}</div><div class="s">so'm</div></div>
+  <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Shu oy tushumi</div><div class="v">{{ month_sum|money }}</div><div class="s">so'm</div></div>
+  <div class="stat {% if debtors %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm</div></div>
+  <div class="stat {% if overdue_total %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Muddati o'tgan</div><div class="v">{{ overdue_total|money }}</div><div class="s">so'm</div></div>
 </div>
 {% if 'payments.accept' in panel_can %}
 <div class="card"><h2>To'lov qabul qilish</h2>
-  <form method="get" class="filters" id="sform"><input type="search" name="q" id="sq" value="{{ q }}" placeholder="O'quvchi familiyasi, ismi yoki sinfi (yozing — o'zi qidiradi)" autocomplete="off" autofocus style="min-width:340px"><button class="btn primary">Qidirish</button></form>
+  <form method="get" class="filters" id="sform"><input type="search" name="q" id="sq" value="{{ q }}" placeholder="O'quvchi familiyasi, ismi yoki sinfi (yozing — o'zi qidiradi)" autocomplete="off" autofocus><button class="btn primary"><svg class="ic"><use href="#p-search"/></svg>Qidirish</button></form>
   <div id="results">{% if q %}{% if found %}<div class="tbl-wrap"><table class="tbl stack"><tbody>
-    {% for s in found %}<tr><td><b>{{ s.user.last_name }} {{ s.user.first_name }}</b> <span class="muted">{{ s.group|default:"" }}</span></td><td style="text-align:right"><a class="btn primary" href="{% url 'panel:pay' s.pk %}">To'lov qabul qilish</a></td></tr>{% endfor %}
+    {% for s in found %}<tr><td><b>{{ s.user.last_name }} {{ s.user.first_name }}</b> <span class="muted">{{ s.group|default:"" }}</span></td><td style="text-align:right"><a class="btn primary" href="{% url 'panel:pay' s.pk %}"><svg class="ic"><use href="#p-coins"/></svg>To'lov qabul qilish</a></td></tr>{% endfor %}
   </tbody></table></div>{% else %}<div class="empty">Topilmadi</div>{% endif %}{% endif %}</div>
 </div>
 {% endif %}

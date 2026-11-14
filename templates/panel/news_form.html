@@ -10,6 +10,6 @@
     {% include 'panel/_field.html' with f=form.group %}
   </div>
   <button class="btn primary">{% if a %}Saqlash{% else %}Yuborish{% endif %}</button>
-  <a class="btn" href="{% if a %}{% url 'panel:news_detail' a.pk %}{% else %}{% url 'panel:news' %}{% endif %}">Bekor qilish</a>
+  <a class="btn" href="{% if a %}{% url 'panel:news_detail' a.pk %}{% else %}{% url 'panel:news' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}
