@@ -24,7 +24,7 @@
     fetch('{% url "tg_auth" %}', {method: 'POST', credentials: 'same-origin',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: 'initData=' + encodeURIComponent(tg.initData)})
-      .then(function (r) { if (r.ok) location.replace('/'); else fail("Avval botda /start bosib, telefon raqamingizni ulang."); })
+      .then(function (r) { if (r.ok) location.replace("{{ next|escapejs }}"); else fail("Avval botda /start bosib, telefon raqamingizni ulang."); })
       .catch(function () { fail("Ulanib bo'lmadi. Keyinroq urinib ko'ring."); });
   }
 </script>

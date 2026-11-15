@@ -155,7 +155,22 @@ class MiniAppTests(TestCase):
 class OpenAppButtonTests(BotTests):
     def test_open_app_uses_inline_button(self):
         TelegramLink.objects.create(user=self.parent, chat_id=5)
-        self.post(self.msg(text='📱 Ilovani ochish'))
+        self.post(self.msg(text='/ilova'))
         kb = [kw for m, kw in self.sent if m == 'sendMessage'][-1]['reply_markup']
         self.assertIn('inline_keyboard', kb)
         self.assertIn('web_app', kb['inline_keyboard'][0][0])
+
+
+@override_settings(BOT_TOKEN='123:TEST')
+class DetailButtonTests(NotifyTests):
+    def test_notification_has_detail_button_to_child(self):
+        Grade.objects.create(student=self.st, score=5, teaching=Teaching.objects.create(
+            subject=Subject.objects.create(name='Kimyo'), group=self.group))
+        btn = self.sent[-1]['reply_markup']['inline_keyboard'][0][0]
+        self.assertEqual(btn['text'], 'Batafsil')
+        self.assertIn(f'next=/oquvchi/{self.st.pk}/', btn['web_app']['url'])
+
+    def test_next_param_only_internal(self):
+        c = Client()
+        self.assertContains(c.get('/tg/app/?next=//evil.com'), 'location.replace("/")')
+        self.assertContains(c.get('/tg/app/?next=/elonlar/'), '/elonlar/')

@@ -13,8 +13,7 @@ from .services import app_url, esc, send
 
 CONTACT_KB = {'keyboard': [[{'text': '📱 Telefon raqamni yuborish', 'request_contact': True}]],
               'resize_keyboard': True, 'one_time_keyboard': True}
-MENU_KB = {'keyboard': [[{'text': '📱 Ilovani ochish'}],
-                        [{'text': '📍 Bugun'}, {'text': '📝 Baholar'}]], 'resize_keyboard': True}
+MENU_KB = {'keyboard': [[{'text': '📍 Bugun'}, {'text': '📝 Baholar'}]], 'resize_keyboard': True}
 
 WELCOME = ("Assalomu alaykum! Bu — maktab boti. Farzandingizning maktabga kelgani-ketgani, baholari, vazifalari va "
            "e'lonlar shu yerga keladi.\n\nBoshlash uchun maktabda ro'yxatdan o'tgan telefon raqamingizni yuboring "

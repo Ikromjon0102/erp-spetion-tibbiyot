@@ -27,7 +27,10 @@ def webhook(request):
 
 def app(request):
     """Mini App kirish sahifasi: Telegram initData ni serverga yuborib, sessiya ochadi."""
-    return render(request, 'tgbot/app.html')
+    nxt = request.GET.get('next', '/')
+    if not nxt.startswith('/') or nxt.startswith('//') or '\\' in nxt:     # faqat sayt ichidagi yo'l
+        nxt = '/'
+    return render(request, 'tgbot/app.html', {'next': nxt})
 
 
 @csrf_exempt

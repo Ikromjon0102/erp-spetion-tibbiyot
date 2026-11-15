@@ -15,8 +15,10 @@ def token():
     return getattr(settings, 'BOT_TOKEN', '') or ''
 
 
-def app_url():
-    return getattr(settings, 'SITE_URL', 'https://med.spetion.uz').rstrip('/') + '/tg/app/'
+def app_url(path=''):
+    from urllib.parse import quote
+    url = getattr(settings, 'SITE_URL', 'https://med.spetion.uz').rstrip('/') + '/tg/app/'
+    return url + ('?next=' + quote(path, safe='/') if path else '')
 
 
 def webhook_secret():
@@ -46,12 +48,13 @@ def esc(s):
     return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
-def _send_all(chat_ids, text):
+def _send_all(chat_ids, text, path=''):
+    kb = {'inline_keyboard': [[{'text': 'Batafsil', 'web_app': {'url': app_url(path)}}]]}
     for cid in chat_ids:
-        send(cid, text)
+        send(cid, text, reply_markup=kb)
 
 
-def notify(users, text):
+def notify(users, text, path=''):
     """Foydalanuvchilarning bog'langan chatlariga xabar (fonda; token yo'q bo'lsa jim o'tadi)."""
     if not token():
         return
@@ -60,9 +63,9 @@ def notify(users, text):
     if not ids:
         return
     if getattr(settings, 'TELEGRAM_SYNC', False):
-        _send_all(ids, text)
+        _send_all(ids, text, path)
     else:
-        threading.Thread(target=_send_all, args=(ids, text), daemon=True).start()
+        threading.Thread(target=_send_all, args=(ids, text, path), daemon=True).start()
 
 
 def validate_init_data(init_data, max_age=24 * 3600):
