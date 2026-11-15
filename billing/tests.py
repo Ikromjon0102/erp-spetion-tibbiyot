@@ -134,6 +134,19 @@ class ViewTests(TestCase):
         self.assertEqual((p.amount, p.method, p.received_by), (400000, 'card', self.rec))
         self.assertContains(self.client.get(f'/oquvchi/{self.s.pk}/chek/{p.pk}/'), p.receipt_no)
 
+    def test_debtors_list_shows_debt_and_pay_link_by_permission(self):
+        paid_up = student('s2', 'Aliyev', self.g, self.other_parent)
+        Payment.objects.create(student=paid_up, amount=summaries([paid_up.pk])[paid_up.pk]['debt'])
+        self.login('rec')
+        r = self.client.get('/panel/tolovlar/qarzdorlar/')
+        self.assertEqual([row['s'] for row in r.context['page']], [self.s])                 # qarzi yo'q o'quvchi chiqmaydi
+        self.assertEqual(r.context['debt_total'], summaries([self.s.pk])[self.s.pk]['debt'])
+        self.assertContains(r, f'/panel/tolovlar/oquvchi/{self.s.pk}/')
+        self.assertEqual(self.client.get('/panel/tolovlar/qarzdorlar/?q=yoq').context['count'], 0)
+        self.assertEqual(self.client.get(f'/panel/tolovlar/qarzdorlar/?sinf={self.g.pk}').context['count'], 1)
+        self.login('hisob')                                                                # hisobchi ko'radi, lekin qabul qila olmaydi
+        self.assertNotContains(self.client.get('/panel/tolovlar/qarzdorlar/'), f'/panel/tolovlar/oquvchi/{self.s.pk}/')
+
     def test_accountant_cannot_accept_but_can_report(self):
         self.login('hisob')
         self.assertEqual(self.client.post(f'/panel/tolovlar/oquvchi/{self.s.pk}/', {'amount': 1, 'method': 'cash', 'paid_on': TODAY.isoformat()}).status_code, 403)

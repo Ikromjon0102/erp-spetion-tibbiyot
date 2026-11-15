@@ -4,6 +4,7 @@
 {% block heading %}To'lovlar{% endblock %}
 {% block actions %}
   {% if 'payments.reports' in panel_can %}<a class="btn" href="{% url 'panel:reports' %}"><svg class="ic"><use href="#p-sheet"/></svg>Hisobotlar</a>{% endif %}
+  <a class="btn" href="{% url 'panel:debtors' %}"><svg class="ic"><use href="#p-alert"/></svg>Qarzdorlar</a>
   <a class="btn" href="{% url 'panel:discounts' %}"><svg class="ic"><use href="#p-percent"/></svg>Chegirmalar</a>
   {% if 'payments.settings' in panel_can %}<a class="btn" href="{% url 'panel:finance_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar</a>{% endif %}
 {% endblock %}
@@ -12,8 +13,8 @@
 <div class="grid g4" style="margin-bottom:18px">
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Bugungi tushum</div><div class="v">{{ today_sum|money }}</div><div class="s">so'm</div></div>
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Shu oy tushumi</div><div class="v">{{ month_sum|money }}</div><div class="s">so'm</div></div>
-  <div class="stat {% if debtors %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm</div></div>
-  <div class="stat {% if overdue_total %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Muddati o'tgan</div><div class="v">{{ overdue_total|money }}</div><div class="s">so'm</div></div>
+  <a class="stat {% if debtors %}warn{% endif %}" href="{% url 'panel:debtors' %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm · ro'yxat →</div></a>
+  <a class="stat {% if overdue_total %}warn{% endif %}" href="{% url 'panel:debtors' %}?holat=muddati"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Muddati o'tgan</div><div class="v">{{ overdue_total|money }}</div><div class="s">so'm · ro'yxat →</div></a>
 </div>
 {% if 'payments.accept' in panel_can %}
 <div class="card"><h2>To'lov qabul qilish</h2>

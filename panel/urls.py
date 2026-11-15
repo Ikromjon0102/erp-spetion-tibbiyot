@@ -62,6 +62,7 @@ urlpatterns = [
     path('elonlar/<int:pk>/ochirish/', views_news.news_delete, name='news_delete'),
 
     path('tolovlar/', views_finance.finance, name='finance'),
+    path('tolovlar/qarzdorlar/', views_finance.debtors, name='debtors'),
     path('tolovlar/oquvchi/<int:pk>/', views_finance.pay, name='pay'),
     path('tolovlar/<int:pk>/bekor/', views_finance.payment_void, name='payment_void'),
     path('tolovlar/chegirmalar/', views_finance.discounts, name='discounts'),

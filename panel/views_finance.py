@@ -3,12 +3,14 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from academics.models import Group
 from accounts.models import Student
 from billing import exports, reports
 from billing.models import BillingSettings, Discount, Payment, StudentDiscount
@@ -81,6 +83,30 @@ def finance(request):
            'today_sum': _paid_sum(Payment.objects.filter(paid_on=today)), 'month_sum': _paid_sum(Payment.objects.filter(paid_on__gte=month_start))}
     ctx.update(totals())
     return render(request, 'panel/finance.html', ctx)
+
+
+@panel_required('payments.view')
+def debtors(request):
+    """Qarzdorlar ro'yxati: avval muddati o'tgan qarzi kattalar. Har qatordan to'lov qabul qilishga o'tiladi."""
+    granted = perms_of(request.user)
+    q, sinf, holat = request.GET.get('q', '').strip(), request.GET.get('sinf', ''), request.GET.get('holat', '')
+    sums = summaries(list(reports.real_students().values_list('pk', flat=True)))
+    owing = {pk: x for pk, x in sums.items() if x['debt'] > 0 and (holat != 'muddati' or x['overdue'] > 0)}
+    qs = real_students().filter(pk__in=owing).prefetch_related('parents')
+    if q:
+        qs = qs.filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q))
+    if sinf.isdigit():
+        qs = qs.filter(group_id=int(sinf))
+    rows = [{'s': s, 'debt': owing[s.pk]['debt'], 'overdue': owing[s.pk]['overdue'], 'parent': next(iter(s.parents.all()), None)} for s in qs]
+    rows.sort(key=lambda r: (-r['overdue'], -r['debt'], r['s'].user.last_name, r['s'].user.first_name))
+    page = Paginator(rows, 50).get_page(request.GET.get('page'))
+    params = request.GET.copy()
+    params.pop('page', None)
+    return render(request, 'panel/debtors.html', {
+        'nav': 'finance', 'page': page, 'groups': Group.objects.all(), 'q': q, 'sinf': sinf, 'holat': holat, 'qs': params.urlencode(),
+        'count': len(rows), 'debt_total': sum((r['debt'] for r in rows), Decimal(0)),
+        'overdue_total': sum((r['overdue'] for r in rows), Decimal(0)),
+        'show_phone': 'sensitive.phones' in granted, 'can_accept': 'payments.accept' in granted, 'can_reports': 'payments.reports' in granted})
 
 
 @panel_required('payments.accept')

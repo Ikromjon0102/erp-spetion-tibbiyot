@@ -1,0 +1,47 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}Qarzdorlar{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> Qarzdorlar <span class="muted" style="font-weight:500;font-size:15px">· {{ count }}</span>{% endblock %}
+{% block actions %}
+  {% if can_reports %}<a class="btn" href="{% url 'panel:reports' %}?r=qarzdorlar"><svg class="ic"><use href="#p-sheet"/></svg>Hisobot (Excel / PDF)</a>{% endif %}
+{% endblock %}
+
+{% block head %}<style>.mlabel { display:none; } @media (max-width:960px){ .mlabel { display:inline; color:var(--dim); margin-right:6px; } }</style>{% endblock %}
+
+{% block content %}
+<form method="get" class="filters" id="filters" data-live>
+  <input type="search" name="q" value="{{ q }}" placeholder="Ism yoki familiya…" autofocus>
+  <select name="sinf">
+    <option value="">Barcha sinflar</option>
+    {% for g in groups %}<option value="{{ g.pk }}" {% if sinf == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>{% endfor %}
+  </select>
+  <select name="holat">
+    <option value="">Hamma qarzdorlar</option>
+    <option value="muddati" {% if holat == 'muddati' %}selected{% endif %}>Faqat muddati o'tganlar</option>
+  </select>
+  <button class="btn" type="submit"><svg class="ic"><use href="#p-search"/></svg>Qidirish</button>
+  {% if q or sinf or holat %}<a class="btn" href="{% url 'panel:debtors' %}">Tozalash</a>{% endif %}
+</form>
+
+<div class="card" style="padding:6px 10px">
+  {% if count %}<div class="muted" style="padding:10px 12px 4px">Jami qarz: <b style="color:var(--bad)">{{ debt_total|money }} so'm</b>{% if overdue_total %} · shundan muddati o'tgan: <b style="color:var(--ink)">{{ overdue_total|money }} so'm</b>{% endif %}</div>{% endif %}
+  <div class="tbl-wrap"><table class="tbl stack">
+    <thead><tr><th>O'quvchi</th><th>Sinf</th><th>Ota-ona</th><th>Qarz</th><th>Muddati o'tgan</th>{% if can_accept %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for r in page %}
+      <tr>
+        <td><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}#pay">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
+        <td>{{ r.s.group|default:"—" }}</td>
+        <td>{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <a class="muted mono" href="tel:{{ r.parent.phone|cut:" " }}">{{ r.parent.phone }}</a>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
+        <td><span class="mlabel">Qarz:</span><b>{{ r.debt|money }}</b></td>
+        <td>{% if r.overdue %}<span class="mlabel">Muddati o'tgan:</span><span class="badge bad">{{ r.overdue|money }}</span>{% else %}<span class="muted desk-only">—</span>{% endif %}</td>
+        {% if can_accept %}<td style="text-align:right"><a class="btn small" href="{% url 'panel:pay' r.s.pk %}"><svg class="ic"><use href="#p-coins"/></svg>To'lov qabul qilish</a></td>{% endif %}
+      </tr>
+    {% empty %}
+      <tr><td colspan="6"><div class="empty">{% if q or sinf or holat %}Hech narsa topilmadi{% else %}Qarzdor yo'q ✓{% endif %}</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}

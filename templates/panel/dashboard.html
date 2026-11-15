@@ -27,7 +27,7 @@
   {% endif %}
   {% endif %}
   {% if debtors is not None %}
-  <div class="stat {% if debtors %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm{% if overdue_total %} · muddati o'tgan {{ overdue_total|money }}{% endif %}</div></div>
+  <a class="stat {% if debtors %}warn{% endif %}" href="{% url 'panel:debtors' %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm{% if overdue_total %} · muddati o'tgan {{ overdue_total|money }}{% endif %}</div></a>
   {% endif %}
   {% if devices_down is not None %}
   <div class="stat {% if devices_down %}warn{% else %}good{% endif %}"><span class="ico"><svg class="ic"><use href="#p-dash"/></svg></span><div class="k">Qurilmalar</div><div class="v">{{ devices|length|add:"0" }}{% if devices_down %}<span style="font-size:15px"> · {{ devices_down }} ta signalsiz</span>{% endif %}</div><div class="s">Face ID terminallari</div></div>
