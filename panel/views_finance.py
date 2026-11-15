@@ -43,7 +43,7 @@ def _paid_sum(qs):
 class PaymentForm(forms.Form):
     amount = forms.IntegerField(label="Summa (so'm)", min_value=1)
     method = forms.ChoiceField(label="To'lov usuli", choices=Payment.Method.choices)
-    paid_on = forms.DateField(label="Sana", widget=forms.DateInput(attrs={'type': 'date'}))
+    paid_on = forms.DateField(label="Sana", widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
     note = forms.CharField(label='Izoh', max_length=200, required=False)
 
     def clean_paid_on(self):
@@ -63,7 +63,7 @@ class SettingsForm(forms.Form):
     monthly_price = forms.IntegerField(label="Oylik narx (so'm)", min_value=0)
     due_day = forms.IntegerField(label="To'lov muddati (oyning nechanchi kuni)", min_value=1, max_value=28,
                                  help_text="Shu kundan keyin to'lanmagan summa «muddati o'tgan» deb belgilanadi (jarima yo'q)")
-    billing_start = forms.DateField(label="Hisob boshlanadigan oy", widget=forms.DateInput(attrs={'type': 'date'}),
+    billing_start = forms.DateField(label="Hisob boshlanadigan oy", widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
                                     help_text="Shu oydan boshlab o'quvchilarga hisob yoziladi. O'quv yili: sentabr–iyun")
 
 

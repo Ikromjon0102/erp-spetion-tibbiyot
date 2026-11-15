@@ -64,6 +64,17 @@ def _filtered(request, granted):
     return qs
 
 
+def _presence_state(p, today, wait_label):
+    """Bugungi holat: (nuqta klassi, matn). Yakshanba kuni kelmagan o'quvchi "kelmagan" emas — dam olish kuni."""
+    if p and p['in'] and not p['out']:
+        return 'in', 'Maktabda'
+    if p and p['out']:
+        return 'out', 'Ketdi'
+    if today.weekday() > 5:
+        return 'off', 'Dam olish kuni'
+    return 'wait', wait_label
+
+
 def _presence_map(student_ids, today):
     state = {}
     for e in AccessEvent.objects.filter(student_id__in=student_ids, occurred_at__date=today).order_by('occurred_at'):
@@ -92,7 +103,7 @@ def students(request):
         p = presence.get(s.pk) if presence is not None else None
         state = None
         if presence is not None:
-            state = ('in', 'Maktabda') if p and p['in'] and not p['out'] else ('out', 'Ketdi') if p and p['out'] else ('wait', 'Kelmagan')
+            state = _presence_state(p, today, 'Kelmagan')
         rows.append({'s': s, 'parent': parents[0] if parents else None, 'extra_parents': max(len(parents) - 1, 0),
                      'state': state, 'debt': (debts or {}).get(s.pk, 0) if debts is not None else None})
     params = request.GET.copy()
@@ -141,7 +152,7 @@ def student_detail(request, pk):
     if 'monitoring.view' in granted:
         ctx['access_days'] = day_summaries(student, days=14)
         p = _presence_map([student.pk], today).get(student.pk)
-        ctx['presence'] = ('in', 'Maktabda') if p and p['in'] and not p['out'] else ('out', 'Ketdi') if p and p['out'] else ('wait', 'Bugun kelmagan')
+        ctx['presence'] = _presence_state(p, today, 'Bugun kelmagan')
     if 'sensitive.grades' in granted:
         by = defaultdict(list)
         for g in student.grades.select_related('teaching__subject').order_by('-date', '-id')[:200]:

@@ -134,9 +134,9 @@
   .pay:last-child { border-bottom:0; }
   .pay .top { display:flex; justify-content:space-between; align-items:center; font-weight:700; }
   .pay .sub { display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); margin-top:3px; }
-  .bar { height:7px; border-radius:99px; background:var(--line); margin-top:8px; overflow:hidden; }
-  .bar i { display:block; height:100%; background:var(--accent); border-radius:99px; }
-  .bar.part i { background:var(--late); }
+  .pbar { height:7px; border-radius:99px; background:var(--line); margin-top:8px; overflow:hidden; }
+  .pbar i { display:block; height:100%; background:var(--accent); border-radius:99px; }
+  .pbar.part i { background:var(--late); }
 
 </style>
 {% endblock %}
@@ -354,7 +354,7 @@
         {% if r.status == 'paid' %}<span class="st ok">To'langan</span>{% elif r.status == 'partial' %}<span class="st late">Qisman</span>{% else %}<span class="st bad">To'lanmagan</span>{% endif %}</div>
       <div class="sub"><span>To'langan: {{ r.paid|money }}</span><span>Hisoblangan: {{ r.charge.amount|money }}</span></div>
       {% if r.charge.discount_label %}<div class="disc">{{ r.charge.discount_label }} · asosiy narx {{ r.charge.base_price|money }}</div>{% endif %}
-      <div class="bar {% if r.status == 'partial' %}part{% endif %}"><i style="width:{{ r.pct }}%"></i></div>
+      <div class="pbar {% if r.status == 'partial' %}part{% endif %}"><i style="width:{{ r.pct }}%"></i></div>
       {% if r.debt %}<div class="sub" style="margin-top:6px"><span>{% if r.overdue %}<b style="color:var(--bad)">Muddati o'tgan ({{ r.due|date:"d.m" }})</b>{% else %}To'lov muddati: {{ r.due|date:"d.m" }}{% endif %}</span><span>Qoldi: <b>{{ r.debt|money }}</b></span></div>{% endif %}
     </div>
     {% endfor %}

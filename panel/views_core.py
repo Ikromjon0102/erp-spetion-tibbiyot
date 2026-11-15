@@ -40,7 +40,7 @@ def missing_attendance(today, now):
 def dashboard(request):
     granted = perms_of(request.user)
     today, now = timezone.localdate(), timezone.localtime()
-    ctx = {'nav': 'dashboard', 'today': today}
+    ctx = {'nav': 'dashboard', 'today': today, 'day_off': today.weekday() > 5}
     total = real_students().count()
     if 'students.view' in granted:
         ctx['students_total'] = total

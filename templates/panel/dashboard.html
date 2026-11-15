@@ -18,8 +18,13 @@
   {% endif %}
   {% if arrived is not None %}
   <a class="stat good" href="{% url 'panel:students' %}"><span class="ico"><svg class="ic"><use href="#p-door"/></svg></span><div class="k">Bugun maktabda</div><div class="v">{{ arrived }}</div><div class="s">Face ID bo'yicha kelganlar</div></a>
+  {% if day_off %}
+  <div class="stat"><span class="ico"><svg class="ic"><use href="#p-clock"/></svg></span><div class="k">Hali kelmaganlar</div><div class="v">—</div><div class="s">{{ today|date:"j F" }} · dam olish kuni</div></div>
+  <div class="stat"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Davomat olinmagan</div><div class="v">—</div><div class="s">bugun dars yo'q</div></div>
+  {% else %}
   <a class="stat {% if not_arrived %}warn{% endif %}" href="{% if 'students.view' in panel_can %}{% url 'panel:students' %}?holat=kelmagan{% else %}#{% endif %}"><span class="ico"><svg class="ic"><use href="#p-clock"/></svg></span><div class="k">Hali kelmaganlar</div><div class="v">{{ not_arrived }}</div><div class="s">{{ today|date:"j F" }}</div></a>
   <div class="stat {% if missing_count %}warn{% else %}good{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Davomat olinmagan</div><div class="v">{{ missing_count }}</div><div class="s">boshlangan darslar</div></div>
+  {% endif %}
   {% endif %}
   {% if debtors is not None %}
   <div class="stat {% if debtors %}warn{% endif %}"><span class="ico"><svg class="ic"><use href="#p-alert"/></svg></span><div class="k">Qarzdorlar</div><div class="v">{{ debtors }}</div><div class="s">{{ debt_total|money }} so'm{% if overdue_total %} · muddati o'tgan {{ overdue_total|money }}{% endif %}</div></div>
@@ -38,6 +43,7 @@
       {% for l in missing %}<tr><td class="mono">{{ l.start|time:"H:i" }}</td><td>{{ l.teaching.group }}</td><td>{{ l.teaching.subject }}</td><td>{{ l.teaching.teacher|default:"—" }}</td></tr>{% endfor %}
     </tbody></table></div>
     {% if missing_count > 8 %}<div class="hint">Yana {{ missing_count|add:"-8" }} ta dars…</div>{% endif %}
+    {% elif day_off %}<div class="empty">Bugun dam olish kuni — darslar yo'q</div>
     {% else %}<div class="empty">Hamma boshlangan darsda davomat olingan ✓</div>{% endif %}
   </div>
   {% endif %}
