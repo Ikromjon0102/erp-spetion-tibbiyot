@@ -2,11 +2,13 @@
 {% block title %}{{ title }}{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:teachers' %}" style="font-weight:600">Ustozlar</a> <span class="muted">/</span> {{ title }}{% endblock %}
 {% block content %}
-<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:520px">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="msg error" style="margin-bottom:12px">{{ form.non_field_errors|join:' ' }}</div>{% endif %}
   {% include 'panel/_field.html' with f=form.last_name %}
   {% include 'panel/_field.html' with f=form.first_name %}
   {% include 'panel/_field.html' with f=form.phone %}
   {% if u %}{% include 'panel/_field.html' with f=form.access_id %}{% endif %}
+  {% if not u %}<div class="field "><label>Yuz rasmi <span class="muted" style="font-weight:500">(ixtiyoriy)</span></label><input type="file" name="photo" accept="image/jpeg,image/png"><div class="hint">JPG/PNG, yuz aniq ko'rinsin. Saqlangach qurilmalarga avtomatik yuboriladi. Keyin ham qo'shish mumkin.</div></div>{% endif %}
   {% if not u %}<div class="hint" style="margin-bottom:12px">Boshlang'ich parol — telefonning oxirgi 4 raqami. Ustoz birinchi kirishda yangi parol qo'yadi. Bir xil raqamli ota-ona hisobi bo'lsa, ular bitta hisobga birlashtiriladi.</div>{% endif %}
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% if u %}{% url 'panel:teacher' u.pk %}{% else %}{% url 'panel:teachers' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>

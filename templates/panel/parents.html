@@ -2,7 +2,7 @@
 {% load app_extras %}
 {% block title %}Ota-onalar{% endblock %}
 {% block heading %}Ota-onalar <span class="muted" style="font-weight:500">· {{ total }}</span>{% endblock %}
-{% block actions %}{% if 'parents.add' in panel_can %}<a class="btn primary" href="{% url 'panel:parent_create' %}"><svg class="ic"><use href="#p-plus"/></svg>Ota-ona qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'parents.add' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:parent_create' %}"><svg class="ic"><use href="#p-plus"/></svg>Ota-ona qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <form method="get" class="filters" data-live>
   <input type="search" name="q" value="{{ q }}" placeholder="Ota-ona yoki farzand ismi, telefon…" autofocus>

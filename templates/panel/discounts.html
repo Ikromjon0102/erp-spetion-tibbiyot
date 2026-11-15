@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
 {% block title %}Chegirmalar{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> Chegirmalar{% endblock %}
-{% block actions %}{% if 'payments.discounts' in panel_can %}<a class="btn primary" href="{% url 'panel:discount_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi chegirma</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'payments.discounts' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:discount_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi chegirma</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="card" style="padding:6px 10px">
   <p class="muted" style="padding:6px 8px 0">Standart holatda hech kimda chegirma yo'q. Kerakli o'quvchining kartasida chegirma tanlanadi. Bir nechta bo'lsa, eng kattasi qo'llanadi (qo'shilmaydi).</p>

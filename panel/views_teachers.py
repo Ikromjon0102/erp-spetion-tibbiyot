@@ -14,6 +14,7 @@ from accounts.student_import import _unique_username
 from . import audit
 from .access import panel_required, perms_of
 from .forms import PhoneField
+from .views_devices import apply_photo, next_teacher_id, photo_ok
 
 PAGE_SIZE = 30
 
@@ -100,7 +101,8 @@ def teachers(request):
 @panel_required('teachers.add')
 def teacher_add(request):
     form = TeacherForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
+    upload = request.FILES.get('photo')
+    if request.method == 'POST' and form.is_valid() and photo_ok(form, upload):
         d = form.cleaned_data
         digits = to_digits(d['phone'])
         with transaction.atomic():
@@ -109,6 +111,11 @@ def teacher_add(request):
             user.save()      # bir xil raqamli ota-ona hisobi bo'lsa, o'zi birlashtiriladi
             password = _initial_password(user)
         audit.log(request, "Ustoz qo'shdi", user, label=user.get_full_name(), details={'telefon': d['phone']}, target_type='teacher')
+        if not user.access_id:
+            user.access_id = next_teacher_id()
+            user.save(update_fields=['access_id'])
+        if upload:
+            apply_photo(request, user, upload, user.get_full_name())
         _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · boshlang'ich parol: {password} (telefonning oxirgi 4 raqami; "
                          "birinchi kirishda yangi parol qo'yadi)")
         return redirect('panel:teacher', pk=user.pk)

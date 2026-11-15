@@ -3,8 +3,8 @@
 {% block title %}Bosh sahifa{% endblock %}
 {% block heading %}Assalomu alaykum, {{ user.first_name|default:user.username }}{% endblock %}
 {% block actions %}
-  {% if 'announcements.add' in panel_can %}<a class="btn primary desk-only" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>E'lon yuborish</a>{% endif %}
-  {% if 'students.add' in panel_can %}<a class="btn" href="{% url 'panel:student_add' %}"><svg class="ic"><use href="#p-plus"/></svg>O'quvchi</a>{% endif %}
+  {% if 'announcements.add' in panel_can %}<a data-modal class="btn primary desk-only" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>E'lon yuborish</a>{% endif %}
+  {% if 'students.add' in panel_can %}<a data-modal class="btn" href="{% url 'panel:student_add' %}"><svg class="ic"><use href="#p-plus"/></svg>O'quvchi</a>{% endif %}
 {% endblock %}
 
 {% block content %}

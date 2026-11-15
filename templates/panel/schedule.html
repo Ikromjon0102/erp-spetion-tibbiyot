@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
 {% block title %}Dars jadvali{% endblock %}
 {% block heading %}Dars jadvali{% endblock %}
-{% block actions %}{% if 'schedule.change' in panel_can %}<a class="btn primary" href="{% url 'panel:lesson_add' %}{% if group %}?sinf={{ group.pk }}{% endif %}"><svg class="ic"><use href="#p-plus"/></svg>Dars qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'schedule.change' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:lesson_add' %}{% if group %}?sinf={{ group.pk }}{% endif %}"><svg class="ic"><use href="#p-plus"/></svg>Dars qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <form method="get" class="filters" data-live>
   <select name="sinf"><option value="">— sinf bo'yicha —</option>{% for g in groups %}<option value="{{ g.pk }}" {% if group.pk == g.pk %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
@@ -17,7 +17,7 @@
       {% for cell in row.days %}<td style="vertical-align:top">
         {% for les in cell %}<div style="margin-bottom:6px;padding:6px 8px;border-radius:10px;background:var(--tint)">
           {% if 'schedule.change' in panel_can %}<a href="{% url 'panel:lesson_edit' les.pk %}" class="name"><b>{{ les.teaching.subject }}</b></a>{% else %}<b>{{ les.teaching.subject }}</b>{% endif %}
-          <div class="muted" style="font-size:12px">{% if group %}{{ les.teaching.teacher.last_name|default:"ustozsiz" }}{% else %}{{ les.teaching.group }}{% endif %}{% if les.room %} · {{ les.room }}{% endif %}</div>
+          <div class="muted" style="font-size:12px">{% if group %}{% if les.teaching.teacher %}{{ les.teaching.teacher.last_name }} {{ les.teaching.teacher.first_name }}{% else %}ustozsiz{% endif %}{% else %}{{ les.teaching.group }}{% endif %}{% if les.room %} · {{ les.room }}{% endif %}</div>
           <div class="muted mono" style="font-size:11.5px">{{ les.start|time:"H:i" }}–{{ les.end|time:"H:i" }}</div>
         </div>{% endfor %}
         {% if 'schedule.change' in panel_can and group %}<a class="muted" style="font-size:12px" href="{% url 'panel:lesson_add' %}?sinf={{ group.pk }}&kun={{ forloop.counter0 }}&soat={{ row.period }}">+ dars</a>{% endif %}

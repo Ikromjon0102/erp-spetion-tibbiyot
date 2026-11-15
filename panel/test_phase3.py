@@ -313,6 +313,8 @@ class SyncTests(TestCase):
         for s in (self.s1, self.s2):
             photos.save_photo(s.user, io.BytesIO(jpeg()))
         self.noid = mk_student('c', 'Idsiz', self.g)
+        Student.objects.filter(pk=self.noid.pk).update(access_id=None)   # avtomatik berilgan ID ni olib tashlaymiz: ID siz odam qurilmaga yuborilmasligini tekshiramiz
+        self.noid.refresh_from_db()
         photos.save_photo(self.noid.user, io.BytesIO(jpeg()))
 
     def kinds(self):

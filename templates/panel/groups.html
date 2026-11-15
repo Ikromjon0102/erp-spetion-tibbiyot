@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
 {% block title %}Sinflar{% endblock %}
 {% block heading %}Sinflar{% endblock %}
-{% block actions %}{% if 'groups.change' in panel_can %}<a class="btn primary" href="{% url 'panel:group_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Sinf qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'groups.change' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:group_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Sinf qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="grid g4">
   {% for g in groups %}

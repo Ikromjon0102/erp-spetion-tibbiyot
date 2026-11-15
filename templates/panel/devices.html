@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
 {% block title %}Qurilmalar{% endblock %}
 {% block heading %}Qurilmalar va yuz rasmlari{% endblock %}
-{% block actions %}{% if manage %}<a class="btn" href="{% url 'panel:device_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Qurilma qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if manage %}<a data-modal class="btn" href="{% url 'panel:device_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Qurilma qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="grid g4" style="margin-bottom:18px">
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-students"/></svg></span><div class="k">O'quvchilar rasmi</div><div class="v">{{ stats.students_photo }}<small class="muted"> / {{ stats.students }}</small></div><div class="s">rasmi yuklangan</div></div>

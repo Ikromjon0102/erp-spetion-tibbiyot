@@ -2,7 +2,7 @@
 {% load panel_extras %}
 {% block title %}E'lonlar{% endblock %}
 {% block heading %}E'lonlar{% endblock %}
-{% block actions %}{% if 'announcements.add' in panel_can %}<a class="btn primary" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi e'lon</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'announcements.add' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:news_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi e'lon</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="card" style="padding:6px 10px">
   <div class="tbl-wrap"><table class="tbl stack">

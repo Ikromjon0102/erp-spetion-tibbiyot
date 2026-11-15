@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#166534">
 <title>{% block title %}Boshqaruv{% endblock %} — Spetion</title>
-<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('sideMin')==='1')document.documentElement.classList.add('side-min');}catch(e){}</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap');
   :root{
@@ -251,23 +251,19 @@
     {% if 'groups.view' in panel_can %}<a class="item {% if nav == 'groups' %}on{% endif %}" href="{% url 'panel:groups' %}"><svg class="ic"><use href="#p-groups"/></svg>Sinflar</a>{% endif %}
     {% if 'payments.view' in panel_can %}<a class="item {% if nav == 'finance' %}on{% endif %}" href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-wallet"/></svg>To'lovlar</a>{% endif %}
     {% if 'announcements.view' in panel_can %}<a class="item {% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><svg class="ic"><use href="#p-news"/></svg>E'lonlar</a>{% endif %}
-    {% if 'staff.view' in panel_can or 'audit.view' in panel_can or 'devices.view' in panel_can %}<div class="sec">Boshqaruv</div>{% endif %}
-    {% if 'devices.view' in panel_can %}<a class="item {% if nav == 'devices' %}on{% endif %}" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
-    {% if 'staff.view' in panel_can %}<a class="item {% if nav == 'staff' %}on{% endif %}" href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>
-    <a class="item {% if nav == 'positions' %}on{% endif %}" href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-pos"/></svg>Lavozimlar</a>{% endif %}
-    {% if 'audit.view' in panel_can %}<a class="item {% if nav == 'audit' %}on{% endif %}" href="{% url 'panel:audit' %}"><svg class="ic"><use href="#p-audit"/></svg>Faoliyat jurnali</a>{% endif %}
   </nav>
-  <div class="grow"></div>
-  <div class="me">
-    <b>{{ user.get_full_name|default:user.username }}</b>
-    <small>{{ panel_position|default:"Xodim" }}</small>
-    {% if user.is_teacher %}<a href="{% url 'journal:teacher_home' %}">Ustoz sahifasi →</a>{% endif %}
-    {% if user.has_children %}<a href="{% url 'home' %}?rejim=ota-ona">Farzandlarim →</a>{% endif %}
-    {% if user.is_superuser %}<a href="/admin/">Texnik admin (Django) →</a>{% endif %}
-    <button type="button" class="themebtn" data-theme-toggle><svg class="ic"><use href="#p-moon"/></svg>Kun / tun rejimi</button>
-    <a href="{% url 'change_password' %}">Parolni o'zgartirish</a>
-    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>Chiqish</button></form>
+  {% if 'staff.view' in panel_can or 'audit.view' in panel_can or 'devices.view' in panel_can %}
+  <button type="button" class="side-toggle bottom" id="sideToggle" aria-label="Menyuni yig'ish / ochish"><svg class="ic"><use href="#p-chev"/></svg>Yig'ish</button>
+  <div class="dd" id="settingsDd">
+    <a href="#" class="item ddtrig {% if nav == 'devices' or nav == 'staff' or nav == 'positions' or nav == 'audit' %}on{% endif %}" id="settingsBtn" aria-haspopup="true" aria-expanded="false"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar<svg class="ic caret"><use href="#p-chev"/></svg></a>
+    <div class="fly" role="menu">
+      {% if 'devices.view' in panel_can %}<a class="sub {% if nav == 'devices' %}on{% endif %}" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
+      {% if 'staff.view' in panel_can %}<a class="sub {% if nav == 'staff' %}on{% endif %}" href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>
+      <a class="sub {% if nav == 'positions' %}on{% endif %}" href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-pos"/></svg>Lavozimlar</a>{% endif %}
+      {% if 'audit.view' in panel_can %}<a class="sub {% if nav == 'audit' %}on{% endif %}" href="{% url 'panel:audit' %}"><svg class="ic"><use href="#p-audit"/></svg>Faoliyat jurnali</a>{% endif %}
+    </div>
   </div>
+  {% endif %}
 </aside>
 <div class="scrim" id="scrim"></div>
 
@@ -276,6 +272,20 @@
     <button class="burger" id="burger" aria-label="Menyu"><svg class="ic"><use href="#p-menu"/></svg></button>
     <h1>{% block heading %}{% endblock %}</h1>
     <div class="acts">{% block actions %}{% endblock %}</div>
+    <div class="tools">
+      <button type="button" class="iconbtn" data-theme-toggle aria-label="Kun / tun rejimi" title="Kun / tun rejimi"><svg class="ic moon"><use href="#p-moon"/></svg><svg class="ic sun"><use href="#p-sun"/></svg></button>
+      <div class="profile" id="profile">
+        <button type="button" class="avbtn" id="profileBtn" aria-haspopup="true" aria-expanded="false" title="{{ user.get_full_name|default:user.username }}">{{ user|initials }}</button>
+        <div class="pmenu" role="menu">
+          <div class="phead"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ panel_position|default:"Xodim" }}</small></div>
+          {% if user.is_teacher %}<a href="{% url 'journal:teacher_home' %}"><svg class="ic"><use href="#p-groups"/></svg>Ustoz sahifasi</a>{% endif %}
+          {% if user.has_children %}<a href="{% url 'home' %}?rejim=ota-ona"><svg class="ic"><use href="#p-students"/></svg>Farzandlarim</a>{% endif %}
+          {% if user.is_superuser %}<a href="/admin/"><svg class="ic"><use href="#p-pos"/></svg>Texnik admin (Django)</a>{% endif %}
+          <a href="{% url 'change_password' %}"><svg class="ic"><use href="#p-lock"/></svg>Parolni o'zgartirish</a>
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="out"><svg class="ic"><use href="#p-out"/></svg>Chiqish</button></form>
+        </div>
+      </div>
+    </div>
   </header>
   <div class="content">
     {% if messages %}<div class="msgs">{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}</div>{% endif %}
@@ -315,6 +325,25 @@
     var more = document.getElementById('moreBtn'), ov = document.getElementById('moreOv');
     function setMore(on){ ov.classList.toggle('show', on); document.body.style.overflow = on ? 'hidden' : ''; }
     if (more){ more.onclick = function(){ setMore(true); }; ov.addEventListener('click', function(e){ if (e.target === ov) setMore(false); }); }
+  })();
+  (function(){
+    var root = document.documentElement, t = document.getElementById('sideToggle');
+    document.querySelectorAll('.side a.item').forEach(function(a){ a.title = a.textContent.trim(); });
+    function pop(wrap, btn){
+      if(!wrap||!btn) return;
+      btn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation();
+        var on = !wrap.classList.contains('open');
+        document.querySelectorAll('.dd.open,.profile.open').forEach(function(x){ x.classList.remove('open'); });
+        wrap.classList.toggle('open', on); btn.setAttribute('aria-expanded', on); });
+    }
+    pop(document.getElementById('settingsDd'), document.getElementById('settingsBtn'));
+    pop(document.getElementById('profile'), document.getElementById('profileBtn'));
+    document.addEventListener('click', function(e){ document.querySelectorAll('.dd.open,.profile.open').forEach(function(x){ if(!x.contains(e.target)) x.classList.remove('open'); }); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') document.querySelectorAll('.dd.open,.profile.open').forEach(function(x){ x.classList.remove('open'); }); });
+    if (t) t.onclick = function(){
+      var min = root.classList.toggle('side-min');
+      try{ localStorage.setItem('sideMin', min ? '1' : '0'); }catch(e){}
+    };
   })();
   (function(){
     var b = document.getElementById('burger'), s = document.getElementById('scrim');
@@ -363,6 +392,7 @@ document.querySelectorAll('form[data-live]').forEach(function(form){
   window.__wireLive = wire; wire(form);
 });
 </script>
+{% include 'ui/_modal.html' %}
 {% block js %}{% endblock %}
 </body>
 </html>

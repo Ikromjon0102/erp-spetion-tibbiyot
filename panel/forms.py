@@ -29,7 +29,7 @@ class StudentForm(forms.Form):
     group = forms.ModelChoiceField(label='Sinf', queryset=Group.objects.all(), required=False, empty_label='— sinfsiz —')
     birth_date = forms.DateField(label="Tug'ilgan sana", required=False, widget=DATE)
     access_id = forms.CharField(label='Face ID (qurilmadagi ID)', max_length=32, required=False,
-                                help_text="Hikvision qurilmasida o'quvchi uchun kiritilgan Employee ID")
+                                help_text="Bo'sh qoldirsangiz avtomatik beriladi (9001 dan). Qurilmada ID allaqachon bor bo'lsa, shuni yozing")
 
     def __init__(self, *args, instance=None, **kwargs):
         self.instance = instance
@@ -46,6 +46,8 @@ class StudentForm(forms.Form):
                 taken = taken.exclude(pk=self.instance.pk)
             if taken.exists():
                 raise forms.ValidationError(f"Bu Face ID boshqa o'quvchida: {taken.first().user.get_full_name()}")
+        if not value and self.instance is not None:
+            return self.instance.access_id      # tahrirda bo'sh qoldirilsa, mavjud ID saqlanadi
         return value or None
 
 

@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'accounts.middleware.ForcePasswordChangeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'panel.middleware.ModalRedirectMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 

@@ -29,6 +29,7 @@ from .models import StaffProfile
 from .access import panel_required, perms_of
 from .forms import ImportForm, ParentForm, StudentForm
 from .views_core import real_students
+from .views_devices import apply_photo, photo_ok as _photo_ok
 
 PAGE_SIZE = 25
 
@@ -168,7 +169,8 @@ def _student_state(student):
 @panel_required('students.add')
 def student_add(request):
     form = StudentForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
+    upload = request.FILES.get('photo')
+    if request.method == 'POST' and form.is_valid() and _photo_ok(form, upload):
         d = form.cleaned_data
         with transaction.atomic():
             user = User(username=_unique_username(f"{d['last_name']}-{d['first_name']}"), first_name=d['first_name'],
@@ -178,6 +180,8 @@ def student_add(request):
             student = Student.objects.create(user=user, group=d['group'], birth_date=d['birth_date'], access_id=d['access_id'])
         audit.log(request, "O'quvchi qo'shdi", student, label=user.get_full_name(), target_type='student')
         messages.success(request, f"{user.get_full_name()} qo'shildi. Endi ota-onasini biriktiring.")
+        if upload:
+            apply_photo(request, user, upload, user.get_full_name())
         return redirect('panel:student', pk=student.pk)
     return render(request, 'panel/student_form.html', {'nav': 'students', 'form': form, 'title': "Yangi o'quvchi"})
 

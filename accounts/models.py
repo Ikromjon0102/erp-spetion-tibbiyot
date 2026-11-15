@@ -86,13 +86,19 @@ class Student(models.Model):
     birth_date = models.DateField('Tug\'ilgan sana', null=True, blank=True)
     access_id = models.CharField(
         'Face ID (qurilmadagi ID)', max_length=32, unique=True, null=True, blank=True,
-        help_text='Hikvision qurilmasida o\'quvchi uchun kiritilgan Employee ID bilan bir xil bo\'lishi kerak')
+        help_text='Bo\'sh qoldirsangiz avtomatik beriladi (9001 dan). Qurilmada ID allaqachon kiritilgan bo\'lsa, shuni yozing')
 
     class Meta:
         verbose_name = 'O\'quvchi'
         verbose_name_plural = 'O\'quvchilar'
 
     def save(self, *args, **kwargs):
+        if not self.access_id:
+            # Face ID bo'sh bo'lsa o'zi beriladi (9001 dan); sinov hisoblariga berilmaydi
+            self.access_id = None
+            if not getattr(self.user, 'is_demo', False):
+                from accounts.face_ids import next_student_id
+                self.access_id = next_student_id()
         super().save(*args, **kwargs)
         if self.access_id:  # ID keyinroq kiritilsa, oldin kelgan "egasiz" kirish-chiqishlar ham bog'lanadi
             from access.models import AccessEvent

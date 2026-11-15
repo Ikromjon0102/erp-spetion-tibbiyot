@@ -2,7 +2,7 @@
 {% load app_extras %}
 {% block title %}Ustozlar{% endblock %}
 {% block heading %}Ustozlar <span class="muted" style="font-weight:500">· {{ total }}</span>{% endblock %}
-{% block actions %}{% if 'teachers.add' in panel_can %}<a class="btn primary" href="{% url 'panel:teacher_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Ustoz qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if 'teachers.add' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:teacher_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Ustoz qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <form method="get" class="filters" data-live>
   <input type="search" name="q" value="{{ q }}" placeholder="Ism, familiya, telefon yoki fan…" autofocus>

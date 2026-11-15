@@ -10,8 +10,9 @@ from django.views.decorators.http import require_POST
 from access.hikvision import Client, DeviceError
 from access.models import Device, FaceSync
 from access.sync import eligible_users, pending_count, sync_device, sync_in_background
+from accounts.face_ids import next_teacher_id as _next_teacher_id
 from accounts.models import Student, User
-from accounts.photos import PhotoError, remove_photo, save_photo
+from accounts.photos import PhotoError, prepare as prepare_photo, remove_photo, save_photo
 from billing.reports import real_students
 
 from . import audit
@@ -35,19 +36,28 @@ class DeviceForm(forms.ModelForm):
 
 
 def next_teacher_id():
-    """Ustoz uchun bo'sh Face ID: 7001 dan boshlanadi (o'quvchilar ID lari bilan to'qnashmaydi)."""
-    taken = set(Student.objects.exclude(access_id=None).values_list('access_id', flat=True)) | set(
-        User.objects.exclude(access_id=None).values_list('access_id', flat=True))
-    n = 7001
-    while str(n) in taken:
-        n += 1
-    return str(n)
+    """Ustoz uchun Face ID: 7001 dan boshlanadi (o'quvchilar 9001 dan, shuning uchun to'qnashmaydi)."""
+    return _next_teacher_id()
 
 
 def person_user(student_pk=None, teacher_pk=None):
     if student_pk:
         return get_object_or_404(Student.objects.select_related('user'), pk=student_pk).user
     return get_object_or_404(User, pk=teacher_pk, role=User.Role.TEACHER, is_demo=False)
+
+
+def photo_ok(form, upload):
+    """Qo'shish formasidagi ixtiyoriy rasmni oldindan tekshiradi: noto'g'ri bo'lsa forma xatosi qo'shadi (yozuv yaratilmaydi)."""
+    if not upload:
+        return True
+    try:
+        prepare_photo(upload)
+    except PhotoError as e:
+        form.add_error(None, str(e))
+        return False
+    finally:
+        upload.seek(0)
+    return True
 
 
 def apply_photo(request, user, upload, label):

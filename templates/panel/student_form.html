@@ -2,13 +2,15 @@
 {% block title %}{{ title }}{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:students' %}" style="font-weight:600">O'quvchilar</a> <span class="muted">/</span> {{ title }}{% endblock %}
 {% block content %}
-<form method="post" class="card" style="max-width:760px">{% csrf_token %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:760px">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="msg error" style="margin-bottom:12px">{{ form.non_field_errors|join:' ' }}</div>{% endif %}
   <div class="formgrid">
     {% include 'panel/_field.html' with f=form.last_name %}
     {% include 'panel/_field.html' with f=form.first_name %}
     {% include 'panel/_field.html' with f=form.group %}
     {% include 'panel/_field.html' with f=form.birth_date %}
     {% include 'panel/_field.html' with f=form.access_id cls='wide' %}
+  {% if not student %}<div class="field wide"><label>Yuz rasmi <span class="muted" style="font-weight:500">(ixtiyoriy)</span></label><input type="file" name="photo" accept="image/jpeg,image/png"><div class="hint">JPG/PNG, yuz aniq ko'rinsin. Saqlangach qurilmalarga avtomatik yuboriladi. Keyin ham qo'shish mumkin.</div></div>{% endif %}
   </div>
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
   <a class="btn" href="{% if student %}{% url 'panel:student' student.pk %}{% else %}{% url 'panel:students' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>

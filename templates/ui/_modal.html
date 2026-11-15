@@ -1,0 +1,71 @@
+<style>
+.mdl-ov { position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(4,22,12,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+.mdl-ov.show { display:flex; }
+.mdl { width:100%; max-width:620px; max-height:calc(100vh - 40px); display:flex; flex-direction:column; border-radius:22px; overflow:hidden;
+  background:var(--card-strong); -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--line-strong); box-shadow:var(--shadow-lift); animation:mdlin .18s ease; }
+@keyframes mdlin { from { transform:translateY(14px) scale(.98); opacity:0; } to { transform:none; opacity:1; } }
+.mdl-head { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid var(--line); }
+.mdl-head h2 { margin:0; font-size:18px; font-weight:800; flex:1; }
+.mdl-x { width:36px; height:36px; border-radius:10px; border:0; background:none; display:grid; place-items:center; color:var(--dim); }
+.mdl-x:hover { background:var(--tint); color:var(--ink); }
+.mdl-body { padding:18px 20px 20px; overflow-y:auto; }
+.mdl-body form.card { max-width:none !important; border:0; box-shadow:none; background:none; padding:0; margin:0;
+  -webkit-backdrop-filter:none; backdrop-filter:none; }
+.mdl-body .msg { margin-bottom:12px; }
+.mdl-load { text-align:center; color:var(--dim); padding:34px 0; }
+.mdl-body button[disabled] { opacity:.6; }
+@media (max-width:960px){
+  .mdl-ov { align-items:flex-end; padding:0; }
+  .mdl { max-width:none; border-radius:22px 22px 0 0; max-height:92vh; animation:mdlup .22s ease; }
+  @keyframes mdlup { from { transform:translateY(40px); opacity:.6; } to { transform:none; opacity:1; } }
+}
+</style>
+<div class="mdl-ov" id="mdlOv"><div class="mdl" role="dialog" aria-modal="true" aria-labelledby="mdlTitle">
+  <div class="mdl-head"><h2 id="mdlTitle"></h2><button type="button" class="mdl-x" id="mdlX" aria-label="Yopish"><svg class="ic"><use href="#p-x"/></svg></button></div>
+  <div class="mdl-body" id="mdlBody"></div>
+</div></div>
+<script>
+/* Modal oyna: <a data-modal href="..."> bosilsa, shu sahifadagi forma oynada ochiladi (JS ishlamasa oddiy sahifaga o'tadi).
+   Saqlansa server yo'naltirgan sahifaga o'tiladi; xato bo'lsa forma oynaning ichida xatolari bilan qayta chiqadi. */
+(function(){
+  var ov = document.getElementById('mdlOv'), body = document.getElementById('mdlBody'), ttl = document.getElementById('mdlTitle'), cur = '';
+  function close(){ ov.classList.remove('show'); body.innerHTML = ''; document.body.style.overflow = ''; }
+  function show(){ ov.classList.add('show'); document.body.style.overflow = 'hidden'; }
+  function render(html, url){
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var form = doc.querySelector('.content form.card');
+    if(!form){ location.href = url; return; }
+    ttl.textContent = (doc.title || '').replace(/\s+—\s+Spetion\s*$/, '');
+    body.innerHTML = '';
+    doc.querySelectorAll('.content .msgs .msg').forEach(function(x){ body.appendChild(document.importNode(x, true)); });
+    form = document.importNode(form, true);
+    form.querySelectorAll('a.btn').forEach(function(a){
+      if(a.querySelector('use[href="#p-x"]')){ var b = document.createElement('button'); b.type = 'button'; b.className = a.className; b.innerHTML = a.innerHTML; b.onclick = close; a.replaceWith(b); }
+    });
+    body.appendChild(form);
+    doc.querySelectorAll('script[data-modal-js]').forEach(function(s){ try{ (new Function(s.textContent))(); }catch(e){} });
+    form.addEventListener('submit', function(e){ e.preventDefault(); send(form, url); });
+    var f = form.querySelector('input:not([type=hidden]):not([type=file]), select, textarea'); if(f) f.focus();
+  }
+  function send(form, url){
+    var btn = form.querySelector('button:not([type=button])'); if(btn) btn.disabled = true;
+    fetch(form.getAttribute('action') || url, {method:'POST', body:new FormData(form), credentials:'same-origin', headers:{'X-Modal':'1'}})
+      .then(function(r){
+        var ct = r.headers.get('content-type') || '';
+        if(ct.indexOf('json') > -1) return r.json().then(function(j){ location.href = j.redirect; });
+        return r.text().then(function(t){ if(r.ok) render(t, url); else { body.innerHTML = '<div class="msg error">Saqlab bo\'lmadi (' + r.status + '). Sahifani yangilab qayta urining.</div>'; } });
+      }).catch(function(){ body.innerHTML = '<div class="msg error">Ulanishda xato. Qayta urinib ko\'ring.</div>'; });
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[data-modal]');
+    if(!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
+    e.preventDefault(); cur = a.href; ttl.textContent = a.textContent.trim(); body.innerHTML = '<div class="mdl-load">Yuklanmoqda…</div>'; show();
+    fetch(cur, {credentials:'same-origin'}).then(function(r){ if(r.redirected && r.url.indexOf('/panel/') < 0){ location.href = r.url; throw 0; } return r.text(); })
+      .then(function(t){ render(t, cur); }).catch(function(x){ if(x !== 0) location.href = cur; });
+  });
+  ov.addEventListener('mousedown', function(e){ if(e.target === ov) close(); });
+  document.getElementById('mdlX').onclick = close;
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && ov.classList.contains('show')) close(); });
+})();
+</script>

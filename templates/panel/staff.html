@@ -2,7 +2,7 @@
 {% load app_extras %}
 {% block title %}Xodimlar{% endblock %}
 {% block heading %}Xodimlar{% endblock %}
-{% block actions %}{% if can_manage %}<a class="btn primary" href="{% url 'panel:staff_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Xodim qo'shish</a>{% endif %}{% endblock %}
+{% block actions %}{% if can_manage %}<a data-modal class="btn primary" href="{% url 'panel:staff_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Xodim qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="card" style="padding:6px 10px">
   <div class="tbl-wrap"><table class="tbl stack">

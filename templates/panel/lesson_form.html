@@ -24,7 +24,7 @@
 {% endif %}
 {% endblock %}
 {% block js %}
-<script>
+<script data-modal-js>
 (function(){
   var times = {{ period_times|safe_json }};
   var p = document.getElementById('id_period'), s = document.getElementById('id_start'), e = document.getElementById('id_end');
