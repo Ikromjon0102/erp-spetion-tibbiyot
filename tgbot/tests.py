@@ -149,3 +149,13 @@ class MiniAppTests(TestCase):
 
     def test_app_page_public(self):
         self.assertEqual(Client().get('/tg/app/').status_code, 200)
+
+
+@override_settings(BOT_TOKEN='123:TEST')
+class OpenAppButtonTests(BotTests):
+    def test_open_app_uses_inline_button(self):
+        TelegramLink.objects.create(user=self.parent, chat_id=5)
+        self.post(self.msg(text='📱 Ilovani ochish'))
+        kb = [kw for m, kw in self.sent if m == 'sendMessage'][-1]['reply_markup']
+        self.assertIn('inline_keyboard', kb)
+        self.assertIn('web_app', kb['inline_keyboard'][0][0])

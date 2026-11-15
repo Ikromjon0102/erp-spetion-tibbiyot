@@ -13,7 +13,7 @@ from .services import app_url, esc, send
 
 CONTACT_KB = {'keyboard': [[{'text': '📱 Telefon raqamni yuborish', 'request_contact': True}]],
               'resize_keyboard': True, 'one_time_keyboard': True}
-MENU_KB = {'keyboard': [[{'text': '📱 Ilovani ochish', 'web_app': {'url': app_url()}}],
+MENU_KB = {'keyboard': [[{'text': '📱 Ilovani ochish'}],
                         [{'text': '📍 Bugun'}, {'text': '📝 Baholar'}]], 'resize_keyboard': True}
 
 WELCOME = ("Assalomu alaykum! Bu — maktab boti. Farzandingizning maktabga kelgani-ketgani, baholari, vazifalari va "
@@ -76,6 +76,10 @@ def handle(update):
         return today(chat_id, linked.user)
     if low in ('/baholar', '📝 baholar'):
         return grades(chat_id, linked.user)
+    if low in ('/ilova', '📱 ilovani ochish'):
+        # Mini App faqat inline tugma yoki menyu tugmasi orqali ochilganda initData oladi (klaviatura tugmasida bo'sh bo'ladi)
+        return send(chat_id, 'Ilovani ochish uchun tugmani bosing 👇',
+                    reply_markup={'inline_keyboard': [[{'text': '📱 Ilovani ochish', 'web_app': {'url': app_url()}}]]})
     if low == '/chiqish':
         linked.delete()
         return send(chat_id, "Bog'lanish o'chirildi. Qayta ulash uchun /start", reply_markup={'remove_keyboard': True})
