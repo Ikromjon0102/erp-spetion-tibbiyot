@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'access',
     'panel',
     'billing',
+    'tgbot',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -166,3 +167,8 @@ if 'test' in sys.argv:  # testlar haqiqiy `.cache` dagi bloklarga tegmasin
 # Ota-ona telefon raqami bilan kiradi; kirgach 30 kun tizimda qoladi (har safar parol so'ralmaydi)
 AUTHENTICATION_BACKENDS = ['accounts.backends.PhoneBackend']
 SESSION_COOKIE_AGE = 30 * 24 * 3600
+
+# Telegram bot (token .env da)
+BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
+TELEGRAM_SYNC = 'test' in sys.argv
+SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili

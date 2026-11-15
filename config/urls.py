@@ -22,5 +22,6 @@ urlpatterns = [
     path('rasm/<int:pk>/', face_photo, name='face_photo'),
     path('ustoz/', include('journal.urls')),
     path('api/access/', include('access.urls')),
+    path('tg/', include('tgbot.urls')),
     path('elonlar/', include('notices.urls')),
 ]
