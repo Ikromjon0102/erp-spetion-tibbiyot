@@ -1,0 +1,21 @@
+[Unit]
+Description=Spetion tibbiyot maktabi (Django, gunicorn) - med.spetion.uz
+After=network.target
+
+[Service]
+User=medspetion
+Group=medspetion
+WorkingDirectory=/var/www/med-spetion/app
+EnvironmentFile=/var/www/med-spetion/.env
+# Server kichik (1 GB) va boshqa loyihalar bor: 1 worker, 2 thread va xotira chegarasi.
+# Xotira yetmasa, birinchi bo'lib shu xizmat to'xtaydi, boshqa loyihalar emas.
+ExecStart=/var/www/med-spetion/venv/bin/gunicorn --workers 1 --threads 2 --timeout 60 --bind 127.0.0.1:8010 config.wsgi:application
+MemoryHigh=200M
+MemoryMax=260M
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

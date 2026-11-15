@@ -130,6 +130,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'      # `collectstatic` shu yerga yig'adi, nginx /static/ ni shundan beradi
 
 # Yuklangan rasmlar (yuz rasmlari) — ommaga ochiq emas, faqat ruxsatli ko'rinish orqali beriladi
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -142,6 +143,13 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # HTTPS tunnel (i.tunl.uz) orqali kirilganda login/davomat POST so'rovlari CSRF tekshiruvidan o'tishi uchun
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://i.tunl.uz,http://i.tunl.uz').split(',')
+
+# Production (DEBUG=0): HTTPS orqasida (nginx) ishlaganda
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Login urinishlari hisoblagichi ishlash jarayonlari va qayta yuklashlar orasida saqlansin (blokni `unlock_logins` bilan olish mumkin)
 CACHES = {

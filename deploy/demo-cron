@@ -1,0 +1,4 @@
+# Demo: bugungi kelish-ketish va davomatni har 30 daqiqada yangilab turadi (08:00-17:00 Toshkent vaqti = 03:00-12:00 UTC),
+# terminallar "tirik" turishi uchun signalni 5 daqiqada bir yangilaydi.
+*/30 3-12 * * * medspetion cd /var/www/med-spetion/app && /var/www/med-spetion/venv/bin/python manage.py seed_showcase --refresh >> /var/www/med-spetion/refresh.log 2>&1
+*/5 3-12 * * * medspetion /var/www/med-spetion/venv/bin/python /var/www/med-spetion/app/deploy/heartbeat.py > /dev/null 2>&1

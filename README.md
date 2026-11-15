@@ -144,3 +144,10 @@ va **ketgan** (oxirgi chiqish) vaqt ko'rinadi. Qurilmaning "Oxirgi signal" vaqti
 
 ## Testlar
     python manage.py test
+
+## Deploy (VPS, med.spetion.uz) va demo
+`deploy/` papkasida: `med-spetion.service` (systemd, gunicorn 1 worker + xotira chegarasi), `nginx-med.spetion.uz.conf`, `demo-cron`, `heartbeat.py`.
+- Muhit: `/var/www/med-spetion/.env` (`SECRET_KEY`, `DEBUG=0`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, `SQLITE_PATH`).
+- Yangilash: kodni `git archive` bilan `app/` ga yoyish, `pip install -r requirements.txt`, `migrate`, `collectstatic`, `systemctl restart med-spetion`.
+- **Demo ma'lumotlar** (to'qima): `python manage.py seed_showcase --password "<parol>"` (bo'sh bazaga bir marta).
+  `python manage.py seed_showcase --refresh` — bugungi kelish-ketish va davomatni yangilaydi (cron har 30 daqiqada).

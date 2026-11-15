@@ -4,3 +4,4 @@ openpyxl>=3.1
 reportlab
 Pillow
 requests
+gunicorn>=22; sys_platform != 'win32'
