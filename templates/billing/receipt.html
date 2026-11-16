@@ -41,6 +41,6 @@
   <div class="foot">Bekor qilingan: {{ p.voided_at|date:"d.m.Y H:i" }}{% if p.void_reason %} · {{ p.void_reason }}{% endif %}</div>
   {% else %}<div class="foot">Rahmat! Bu chek to'lov qabul qilinganini tasdiqlaydi.</div>{% endif %}
 </div>
-<div class="actions"><a href="{{ back }}">← Orqaga</a><button class="primary" onclick="window.print()">Chop etish / PDF</button></div>
+<div class="actions"><a href="{{ back }}">← Orqaga</a>{% if debtors %}<a href="{{ debtors }}">Qarzdorlar</a>{% endif %}<button class="primary" onclick="window.print()">Chop etish / PDF</button></div>
 </body>
 </html>

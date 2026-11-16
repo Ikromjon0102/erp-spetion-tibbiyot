@@ -60,7 +60,7 @@ class StaffCreateForm(forms.Form):
     last_name = forms.CharField(label='Familiya', max_length=150)
     first_name = forms.CharField(label='Ism', max_length=150)
     phone = PhoneField(label='Telefon raqam (login)')
-    position = forms.ModelChoiceField(label='Lavozim', queryset=Position.objects.all(), empty_label=None)
+    position = forms.ModelChoiceField(label='Lavozim', queryset=Position.objects.all(), empty_label='— lavozimni tanlang —')
 
 
 class GroupForm(forms.ModelForm):

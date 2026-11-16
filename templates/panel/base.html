@@ -295,8 +295,9 @@
 <nav class="mtab" aria-label="Bo'limlar">
   <a class="{% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}"><span class="pill"><svg class="ic"><use href="#p-dash"/></svg></span>Bosh</a>
   {% if 'students.view' in panel_can %}<a class="{% if nav == 'students' %}on{% endif %}" href="{% url 'panel:students' %}"><span class="pill"><svg class="ic"><use href="#p-students"/></svg></span>O'quvchilar</a>{% endif %}
+  {% if 'payments.view' in panel_can %}<a class="{% if nav == 'finance' %}on{% endif %}" href="{% url 'panel:finance' %}"><span class="pill"><svg class="ic"><use href="#p-wallet"/></svg></span>To'lovlar</a>{% endif %}
   {% if 'announcements.view' in panel_can %}<a class="{% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><span class="pill"><svg class="ic"><use href="#p-news"/></svg></span>E'lonlar</a>{% endif %}
-  <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'finance' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
+  <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
 </nav>
 <div class="msheet-ov" id="moreOv"><div class="msheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
@@ -306,7 +307,6 @@
     {% if 'teachers.view' in panel_can %}<a href="{% url 'panel:teachers' %}"><svg class="ic"><use href="#p-book"/></svg>Ustozlar</a>{% endif %}
     {% if 'schedule.view' in panel_can %}<a href="{% url 'panel:schedule' %}"><svg class="ic"><use href="#p-cal"/></svg>Dars jadvali</a>{% endif %}
     {% if 'devices.view' in panel_can %}<a href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
-    {% if 'payments.view' in panel_can %}<a href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-wallet"/></svg>To'lovlar</a>{% endif %}
     {% if 'groups.view' in panel_can %}<a href="{% url 'panel:groups' %}"><svg class="ic"><use href="#p-groups"/></svg>Sinflar</a>{% endif %}
     {% if 'staff.view' in panel_can %}<a href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>
     <a href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-pos"/></svg>Lavozimlar</a>{% endif %}

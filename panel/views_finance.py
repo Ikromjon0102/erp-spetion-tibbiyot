@@ -42,8 +42,18 @@ def _paid_sum(qs):
     return qs.filter(voided=False).exclude(student__user__username__startswith='sinov_').aggregate(t=Sum('amount'))['t'] or 0
 
 
+class MoneyField(forms.IntegerField):
+    """Summa: "1 500 000" ko'rinishida yoziladi (bo'shliqlar tashlab yuboriladi)."""
+    widget = forms.TextInput(attrs={'inputmode': 'numeric', 'autocomplete': 'off', 'data-money': ''})
+
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = ''.join(value.split()).replace('\xa0', '')
+        return super().to_python(value)
+
+
 class PaymentForm(forms.Form):
-    amount = forms.IntegerField(label="Summa (so'm)", min_value=1)
+    amount = MoneyField(label="Summa (so'm)", min_value=1)
     method = forms.ChoiceField(label="To'lov usuli", choices=Payment.Method.choices)
     paid_on = forms.DateField(label="Sana", widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
     note = forms.CharField(label='Izoh', max_length=200, required=False)
@@ -123,7 +133,14 @@ def pay(request, pk):
                   target_type='student')
         messages.success(request, f"To'lov qabul qilindi. Chek: {p.receipt_no}")
         return redirect('receipt', pk=student.pk, pay=p.pk)
-    return render(request, 'panel/pay.html', {'nav': 'finance', 'student': student, 'bill': bill, 'form': form})
+    monthly = bill['rows'][-1]['charge'].amount if bill['rows'] else bill['price']
+    quick = [("To'liq qarz", bill['debt'])] if bill['debt'] else []
+    if 0 < bill['overdue'] < bill['debt']:
+        quick.append(("Muddati o'tgan", bill['overdue']))
+    if monthly and monthly != bill['debt']:
+        quick.append(('1 oylik', monthly))
+    return render(request, 'panel/pay.html', {'nav': 'finance', 'student': student, 'bill': bill, 'form': form,
+                                              'quick': [(label, int(v)) for label, v in quick]})
 
 
 @require_POST

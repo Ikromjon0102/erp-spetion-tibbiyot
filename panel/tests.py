@@ -397,6 +397,13 @@ class StaffTests(TestCase):
         return self.client.post('/panel/xodimlar/yangi/', {**base, **data}, follow=True)
 
     # --- xodim qo'shish
+    def test_position_has_no_default_and_is_required(self):
+        self.client.login(username='egasi', password='x')
+        self.assertContains(self.client.get('/panel/xodimlar/yangi/'), '— lavozimni tanlang —')
+        before = StaffProfile.objects.count()
+        self.add(position='')
+        self.assertEqual(StaffProfile.objects.count(), before)
+
     def test_only_with_manage_permission(self):
         self.client.login(username='rec', password='x')
         self.assertEqual(self.client.get('/panel/xodimlar/yangi/').status_code, 403)

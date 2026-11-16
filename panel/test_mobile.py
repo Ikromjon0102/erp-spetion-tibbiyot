@@ -37,10 +37,12 @@ class MobileAppShellTests(TestCase):
         owner = self.tab_bar(self.html('egasi'))
         for label in ('Bosh', "O'quvchilar", "E'lonlar", "Ko'proq"):
             self.assertIn(label, owner)
+        self.assertIn('href="/panel/tolovlar/"', self.tab_bar(self.html('rec')))        # kassirda To'lovlar tab
         zavxoz = self.tab_bar(self.html('zavxoz'))               # Zavxozda o'quvchilar ruxsati yo'q
         self.assertIn('Bosh', zavxoz)
         self.assertNotIn("O'quvchilar", zavxoz)
         self.assertIn("E'lonlar", zavxoz)
+        self.assertNotIn("To'lovlar", zavxoz)
 
     def test_more_sheet_lists_only_allowed_sections(self):
         owner = self.more_sheet(self.html('egasi'))

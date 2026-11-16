@@ -10,6 +10,9 @@
      {% for d in bill.discounts %}<br><span class="badge">{{ d.discount.name }} −{{ d.discount.percent|floatformat:"-2" }}%</span>{% endfor %}</p>
   <form method="post">{% csrf_token %}
     {% include 'panel/_field.html' with f=form.amount %}
+    {% if quick %}<div class="quick" style="display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 16px">
+      {% for label, v in quick %}<button type="button" class="btn small" data-sum="{{ v }}">{{ label }} · {{ v|money }}</button>{% endfor %}
+    </div>{% endif %}
     {% include 'panel/_field.html' with f=form.method %}
     {% include 'panel/_field.html' with f=form.paid_on %}
     {% include 'panel/_field.html' with f=form.note %}
@@ -17,4 +20,22 @@
     <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Qabul qilish va chek chiqarish</button> <a class="btn" href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
   </form>
 </div>
+{% endblock %}
+{% block js %}
+<script>
+(function(){
+  var el = document.querySelector('input[data-money]'); if(!el) return;
+  function fmt(v){ return String(v).replace(/\D/g, '').replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function apply(){
+    var before = el.value.slice(0, el.selectionStart).replace(/\D/g, '').length;   // kursordan oldingi raqamlar soni
+    el.value = fmt(el.value);
+    var pos = 0, seen = 0;
+    while (pos < el.value.length && seen < before){ if (/\d/.test(el.value[pos])) seen++; pos++; }
+    try { el.setSelectionRange(pos, pos); } catch(e) {}
+  }
+  el.value = fmt(el.value);
+  el.addEventListener('input', apply);
+  document.querySelectorAll('[data-sum]').forEach(function(b){ b.addEventListener('click', function(){ el.value = fmt(b.dataset.sum); el.focus(); }); });
+})();
+</script>
 {% endblock %}

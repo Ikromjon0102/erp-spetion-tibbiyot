@@ -134,6 +134,21 @@ class ViewTests(TestCase):
         self.assertEqual((p.amount, p.method, p.received_by), (400000, 'card', self.rec))
         self.assertContains(self.client.get(f'/oquvchi/{self.s.pk}/chek/{p.pk}/'), p.receipt_no)
 
+    def test_amount_with_spaces_and_receipt_leads_back_to_lists_not_to_the_form(self):
+        self.login('rec')
+        url = f'/panel/tolovlar/oquvchi/{self.s.pk}/'
+        page = self.client.get(url)
+        self.assertEqual(page.context['quick'][0], ("To'liq qarz", int(summaries([self.s.pk])[self.s.pk]['debt'])))
+        r = self.client.post(url, {'amount': '400 000', 'method': 'cash', 'paid_on': TODAY.isoformat(), 'note': ''})
+        p = Payment.objects.get()
+        self.assertEqual(p.amount, 400000)
+        receipt = self.client.get(r.url, HTTP_REFERER='http://testserver' + url)
+        self.assertEqual(receipt.context['back'], '/panel/tolovlar/')                      # formaga qaytarmaydi
+        self.assertContains(receipt, 'href="/panel/tolovlar/qarzdorlar/"')
+        self.client.logout()
+        self.client.login(username='ota', password='x')                                    # ota-onada panel havolalari yo'q
+        self.assertNotContains(self.client.get(r.url), '/panel/')
+
     def test_debtors_list_shows_debt_and_pay_link_by_permission(self):
         paid_up = student('s2', 'Aliyev', self.g, self.other_parent)
         Payment.objects.create(student=paid_up, amount=summaries([paid_up.pk])[paid_up.pk]['debt'])
