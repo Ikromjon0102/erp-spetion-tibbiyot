@@ -13,7 +13,7 @@
     {% else %}<div style="display:flex;flex-wrap:wrap;gap:6px">{% for code in pos.default_perms %}<span class="badge gray">{{ labels|get:code|default:code }}</span>{% empty %}<span class="muted">ruxsat tanlanmagan</span>{% endfor %}</div>{% endif %}
     {% if can_manage %}<div style="margin-top:14px;display:flex;gap:8px">
       <a class="btn small" href="{% url 'panel:position_edit' pos.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
-      {% if not pos.is_owner and not pos.n %}<form method="post" action="{% url 'panel:position_delete' pos.pk %}" onsubmit="return confirm('Lavozim o\'chirilsinmi?')">{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>{% endif %}
+      {% if not pos.is_owner and not pos.n %}<form method="post" action="{% url 'panel:position_delete' pos.pk %}" data-confirm="«{{ pos.name }}» lavozimi o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>{% endif %}
     </div>{% endif %}
   </div>
   {% endfor %}

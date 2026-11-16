@@ -5,7 +5,7 @@
 {% block actions %}
   {% if 'announcements.change' in granted %}
   <a class="btn" href="{% url 'panel:news_edit' a.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
-  <form method="post" action="{% url 'panel:news_delete' a.pk %}" onsubmit="return confirm('E\'lon o\'chirilsinmi? Bu qaytarilmaydi.')">{% csrf_token %}<button class="btn danger"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>
+  <form method="post" action="{% url 'panel:news_delete' a.pk %}" data-confirm="E'lon o'chirilsinmi? Bu qaytarilmaydi — o'qilganlik ma'lumotlari ham o'chadi." data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn danger"><svg class="ic"><use href="#p-trash"/></svg>O'chirish</button></form>
   {% endif %}
 {% endblock %}
 {% block content %}

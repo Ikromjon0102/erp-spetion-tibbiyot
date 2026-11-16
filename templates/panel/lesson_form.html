@@ -19,7 +19,7 @@
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:schedule' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% if lesson %}
-<form method="post" action="{% url 'panel:lesson_delete' lesson.pk %}" style="margin-top:14px" onsubmit="return confirm(&quot;Dars jadvaldan olib tashlansinmi?&quot;)">{% csrf_token %}
+<form method="post" action="{% url 'panel:lesson_delete' lesson.pk %}" style="margin-top:14px" data-confirm="Dars jadvaldan olib tashlansinmi? Davomat va baholar tarixi saqlanadi." data-confirm-ok="Olib tashlash" data-confirm-danger>{% csrf_token %}
   <button class="btn"><svg class="ic"><use href="#p-trash"/></svg>Jadvaldan olib tashlash</button> <span class="muted">Davomat va baho tarixi saqlanadi.</span></form>
 {% endif %}
 {% endblock %}

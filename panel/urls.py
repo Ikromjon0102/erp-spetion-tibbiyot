@@ -57,6 +57,7 @@ urlpatterns = [
 
     path('elonlar/', views_news.news, name='news'),
     path('elonlar/yangi/', views_news.news_add, name='news_add'),
+    path('elonlar/qabul-qiluvchilar/', views_news.news_recipients, name='news_recipients'),
     path('elonlar/<int:pk>/', views_news.news_detail, name='news_detail'),
     path('elonlar/<int:pk>/tahrirlash/', views_news.news_edit, name='news_edit'),
     path('elonlar/<int:pk>/ochirish/', views_news.news_delete, name='news_delete'),

@@ -11,7 +11,7 @@
       {% if p.is_teacher %}<span class="badge blue">ustoz ham</span>{% endif %}</p>
     <p><span class="muted">Oxirgi kirish:</span> {{ p.last_login|date:"d.m.Y H:i"|default:"hali kirmagan" }}</p>
     {% if 'parents.change' in panel_can %}{% if can_reset %}
-    <form method="post" action="{% url 'panel:parent_password_set' p.pk %}" onsubmit="return confirm(&quot;Yangi bir martalik parol berilsinmi? Eskisi ishlamay qoladi.&quot;)">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol berish</button></form>
+    <form method="post" action="{% url 'panel:parent_password_set' p.pk %}" data-confirm="Yangi bir martalik parol berilsinmi? Eskisi ishlamay qoladi." data-confirm-ok="Parol berish">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol berish</button></form>
     {% else %}<div class="hint">Bu hisob ustoz yoki xodimga tegishli — parolini o'z kartasidan boshqaring.</div>{% endif %}{% endif %}
   </div>
   <div class="card"><h2>Farzandlari</h2>

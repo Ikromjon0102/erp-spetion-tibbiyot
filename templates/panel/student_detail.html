@@ -47,7 +47,7 @@
     <td>{% if p.has_usable_password %}{% if p.must_change_password %}<span class="badge warn">bir martalik parol</span>{% else %}<span class="badge">faol</span>{% endif %}{% else %}<span class="badge gray">parol berilmagan</span>{% endif %}</td>
     {% if can_change %}<td style="text-align:right;white-space:nowrap">
       {% if not p.is_teacher %}<form method="post" action="{% url 'panel:parent_password' s.pk p.pk %}" style="display:inline">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol</button></form>{% endif %}
-      <form method="post" action="{% url 'panel:parent_remove' s.pk p.pk %}" style="display:inline" onsubmit="return confirm('Ota-onani bu o\'quvchidan ajratasizmi?')">{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-unlink"/></svg>Ajratish</button></form>
+      <form method="post" action="{% url 'panel:parent_remove' s.pk p.pk %}" style="display:inline" data-confirm="{{ p.get_full_name|default:p.username }} bu o'quvchidan ajratilsinmi? Hisobning o'zi o'chmaydi." data-confirm-ok="Ajratish" data-confirm-danger>{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-unlink"/></svg>Ajratish</button></form>
     </td>{% endif %}
   </tr>{% endfor %}</tbody></table></div>
   {% else %}<div class="empty">Ota-ona biriktirilmagan</div>{% endif %}
@@ -99,7 +99,7 @@
     {% for p in bill.payments %}<tr><td>{{ p.paid_on|date:"d.m.Y" }}</td>
       <td>{% if p.voided %}<s class="muted">{{ p.amount|money }}</s> <span class="badge bad">bekor</span>{% else %}<b>{{ p.amount|money }}</b>{% endif %}</td>
       <td>{{ p.get_method_display }}</td><td><a class="mono" href="{% url 'receipt' s.pk p.pk %}">{{ p.receipt_no }}</a></td>
-      <td>{% if not p.voided and 'payments.void' in panel_can %}<form method="post" action="{% url 'panel:payment_void' p.pk %}" style="display:flex;gap:6px" onsubmit="return confirm('To\u2018lov bekor qilinsinmi?')">{% csrf_token %}<input type="text" name="reason" placeholder="Sabab" style="width:130px"><button class="btn"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</button></form>{% endif %}</td></tr>{% endfor %}
+      <td>{% if not p.voided and 'payments.void' in panel_can %}<form method="post" action="{% url 'panel:payment_void' p.pk %}" data-confirm="{{ p.receipt_no }} — {{ p.amount|money }} so'm to'lov bekor qilinsinmi? Yozuv o'chmaydi, lekin hisobga olinmaydi." data-confirm-ok="To'lovni bekor qilish" data-confirm-danger data-confirm-reason="Bekor qilish sababi">{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</button></form>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div>{% else %}<div class="empty">To'lovlar yo'q</div>{% endif %}
 </div>
 <div class="card"><h2>Chegirmalar</h2>

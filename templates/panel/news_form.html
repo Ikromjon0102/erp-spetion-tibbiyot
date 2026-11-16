@@ -2,14 +2,37 @@
 {% block title %}{{ title }}{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:news' %}" style="font-weight:600">E'lonlar</a> <span class="muted">/</span> {{ title }}{% endblock %}
 {% block content %}
-<form method="post" class="card" style="max-width:760px">{% csrf_token %}
+<form method="post" class="card" style="max-width:760px" id="newsForm" data-count-url="{% url 'panel:news_recipients' %}"{% if not a %} data-send{% endif %}>{% csrf_token %}
   {% include 'panel/_field.html' with f=form.title %}
   {% include 'panel/_field.html' with f=form.body %}
   <div class="formgrid">
     {% include 'panel/_field.html' with f=form.audience %}
     {% include 'panel/_field.html' with f=form.group %}
   </div>
+  <div class="hint" id="newsCount" style="margin:-6px 0 14px;font-size:13.5px" aria-live="polite"></div>
   <button class="btn primary">{% if a %}Saqlash{% else %}Yuborish{% endif %}</button>
   <a class="btn" href="{% if a %}{% url 'panel:news_detail' a.pk %}{% else %}{% url 'panel:news' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
+{% endblock %}
+{% block js %}
+<script data-modal-js>
+(function(){
+  var form = document.getElementById('newsForm'); if(!form || form.__count) return; form.__count = true;
+  var out = document.getElementById('newsCount'), aud = form.querySelector('[name=audience]'), grp = form.querySelector('[name=group]'), seq = 0;
+  function update(){
+    var my = ++seq;
+    fetch(form.dataset.countUrl + '?audience=' + encodeURIComponent(aud.value) + '&group=' + encodeURIComponent(grp.value), {credentials:'same-origin'})
+      .then(function(r){ return r.json(); }).then(function(j){
+        if(my !== seq || j.count === null) return;
+        var n = j.count;
+        out.innerHTML = n ? 'Hozir <b>' + n + ' ta</b> qabul qiluvchi ko\'radi (tizimga kira oladigan hisoblar).' : '<b style="color:var(--bad)">Bu tanlov bo\'yicha qabul qiluvchi yo\'q.</b>';
+        if(form.dataset.send !== undefined){
+          form.dataset.confirm = n ? 'E\'lon ' + n + ' ta qabul qiluvchiga yuboriladi. Yuborilsinmi?' : 'Hozircha bu e\'lonni hech kim olmaydi (qabul qiluvchi yo\'q). Baribir saqlansinmi?';
+          form.dataset.confirmOk = n ? 'Yuborish' : 'Saqlash';
+        }
+      }).catch(function(){ out.textContent = ''; });
+  }
+  aud.addEventListener('change', update); grp.addEventListener('change', update); update();
+})();
+</script>
 {% endblock %}

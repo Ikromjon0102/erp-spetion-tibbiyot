@@ -20,6 +20,14 @@
   .mdl { max-width:none; border-radius:22px 22px 0 0; max-height:92vh; animation:mdlup .22s ease; }
   @keyframes mdlup { from { transform:translateY(40px); opacity:.6; } to { transform:none; opacity:1; } }
 }
+.cf-ov { z-index:95; }
+.cf { max-width:440px; }
+.cf-body { padding:20px; }
+.cf-msg { font-weight:600; font-size:15.5px; line-height:1.5; white-space:pre-line; }
+.cf-reason { margin-top:14px; } .cf-reason label { display:block; font-weight:700; font-size:13px; color:var(--dim); margin-bottom:6px; }
+.cf-err { color:var(--bad); font-size:13px; font-weight:600; margin-top:6px; }
+.cf-acts { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
+.cf-acts .btn.danger.primary { background:var(--bad) !important; border-color:var(--bad) !important; color:#fff !important; box-shadow:none; }
 </style>
 <div class="mdl-ov" id="mdlOv"><div class="mdl" role="dialog" aria-modal="true" aria-labelledby="mdlTitle">
   <div class="mdl-head"><h2 id="mdlTitle"></h2><button type="button" class="mdl-x" id="mdlX" aria-label="Yopish"><svg class="ic"><use href="#p-x"/></svg></button></div>
@@ -67,5 +75,56 @@
   ov.addEventListener('mousedown', function(e){ if(e.target === ov) close(); });
   document.getElementById('mdlX').onclick = close;
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && ov.classList.contains('show')) close(); });
+})();
+</script>
+<div class="mdl-ov cf-ov" id="cfOv"><div class="mdl cf" role="alertdialog" aria-modal="true" aria-labelledby="cfMsg">
+  <div class="cf-body">
+    <div class="cf-msg" id="cfMsg"></div>
+    <div class="cf-reason" id="cfReasonBox" hidden><label for="cfReason" id="cfReasonLbl"></label><input type="text" id="cfReason" maxlength="200" autocomplete="off"><div class="cf-err" id="cfErr" hidden>Sababni yozing</div></div>
+    <div class="cf-acts"><button type="button" class="btn" id="cfNo">Yo'q, qaytish</button><button type="button" class="btn primary" id="cfYes"></button></div>
+  </div>
+</div></div>
+<script>
+/* Tasdiqlash oynasi: <form data-confirm="Savol?" data-confirm-ok="O'chirish" [data-confirm-danger] [data-confirm-reason="Sabab"]>.
+   data-confirm-reason bo'lsa sabab majburiy va formaga "reason" maydoni sifatida qo'shiladi. Forma modal ichida bo'lsa ham ishlaydi. */
+(function(){
+  var ov = document.getElementById('cfOv'), msg = document.getElementById('cfMsg'), yes = document.getElementById('cfYes'), no = document.getElementById('cfNo'),
+      box = document.getElementById('cfReasonBox'), lbl = document.getElementById('cfReasonLbl'), inp = document.getElementById('cfReason'),
+      err = document.getElementById('cfErr'), pending = null, last = null;
+  function close(){ ov.classList.remove('show'); pending = null; if(last && last.focus) last.focus(); }
+  function accept(){
+    if(!pending) return;
+    var form = pending.form, sub = pending.submitter;
+    if(!box.hidden){
+      var v = inp.value.trim();
+      if(!v){ err.hidden = false; inp.focus(); return; }
+      var h = form.querySelector('input[name=reason]');
+      if(!h){ h = document.createElement('input'); h.type = 'hidden'; h.name = 'reason'; form.appendChild(h); }
+      h.value = v;
+    }
+    ov.classList.remove('show'); pending = null;
+    form.dataset.confirmed = '1';
+    if(form.requestSubmit) form.requestSubmit(sub && sub.form === form ? sub : undefined); else form.submit();
+  }
+  document.addEventListener('submit', function(e){
+    var form = e.target;
+    if(!form.dataset || form.dataset.confirm === undefined || form.dataset.confirm === '') return;
+    if(form.dataset.confirmed === '1'){ delete form.dataset.confirmed; return; }
+    e.preventDefault(); e.stopPropagation();
+    pending = {form: form, submitter: e.submitter}; last = document.activeElement;
+    msg.textContent = form.dataset.confirm;
+    yes.textContent = form.dataset.confirmOk || 'Ha, davom etish';
+    yes.classList.toggle('danger', form.dataset.confirmDanger !== undefined);
+    var reason = form.dataset.confirmReason;
+    box.hidden = !reason; err.hidden = true; inp.value = '';
+    if(reason) lbl.textContent = reason;
+    ov.classList.add('show');
+    (reason ? inp : no).focus();
+  }, true);
+  yes.onclick = accept; no.onclick = close;
+  inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); accept(); } });
+  inp.addEventListener('input', function(){ err.hidden = true; });
+  ov.addEventListener('mousedown', function(e){ if(e.target === ov) close(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && ov.classList.contains('show')){ e.stopImmediatePropagation(); close(); } }, true);
 })();
 </script>

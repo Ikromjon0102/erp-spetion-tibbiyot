@@ -366,6 +366,15 @@ class GroupsAndNewsTests(TestCase):
         self.client.post(f'/panel/sinflar/{self.g5.pk}/', {'name': '5-A', 'year': 2026})
         self.assertEqual(AuditLog.objects.get(verb="Sinfni o'zgartirdi").details['nom'], {'eski': '5-Sinf', 'yangi': '5-A'})
 
+    def test_recipient_count_before_sending(self):
+        self.client.login(username='zam', password='x')
+        count = lambda **q: self.client.get('/panel/elonlar/qabul-qiluvchilar/', q).json()['count']
+        self.assertEqual(count(audience='parents', group=self.g5.pk), 1)
+        self.assertEqual(count(audience='all'), 2)                                    # ustoz va ota-ona (o'quvchining paroli yo'q)
+        self.assertEqual(count(audience='students'), 0)
+        self.assertIsNone(count(audience='boshqa'))
+        self.assertContains(self.client.get('/panel/elonlar/yangi/'), 'data-send')
+
     def test_send_announcement_and_see_who_read_it(self):
         self.client.login(username='zam', password='x')
         r = self.client.post('/panel/elonlar/yangi/', {'title': 'Yig\'ilish', 'body': 'Juma kuni', 'audience': 'parents', 'group': self.g5.pk})

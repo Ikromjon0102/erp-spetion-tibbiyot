@@ -22,7 +22,7 @@
     {% if children %}<p><span class="muted">Farzandlari (ota-ona sifatida):</span> {% for c in children %}<a class="name" href="{% if 'students.view' in panel_can %}{% url 'panel:student' c.pk %}{% else %}#{% endif %}">{{ c.user.last_name }} {{ c.user.first_name }}</a>{% if c.group %} <span class="muted">({{ c.group }})</span>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
     {% if 'teachers.change' in panel_can %}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-      <form method="post" action="{% url 'panel:teacher_password' u.pk %}" onsubmit="return confirm(&quot;Parol telefonning oxirgi 4 raqamiga qaytarilsinmi?&quot;)">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-key"/></svg>Parolni tiklash</button></form>
+      <form method="post" action="{% url 'panel:teacher_password' u.pk %}" data-confirm="Parol telefonning oxirgi 4 raqamiga qaytarilsinmi?" data-confirm-ok="Parolni tiklash">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-key"/></svg>Parolni tiklash</button></form>
       <form method="post" action="{% url 'panel:teacher_toggle' u.pk %}">{% csrf_token %}<button class="btn">{% if u.is_active %}Nofaol qilish{% else %}Faollashtirish{% endif %}</button></form>
     </div>
     <div class="hint">Parol tiklansa, boshlang'ich parol — telefonning oxirgi 4 raqami; ustoz kirgach yangisini qo'yadi.</div>

@@ -148,7 +148,9 @@ def pay(request, pk):
 def payment_void(request, pk):
     p = get_object_or_404(Payment, pk=pk)
     reason = request.POST.get('reason', '').strip()[:200]
-    if not p.voided:
+    if not reason:
+        messages.error(request, "To'lovni bekor qilish uchun sababini yozing.")
+    elif not p.voided:
         p.voided, p.voided_by, p.voided_at, p.void_reason = True, request.user, timezone.now(), reason
         p.save(update_fields=['voided', 'voided_by', 'voided_at', 'void_reason'])
         audit.log(request, "To'lovni bekor qildi", p.student, label=f'{p.student} — {p.receipt_no}',

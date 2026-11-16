@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -36,6 +37,16 @@ def news_detail(request, pk):
     read = sum(1 for r in rows if r['read_at'])
     return render(request, 'panel/news_detail.html', {'nav': 'news', 'a': a, 'rows': rows, 'read': read, 'total': len(rows),
                                                       'granted': perms_of(request.user)})
+
+
+@panel_required('announcements.view')
+def news_recipients(request):
+    """Tanlangan "kimlar uchun" va sinf bo'yicha e'lonni nechta odam olishini qaytaradi (yuborishdan oldin ko'rsatish uchun)."""
+    audience, group = request.GET.get('audience', ''), request.GET.get('group', '')
+    if audience not in Announcement.Audience.values:
+        return JsonResponse({'count': None})
+    draft = Announcement(audience=audience, group_id=int(group) if group.isdigit() else None)
+    return JsonResponse({'count': len(recipients_of(draft))})
 
 
 @panel_required('announcements.add')

@@ -196,6 +196,9 @@ class ViewTests(TestCase):
         self.login('rec')
         self.assertEqual(self.client.post(f'/panel/tolovlar/{p.pk}/bekor/', {'reason': 'xato'}).status_code, 403)
         self.login('dir')
+        self.client.post(f'/panel/tolovlar/{p.pk}/bekor/', {'reason': '  '})            # sababsiz bekor qilinmaydi
+        p.refresh_from_db()
+        self.assertFalse(p.voided)
         self.client.post(f'/panel/tolovlar/{p.pk}/bekor/', {'reason': 'xato kiritilgan'})
         p.refresh_from_db()
         self.assertTrue(p.voided and p.voided_by == self.dir)
