@@ -236,6 +236,23 @@ class StudentsTests(TestCase):
         entry = AuditLog.objects.get(verb="O'quvchi qo'shdi")
         self.assertEqual((entry.actor, entry.target_id), (self.rec, s.pk))
 
+    def test_add_student_with_parent_in_one_step(self):
+        self.client.login(username='rec', password='x')
+        post = lambda **d: self.client.post('/panel/oquvchilar/yangi/', {'last_name': 'Olimov', 'first_name': 'Ali', 'group': self.g5.pk, **d})
+        r = post(parent_phone='90 777 11 22')                                        # yangi raqam, ism yo'q -> so'raydi
+        self.assertIn('parent_name', r.context['form'].errors)
+        self.assertIn('parent_phone', post(parent_name='Olim Olimov').context['form'].errors)
+        self.assertFalse(Student.objects.filter(user__last_name='Olimov').exists())
+        post(parent_phone='90 777 11 22', parent_name='Olim Olimov')
+        s1 = Student.objects.get(user__last_name='Olimov')
+        parent = s1.parents.get()
+        self.assertEqual((parent.role, parent.phone, parent.first_name, parent.has_usable_password()),
+                         ('parent', '+998 90 777-11-22', 'Olim Olimov', False))
+        self.assertTrue(AuditLog.objects.filter(verb='Ota-ona biriktirdi', target_id=s1.pk).exists())
+        self.client.post('/panel/oquvchilar/yangi/', {'last_name': 'Olimova', 'first_name': 'Guli', 'parent_phone': '+998907771122'})
+        self.assertEqual(Student.objects.get(user__last_name='Olimova').parents.get(), parent)   # ukasi: o'sha hisob, ism shart emas
+        self.assertNotContains(self.client.get(f'/panel/oquvchilar/{s1.pk}/tahrirlash/'), 'parent_phone')
+
     def test_duplicate_face_id_is_rejected(self):
         self.madina.access_id = 'F1'
         self.madina.save()

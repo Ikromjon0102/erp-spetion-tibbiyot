@@ -10,6 +10,11 @@
     {% include 'panel/_field.html' with f=form.group %}
     {% include 'panel/_field.html' with f=form.birth_date %}
     {% include 'panel/_field.html' with f=form.access_id cls='wide' %}
+  {% if not student %}
+    {% include 'panel/_field.html' with f=form.parent_phone %}
+    {% include 'panel/_field.html' with f=form.parent_name %}
+    <div class="hint wide" style="margin:-10px 0 16px">Ota-ona ixtiyoriy — keyin ham biriktirsa bo'ladi. Shu raqam bilan hisob allaqachon bo'lsa (masalan, aka-ukasining ota-onasi yoki ustoz), yangi hisob ochilmaydi va ismni yozish shart emas.</div>
+  {% endif %}
   {% if not student %}<div class="field wide"><label>Yuz rasmi <span class="muted" style="font-weight:500">(ixtiyoriy)</span></label><input type="file" name="photo" accept="image/jpeg,image/png"><div class="hint">JPG/PNG, yuz aniq ko'rinsin. Saqlangach qurilmalarga avtomatik yuboriladi. Keyin ham qo'shish mumkin.</div></div>{% endif %}
   </div>
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>

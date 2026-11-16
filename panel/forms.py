@@ -30,6 +30,10 @@ class StudentForm(forms.Form):
     birth_date = forms.DateField(label="Tug'ilgan sana", required=False, widget=DATE)
     access_id = forms.CharField(label='Face ID (qurilmadagi ID)', max_length=32, required=False,
                                 help_text="Bo'sh qoldirsangiz avtomatik beriladi (9001 dan). Qurilmada ID allaqachon bor bo'lsa, shuni yozing")
+    # Faqat yangi o'quvchida: ota-onani shu formaning o'zida biriktirish (ixtiyoriy)
+    parent_phone = PhoneField(label='Ota-ona telefoni (login)', required=False,
+                              widget=forms.TextInput(attrs={'type': 'tel', 'placeholder': '+998 90 123-45-67', 'autocomplete': 'off'}))
+    parent_name = forms.CharField(label='Ota-ona ism-familiyasi', max_length=150, required=False)
 
     def __init__(self, *args, instance=None, **kwargs):
         self.instance = instance
@@ -37,6 +41,19 @@ class StudentForm(forms.Form):
             kwargs['initial'] = {'last_name': instance.user.last_name, 'first_name': instance.user.first_name,
                                  'group': instance.group, 'birth_date': instance.birth_date, 'access_id': instance.access_id}
         super().__init__(*args, **kwargs)
+        if instance is not None:                 # tahrirda ota-onalar kartaning "Ota-onalar" yorlig'ida boshqariladi
+            del self.fields['parent_phone'], self.fields['parent_name']
+
+    def clean(self):
+        d = super().clean()
+        if 'parent_phone' not in self.fields or self.errors.get('parent_phone'):
+            return d
+        phone, name = d.get('parent_phone'), (d.get('parent_name') or '').strip()
+        if name and not phone:
+            self.add_error('parent_phone', "Ota-onani biriktirish uchun telefon raqamini kiriting")
+        elif phone and not name and not User.objects.filter(phone_digits=to_digits(phone)).exists():
+            self.add_error('parent_name', "Bu raqam bilan hisob yo'q — ota-onaning ism-familiyasini kiriting")
+        return d
 
     def clean_access_id(self):
         value = self.cleaned_data['access_id'].strip()

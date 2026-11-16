@@ -177,6 +177,22 @@ def _student_state(student):
             'group': student.group.name if student.group else '', 'birth_date': student.birth_date, 'access_id': student.access_id}
 
 
+def _attach_parent(request, student, name, phone):
+    """Telefon bo'yicha ota-onani biriktiradi: hisob bor bo'lsa o'shani (ustoz ham ota-ona bo'lishi mumkin), bo'lmasa yangisini ochadi."""
+    digits = to_digits(phone)
+    existing = User.objects.filter(phone_digits=digits).order_by('id')
+    user = existing.filter(role=User.Role.TEACHER).first() or existing.first()
+    created = user is None
+    if created:
+        user = User(username=digits, role=User.Role.PARENT, first_name=name, phone=phone)
+        user.set_unusable_password()
+        user.save()
+    student.parents.add(user)
+    audit.log(request, "Ota-ona biriktirdi", student, label=f"{student.user.get_full_name()} ← {user.get_full_name() or user.username}",
+              details={'telefon': phone, 'yangi hisob': 'ha' if created else "yo'q (mavjud hisob)"}, target_type='student')
+    return user, created
+
+
 @panel_required('students.add')
 def student_add(request):
     form = StudentForm(request.POST or None)
@@ -190,7 +206,13 @@ def student_add(request):
             user.save()
             student = Student.objects.create(user=user, group=d['group'], birth_date=d['birth_date'], access_id=d['access_id'])
         audit.log(request, "O'quvchi qo'shdi", student, label=user.get_full_name(), target_type='student')
-        messages.success(request, f"{user.get_full_name()} qo'shildi. Endi ota-onasini biriktiring.")
+        if d.get('parent_phone'):
+            parent, created = _attach_parent(request, student, d['parent_name'].strip(), d['parent_phone'])
+            who = parent.get_full_name() or parent.username
+            messages.success(request, f"{user.get_full_name()} qo'shildi, ota-onasi biriktirildi: {who}"
+                             + (" (yangi hisob; kirish uchun \"Ota-onalar\" yorlig'ida bir martalik parol bering)." if created else " (mavjud hisob)."))
+        else:
+            messages.success(request, f"{user.get_full_name()} qo'shildi. Endi ota-onasini biriktiring.")
         if upload:
             apply_photo(request, user, upload, user.get_full_name())
         return redirect('panel:student', pk=student.pk)
@@ -226,17 +248,7 @@ def parent_add(request, pk):
     if not form.is_valid():
         messages.error(request, ' '.join(e for errs in form.errors.values() for e in errs))
         return _back(student)
-    phone, digits = form.cleaned_data['phone'], to_digits(form.cleaned_data['phone'])
-    existing = User.objects.filter(phone_digits=digits).order_by('id')
-    user = existing.filter(role=User.Role.TEACHER).first() or existing.first()   # ustoz ham ota-ona bo'lishi mumkin
-    created = user is None
-    if created:
-        user = User(username=digits, role=User.Role.PARENT, first_name=form.cleaned_data['name'], phone=phone)
-        user.set_unusable_password()
-        user.save()
-    student.parents.add(user)
-    audit.log(request, "Ota-ona biriktirdi", student, label=f"{student.user.get_full_name()} ← {user.get_full_name() or user.username}",
-              details={'telefon': phone, 'yangi hisob': 'ha' if created else "yo'q (mavjud hisob)"}, target_type='student')
+    user, created = _attach_parent(request, student, form.cleaned_data['name'], form.cleaned_data['phone'])
     messages.success(request, f"{user.get_full_name() or user.username} biriktirildi" + (" (yangi hisob; kirish uchun bir martalik parol bering)." if created else '.'))
     return _back(student)
 
