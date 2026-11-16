@@ -5,11 +5,14 @@ from django.urls import include, path
 from accounts import views as acc
 from billing import views as billing_views
 from accounts.photo_view import face_photo
+from accounts import pwa
 
 admin.site.site_header = 'Tibbiyot maktabi — boshqaruv'
 admin.site.site_title = 'Tibbiyot maktabi'
 
 urlpatterns = [
+    path('manifest.webmanifest', pwa.manifest, name='pwa_manifest'),
+    path('sw.js', pwa.service_worker, name='pwa_sw'),
     path('admin/', admin.site.urls),
     path('panel/', include('panel.urls')),
     path('login/', acc.ThrottledLoginView.as_view(), name='login'),

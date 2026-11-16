@@ -14,3 +14,7 @@ template.html
 *.xlsx
 tunl.exe
 *.csv
+
+# haqiqiy ro'yxatlar va yuz rasmlari (shaxsiy ma'lumot) — hech qachon git'ga qo'shilmaydi
+datalar/
+rasmlar/

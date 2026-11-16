@@ -83,11 +83,17 @@ def _read_rows(path):
 
 @transaction.atomic
 def import_students(path, group_name):
+    return import_rows(group_name, _read_rows(path))
+
+
+@transaction.atomic
+def import_rows(group_name, rows):
+    """rows: (to'liq ism, 'ona'/'ota'/'', ota-ona telefoni) — fayl formatidan qat'i nazar."""
     group, _ = Group.objects.get_or_create(name=group_name)
     report = {'group': group_name, 'created': 0, 'existing': 0, 'parents_new': 0, 'parents_linked': 0,
               'no_phone': [], 'bad_phone': []}
 
-    for full, relation, phone_raw in _read_rows(path):
+    for full, relation, phone_raw in rows:
         last, first = split_name(full)
         student = (Student.objects.filter(group=group, user__last_name__iexact=last, user__first_name__iexact=first)
                    .first())

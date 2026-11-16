@@ -1,0 +1,42 @@
+{# Ilovani telefonga o'rnatish taklifi. Android/Chrome: o'rnatish tugmasi; iPhone: Safari ko'rsatmasi. #}
+<div id="pwa-bar" hidden role="dialog" aria-label="Ilovani o'rnatish">
+  <div class="pwa-txt"><b>Spetion Tibbiyot</b><span id="pwa-hint">Ilovani telefoningizga o'rnating — har safar manzil yozish shart emas</span></div>
+  <button type="button" id="pwa-go" class="pwa-go" hidden>O'rnatish</button>
+  <button type="button" id="pwa-x" class="pwa-x" aria-label="Yopish">✕</button>
+</div>
+<style>
+  #pwa-bar { position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:90; display:flex; align-items:center; gap:10px;
+    padding:12px 14px; border-radius:16px; background:#166534; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.28); max-width:520px; margin:0 auto; }
+  #pwa-bar[hidden] { display:none; }
+  .pwa-txt { flex:1; display:grid; gap:2px; font-size:13px; line-height:1.3; }
+  .pwa-txt b { font-size:14px; }
+  .pwa-go { border:0; border-radius:99px; padding:9px 16px; font:inherit; font-weight:700; background:#fff; color:#166534; cursor:pointer; }
+  .pwa-x { border:0; background:transparent; color:#fff; font-size:16px; padding:6px; cursor:pointer; opacity:.8; }
+</style>
+<script>
+(function () {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('{% url "pwa_sw" %}').catch(function () {});
+  var bar = document.getElementById('pwa-bar'), go = document.getElementById('pwa-go'), hint = document.getElementById('pwa-hint');
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  var dismissed = false;
+  try { dismissed = Date.now() - Number(localStorage.getItem('pwa-dismissed') || 0) < 7 * 864e5; } catch (e) {}
+  if (standalone || dismissed || !bar) return;
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); deferred = e; go.hidden = false; bar.hidden = false;
+  });
+  go.addEventListener('click', function () {
+    if (!deferred) return; deferred.prompt();
+    deferred.userChoice.finally(function () { deferred = null; bar.hidden = true; });
+  });
+  document.getElementById('pwa-x').addEventListener('click', function () {
+    bar.hidden = true; try { localStorage.setItem('pwa-dismissed', Date.now()); } catch (e) {}
+  });
+  window.addEventListener('appinstalled', function () { bar.hidden = true; });
+  var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) && !window.MSStream;
+  if (ios) {   // iPhone o'rnatishni o'zi taklif qilmaydi — qo'lda ko'rsatma
+    hint.textContent = "iPhone: pastdagi «Ulashish» tugmasini bosing → «Bosh ekranga qo'shish»";
+    bar.hidden = false;
+  }
+})();
+</script>

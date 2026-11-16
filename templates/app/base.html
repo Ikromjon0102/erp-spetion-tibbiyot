@@ -102,6 +102,7 @@
   .tabbar button.on .pill { background:var(--tint); }
 </style>
 {% include 'ui/_glass.html' %}
+{% include 'pwa/_head.html' %}
 {% block head %}{% endblock %}
 </head>
 <body class="shell-app">
@@ -203,5 +204,6 @@ document.querySelectorAll('[data-theme-toggle]').forEach(function(b){
 });
 </script>
 {% block js %}{% endblock %}
+{% include 'pwa/_install.html' %}
 </body>
 </html>

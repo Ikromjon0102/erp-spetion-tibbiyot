@@ -23,6 +23,10 @@ PASSWORD_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'  # o/0, l/1/i kabi adashad
 EXTRA_LESSON_MINUTES = 45
 
 
+# Jadvaldagi ism -> ustozlar ro'yxatidagi (Word) ism. Fanlar mos kelishi tekshirilgan.
+TEACHER_ALIASES = {'oychexra': 'Oychehra', 'nigoraxon': 'Nigora', 'ranoxon': "Ra'no", 'boburmirzo': 'Bobur', 'shuxratjon': 'Shuhrat'}
+
+
 def normalize_teacher(raw):
     """'Oychexra aya' va 'Oychexra' — bir odam. Qo'shimcha so'zlar (aya/opa) olib tashlanadi."""
     name = (raw or '').strip().replace('’', "'").replace('ʻ', "'").replace('`', "'")
@@ -74,7 +78,9 @@ def import_workbook(path):
 
     def get_teacher(name):
         if name not in teacher_cache:
-            u = User.objects.filter(role=User.Role.TEACHER, first_name__iexact=name).first()
+            teachers = User.objects.filter(role=User.Role.TEACHER)
+            u = (teachers.filter(first_name__iexact=TEACHER_ALIASES.get(name.lower(), name)).first()
+                 or teachers.filter(first_name__iexact=name).first())   # alias topilmasa — asl ism bo'yicha
             if u is None:
                 password = ''.join(secrets.choice(PASSWORD_ALPHABET) for _ in range(8))
                 u = User(username=_make_username(name), first_name=name, role=User.Role.TEACHER)
