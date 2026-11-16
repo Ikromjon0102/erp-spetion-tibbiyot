@@ -77,6 +77,9 @@ class SettingsForm(forms.Form):
                                  help_text="Shu kundan keyin to'lanmagan summa «muddati o'tgan» deb belgilanadi (jarima yo'q)")
     billing_start = forms.DateField(label="Hisob boshlanadigan oy", widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
                                     help_text="Shu oydan boshlab o'quvchilarga hisob yoziladi. O'quv yili: sentabr–iyun")
+    pay_info = forms.CharField(label="To'lov yo'riqnomasi (rekvizitlar)", required=False, max_length=1500,
+                               widget=forms.Textarea(attrs={'rows': 8}),
+                               help_text="Ota-ona ilovasida «To'lov» bo'limida ko'rsatiladi: hisob raqam, bank, kassa ish vaqti. Bo'sh qoldirilsa ko'rinmaydi")
 
 
 @panel_required('payments.view')
@@ -239,15 +242,17 @@ def student_discount_remove(request, pk, sd_id):
 def finance_settings(request):
     cfg = BillingSettings.get()
     form = SettingsForm(request.POST or None, initial={'monthly_price': int(cfg.monthly_price), 'due_day': cfg.due_day,
-                                                       'billing_start': cfg.billing_start})
+                                                       'billing_start': cfg.billing_start, 'pay_info': cfg.pay_info})
     if request.method == 'POST' and form.is_valid():
         d = form.cleaned_data
         before = (int(cfg.monthly_price), cfg.due_day, cfg.billing_start)
         cfg.monthly_price, cfg.due_day, cfg.billing_start = d['monthly_price'], d['due_day'], first_of_month(d['billing_start'])
+        info_changed, cfg.pay_info = cfg.pay_info.strip() != d['pay_info'].strip(), d['pay_info'].strip()
         cfg.save()
         n = recalc_current_month() if before[0] != d['monthly_price'] else 0
         audit.log(request, "To'lov sozlamalarini o'zgartirdi", label="Moliya sozlamalari", target_type='billing',
-                  details={'oylik narx': audit.change(before[0], d['monthly_price']), "to'lov muddati": audit.change(before[1], d['due_day'])})
+                  details={'oylik narx': audit.change(before[0], d['monthly_price']), "to'lov muddati": audit.change(before[1], d['due_day']),
+                           "to'lov yo'riqnomasi": "o'zgartirildi" if info_changed else "o'zgarmadi"})
         messages.success(request, "Saqlandi" + (f". Joriy oy uchun {n} ta hisob yangilandi (o'tgan oylar o'zgarmadi)." if n else ''))
         return redirect('panel:finance')
     return render(request, 'panel/finance_settings.html', {'nav': 'finance', 'form': form})

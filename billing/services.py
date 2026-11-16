@@ -162,7 +162,7 @@ def account(student, today=None):
         'debt': sum((r['debt'] for r in rows), ZERO), 'advance': remaining,
         'overdue': sum((r['debt'] for r in rows if r['overdue']), ZERO),
         'discounts': list(student.discounts.select_related('discount', 'assigned_by')),
-        'price': cfg.monthly_price,
+        'price': cfg.monthly_price, 'pay_info': cfg.pay_info.strip(),
     }
 
 

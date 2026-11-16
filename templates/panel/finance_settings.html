@@ -2,10 +2,11 @@
 {% block title %}To'lov sozlamalari{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> Sozlamalar{% endblock %}
 {% block content %}
-<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+<form method="post" class="card" style="max-width:620px">{% csrf_token %}
   {% include 'panel/_field.html' with f=form.monthly_price %}
   {% include 'panel/_field.html' with f=form.due_day %}
   {% include 'panel/_field.html' with f=form.billing_start %}
+  {% include 'panel/_field.html' with f=form.pay_info %}
   <div class="hint" style="margin-bottom:12px">Narx o'zgarsa, faqat joriy oy hisobi yangilanadi; o'tgan oylar o'zgarmaydi.</div>
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>

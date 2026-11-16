@@ -124,6 +124,12 @@
   .num { font:700 11px 'Space Mono',monospace; color:var(--faint); width:14px; flex-shrink:0; }
 
   /* to'lov */
+  .payinfo { padding:14px; } .payinfo .txt { white-space:pre-wrap; word-break:break-word; font-size:14.5px; line-height:1.6; font-weight:500; }
+  .payinfo .copy { margin-top:10px; padding:8px 14px; border-radius:10px; border:1.5px solid var(--line-strong); background:none; font-weight:700; font-size:13.5px; color:var(--accent-deep); }
+  .hwall { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:13px 14px; margin-bottom:12px; border-radius:16px; border:1.5px solid var(--line); background:var(--card); font-weight:700; font-size:15px; color:var(--ink); }
+  .hwall small { display:block; color:var(--dim); font-weight:500; font-size:12.5px; margin-top:1px; } .hwall .grow { flex:1; min-width:0; }
+  .hwall .ic { color:var(--dim); } .hwall .newdot { width:9px; height:9px; }
+  .hwi .subj { font-weight:800; font-size:15px; margin-bottom:6px; }
   .pay-hero { text-align:center; padding:20px 14px; }
   .disc { font-size:12.5px; color:var(--accent-deep); background:var(--tint); display:inline-block; padding:3px 9px; border-radius:8px; margin-top:6px; font-weight:600; }
   a.payrow { display:block; } a.payrow:active { background:var(--tint); } .payrow.void { opacity:.55; } .payrow.void .top span:first-child { text-decoration:line-through; }
@@ -181,6 +187,7 @@
     {% endif %}
   </div>
 
+  <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
   <h2 class="sec">Bugungi darslar <small>{{ today|date:"j F" }}</small></h2>
   {% if today_lessons %}
   <div class="list" id="todayList">
@@ -302,6 +309,7 @@
 <!-- ====================== JADVAL ====================== -->
 <section class="tabpane" id="tab-schedule" hidden>
   <h1 class="page">Dars jadvali</h1>
+  <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
   <div class="daychips" id="dayChips">
     {% for d in days %}<button data-day="{{ d.idx }}" class="{% if d.is_today %}today{% endif %}">{{ d.code }}<small>{{ d.name|slice:":3" }}</small></button>{% endfor %}
   </div>
@@ -344,6 +352,11 @@
     {% for d in bill.discounts %}<div style="font-weight:700">{{ d.discount.name }} <span class="due">−{{ d.discount.percent|floatformat:"-2" }}%</span></div>
     {% if d.note %}<div class="muted" style="font-size:12.5px">{{ d.note }}</div>{% endif %}{% endfor %}
   </div>
+  {% endif %}
+  {% if bill.pay_info %}
+  <h2 class="sec">Qanday to'lash mumkin</h2>
+  <div class="card payinfo"><div class="txt" id="payInfo">{{ bill.pay_info }}</div>
+    <button type="button" class="copy" id="payCopy">Nusxa olish</button></div>
   {% endif %}
   {% if bill.rows %}
   <h2 class="sec">Oylar bo'yicha</h2>
@@ -417,6 +430,44 @@
     ov.classList.add('show'); document.body.style.overflow = 'hidden';
     markRead(subject, items);
   }
+  // ---------- barcha vazifalar bir ro'yxatda: yaqin muddat tepada, o'tganlari pastda ----------
+  function allItems(){
+    var all = [];
+    Object.keys(HW).forEach(function(s){ HW[s].forEach(function(h){ all.push({s: s, h: h}); }); });
+    return all.sort(function(a, b){
+      var pa = a.h.days_left < 0, pb = b.h.days_left < 0;
+      if (pa !== pb) return pa ? 1 : -1;
+      return pa ? b.h.days_left - a.h.days_left : a.h.days_left - b.h.days_left;
+    });
+  }
+  function refreshAllBtn(){
+    var all = allItems(), open = all.filter(function(x){ return x.h.days_left >= 0; }).length,
+        unread = all.some(function(x){ return !x.h.read; });
+    document.querySelectorAll('[data-hwall]').forEach(function(b){
+      b.hidden = !all.length;
+      b.querySelector('[data-hwall-sub]').textContent = open ? open + ' ta topshirilishi kerak' : "Topshirilishi kerak bo'lgan vazifa yo'q";
+      b.querySelector('[data-hwall-dot]').hidden = !unread;
+    });
+  }
+  function openAll(){
+    var all = allItems(); if (!all.length) return;
+    document.getElementById('hwTitle').textContent = 'Barcha vazifalar';
+    body.innerHTML = all.map(function(x){ var h = x.h;
+      return '<div class="hwi' + (h.past ? ' past' : '') + '"><div class="subj">' + esc(x.s) + '</div><div class="top"><span class="due ' + dueClass(h) + '">' + esc(dueText(h)) + '</span>'
+        + '<span class="meta2">' + esc(h.assigned) + ' berildi' + (h.teacher ? ' · ' + esc(h.teacher) : '') + '</span></div><div class="txt">' + esc(h.text) + '</div></div>';
+    }).join('');
+    ov.classList.add('show'); document.body.style.overflow = 'hidden';
+    Object.keys(HW).forEach(function(s){ markRead(s, HW[s]); });
+  }
+  document.querySelectorAll('[data-hwall]').forEach(function(b){ b.onclick = openAll; });
+  refreshAllBtn();
+  var copyBtn = document.getElementById('payCopy');
+  if (copyBtn) copyBtn.onclick = function(){
+    var t = document.getElementById('payInfo').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){
+      copyBtn.textContent = 'Nusxa olindi ✓'; setTimeout(function(){ copyBtn.textContent = 'Nusxa olish'; }, 1800);
+    }).catch(function(){ var r = document.createRange(); r.selectNodeContents(document.getElementById('payInfo')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+  };
   function closeHw(){ ov.classList.remove('show'); document.body.style.overflow = ''; }
   document.getElementById('hwClose').onclick = closeHw;
   ov.addEventListener('click', function(e){ if (e.target === ov) closeHw(); });
@@ -429,6 +480,7 @@
     });
     var anyLeft = Object.keys(HW).some(function(k){ return HW[k].some(function(h){ return !h.read; }); });
     var badge = document.getElementById('hwBadge'); if (badge && !anyLeft) badge.remove();
+    refreshAllBtn();
     var m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
     fetch('/vazifa/oqildi/', {method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': m ? decodeURIComponent(m[1]) : ''}, body: JSON.stringify({ids: ids})}).catch(function(){});

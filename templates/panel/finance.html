@@ -10,6 +10,7 @@
 {% endblock %}
 {% block content %}
 {% if not cfg.monthly_price %}<div class="card" style="border-color:#E0A800">Oylik narx belgilanmagan — hisob yozilmaydi.{% if 'payments.settings' in panel_can %} <a href="{% url 'panel:finance_settings' %}"><b>Narxni belgilash →</b></a>{% endif %}</div>{% endif %}
+{% if cfg.pay_info_is_sample %}<div class="card" style="border-color:#E0A800">Ota-onalarga ko'rinadigan to'lov rekvizitlari hali <b>namuna</b> holatida.{% if 'payments.settings' in panel_can %} <a href="{% url 'panel:finance_settings' %}"><b>Haqiqiy rekvizitlarni kiritish →</b></a>{% endif %}</div>{% endif %}
 <div class="grid g4" style="margin-bottom:18px">
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Bugungi tushum</div><div class="v">{{ today_sum|money }}</div><div class="s">so'm</div></div>
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Shu oy tushumi</div><div class="v">{{ month_sum|money }}</div><div class="s">so'm</div></div>

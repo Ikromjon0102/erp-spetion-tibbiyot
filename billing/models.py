@@ -6,6 +6,16 @@ from django.db import models
 from django.utils import timezone
 
 
+# Namuna matn: haqiqiy rekvizitlar panel -> To'lovlar -> Sozlamalar'da kiritiladi. Raqamlar ataylab nol — bu hisobga pul o'tmaydi.
+PAY_INFO_SAMPLE = """NAMUNA — haqiqiy rekvizitlar bilan almashtiring
+Qabul qiluvchi: «Spetion» xususiy maktabi MChJ
+Hisob raqam: 0000 0000 0000 0000 0000
+Bank: «Namuna bank» ATB, MFO 00000
+STIR (INN): 000 000 000
+To'lov maqsadi: o'quvchining familiyasi, ismi va sinfi
+Naqd to'lov: maktab kassasi, Du–Sha 9:00–17:00"""
+
+
 class BillingSettings(models.Model):
     """Yagona (bitta) sozlama yozuvi: oylik narx, to'lov muddati va hisob boshlanadigan oy."""
     monthly_price = models.DecimalField('Oylik narx (so\'m)', max_digits=12, decimal_places=0, default=0)
@@ -13,6 +23,12 @@ class BillingSettings(models.Model):
                                                validators=[MinValueValidator(1), MaxValueValidator(28)])
     billing_start = models.DateField("Hisob boshlanadigan oy", null=True, blank=True,
                                      help_text="Shu oydan boshlab o'quvchilarga hisob yoziladi (oyning 1-sanasi)")
+    pay_info = models.TextField("To'lov yo'riqnomasi (rekvizitlar)", blank=True, default=PAY_INFO_SAMPLE,
+                                help_text="Ota-ona ilovasida «To'lov» bo'limida ko'rsatiladi. Bo'sh qoldirilsa ko'rinmaydi")
+
+    @property
+    def pay_info_is_sample(self):
+        return self.pay_info.strip() == PAY_INFO_SAMPLE.strip()
 
     class Meta:
         verbose_name = 'Moliya sozlamalari'

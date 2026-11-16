@@ -149,6 +149,19 @@ class ViewTests(TestCase):
         self.client.login(username='ota', password='x')                                    # ota-onada panel havolalari yo'q
         self.assertNotContains(self.client.get(r.url), '/panel/')
 
+    def test_pay_info_is_sample_by_default_editable_and_shown_to_parent(self):
+        self.login('dir')
+        self.assertContains(self.client.get('/panel/tolovlar/'), 'namuna')                 # ogohlantirish
+        self.client.post('/panel/tolovlar/sozlamalar/', {'monthly_price': 1000000, 'due_day': 10, 'billing_start': TODAY.replace(day=1).isoformat(),
+                                                        'pay_info': 'Hisob raqam: 2020 8000 1234'})
+        self.assertFalse(BillingSettings.get().pay_info_is_sample)
+        self.assertNotContains(self.client.get('/panel/tolovlar/'), 'namuna')
+        self.client.logout()
+        self.client.login(username='ota', password='x')
+        self.assertContains(self.client.get(f'/oquvchi/{self.s.pk}/'), 'Hisob raqam: 2020 8000 1234')
+        BillingSettings.objects.update(pay_info='')
+        self.assertNotContains(self.client.get(f'/oquvchi/{self.s.pk}/'), "Qanday to'lash mumkin")
+
     def test_debtors_list_shows_debt_and_pay_link_by_permission(self):
         paid_up = student('s2', 'Aliyev', self.g, self.other_parent)
         Payment.objects.create(student=paid_up, amount=summaries([paid_up.pk])[paid_up.pk]['debt'])
