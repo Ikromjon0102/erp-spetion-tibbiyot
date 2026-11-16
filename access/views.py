@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils import timezone
@@ -62,10 +63,15 @@ def hikvision_push(request, token):
     if not employee_no:  # heartbeat yoki shaxs aniqlanmagan hodisa
         return JsonResponse({'ok': True, 'ignored': True})
 
+    occurred_at = _parse_time(data.get('dateTime'))
+    cutoff = getattr(settings, 'ACCESS_IGNORE_EVENTS_BEFORE', None)
+    if cutoff and occurred_at < cutoff:   # qurilma xotirasidagi eski jurnalni qayta yuborishi mumkin — hisobga olmaymiz
+        return JsonResponse({'ok': True, 'ignored': 'old'})
+
     event, created = None, False
     try:
         event, created = AccessEvent.objects.get_or_create(
-            device=device, employee_no=employee_no, occurred_at=_parse_time(data.get('dateTime')),
+            device=device, employee_no=employee_no, occurred_at=occurred_at,
             defaults={
                 'student': Student.objects.filter(access_id=employee_no).first(),
                 'person_name': str(ev.get('name') or '')[:100],

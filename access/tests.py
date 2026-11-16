@@ -38,6 +38,13 @@ class HikvisionPushTests(TestCase):
         self.assertEqual((e.student, e.direction, e.sub_type), (self.student, 'in', 75))
         self.assertEqual(timezone.localtime(e.occurred_at).strftime('%H:%M'), '08:12')
 
+    def test_old_events_ignored_before_cutoff(self):
+        with self.settings(ACCESS_IGNORE_EVENTS_BEFORE=timezone.make_aware(__import__('datetime').datetime(2026, 11, 16))):
+            r = self.push(self.entry, payload(when='2026-08-30T11:41:13+00:00'))
+            self.assertEqual(r.json().get('ignored'), 'old')
+            self.push(self.entry, payload(when='2026-11-16T09:00:00+05:00'))
+        self.assertEqual(AccessEvent.objects.count(), 1)
+
     def test_multipart_event_log(self):
         self.push(self.exit, payload(when='2026-11-14T15:40:00+05:00'), multipart=True)
         self.assertEqual(AccessEvent.objects.get().direction, 'out')

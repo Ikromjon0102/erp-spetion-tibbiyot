@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import datetime
 import sys
 from pathlib import Path
 
@@ -137,6 +138,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'      # `collectstatic` shu yerga yig'adi,
 # Yuklangan rasmlar (yuz rasmlari) — ommaga ochiq emas, faqat ruxsatli ko'rinish orqali beriladi
 MEDIA_ROOT = BASE_DIR / 'media'
 FACE_SYNC_BACKGROUND = 'test' not in sys.argv   # rasm yuklanganda qurilmalarga fonda yuborish
+
+# Shu vaqtdan eski terminal voqealari hisobga olinmaydi (terminal xotirasidagi eski jurnal qayta yuborilganda). ISO format.
+_ignore_before = os.environ.get('ACCESS_IGNORE_EVENTS_BEFORE')
+ACCESS_IGNORE_EVENTS_BEFORE = datetime.fromisoformat(_ignore_before) if _ignore_before else None
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'login'
