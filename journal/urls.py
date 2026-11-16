@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/dars/<int:pk>/', views.api_lesson, name='api_lesson'),
     path('api/dars/<int:pk>/saqlash/', views.api_lesson_save, name='api_lesson_save'),
     path('api/baho/<int:pk>/', views.api_grade, name='api_grade'),
+    path('api/jurnal/<int:pk>/', views.api_journal, name='api_journal'),
     path('api/baho/<int:pk>/saqlash/', views.api_grade_save, name='api_grade_save'),
     path('api/baho/<int:pk>/ochirish/', views.api_grade_delete, name='api_grade_delete'),
     path('api/vazifa/<int:pk>/', views.api_hw, name='api_hw'),

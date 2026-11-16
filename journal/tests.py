@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, time
+from datetime import date, datetime, time
 from unittest import mock
 
 from django.core.cache import cache
@@ -123,6 +123,21 @@ class TeacherApiTests(TestCase):
         lesson = lesson or self.lesson
         return self.post(f'/ustoz/api/baho/{lesson.id}/saqlash/',
                          {'date': str(DAY.date()), 'student': student.id, 'score': score, **extra}, now=now).json()
+
+    def test_journal_lists_grades_by_date_with_average(self):
+        a, b = self.students[0], self.students[1]
+        Grade.objects.create(student=a, teaching=self.lesson.teaching, date=date(2026, 11, 2), score=5)
+        Grade.objects.create(student=a, teaching=self.lesson.teaching, date=date(2026, 11, 9), score=4, kind='test')
+        Grade.objects.create(student=b, teaching=self.lesson.teaching, date=date(2026, 11, 9), score=3)
+        r = self.client.get(f'/ustoz/api/jurnal/{self.lesson.id}/').json()
+        self.assertEqual([d['d'] for d in r['dates']], ['2026-11-02', '2026-11-09'])
+        rows = {s['id']: s for s in r['students']}
+        self.assertEqual((rows[a.id]['avg'], rows[a.id]['count']), (4.5, 2))
+        self.assertEqual(rows[a.id]['g']['2026-11-09'], [{'s': 4, 'k': 'test'}])
+        self.assertEqual(rows[b.id]['g'], {'2026-11-09': [{'s': 3, 'k': 'current'}]})
+        self.assertIsNone(rows[self.students[2].id]['avg'])
+        self.client.login(username='t2', password='x')                                   # boshqa ustoz ko'ra olmaydi
+        self.assertEqual(self.client.get(f'/ustoz/api/jurnal/{self.lesson.id}/').status_code, 404)
 
     def test_grade_save_links_to_lesson_and_shows_in_given(self):
         r = self.give(self.students[1], 5, kind='exam', comment="Zo'r")

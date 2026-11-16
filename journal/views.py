@@ -179,6 +179,30 @@ def api_grade(request, pk):
     })
 
 
+JOURNAL_DATES = 12
+
+
+@teacher_required_json
+def api_journal(request, pk):
+    """Baholar jurnali: shu sinf va fan bo'yicha oxirgi baho qo'yilgan kunlar ustunlarda, o'quvchilar qatorlarda. Faqat ko'rish."""
+    lesson = _own_lesson(request, pk)
+    grades = list(Grade.objects.filter(teaching=lesson.teaching).order_by('date', 'id').values('student_id', 'date', 'score', 'kind'))
+    dates = sorted({g['date'] for g in grades})[-JOURNAL_DATES:]
+    cells, totals = {}, {}
+    for g in grades:
+        t = totals.setdefault(g['student_id'], [0, 0])
+        t[0] += g['score']
+        t[1] += 1
+        if g['date'] in dates:
+            cells.setdefault(g['student_id'], {}).setdefault(g['date'].isoformat(), []).append({'s': g['score'], 'k': g['kind']})
+    students = []
+    for s in _group_students(lesson):
+        total, count = totals.get(s.id, (0, 0))
+        students.append({'id': s.id, 'name': _student_name(s), 'count': count, 'avg': round(total / count, 1) if count else None,
+                         'g': cells.get(s.id, {})})
+    return JsonResponse({'ok': True, 'dates': [{'d': d.isoformat(), 'label': d.strftime('%d.%m')} for d in dates], 'students': students})
+
+
 @require_POST
 @teacher_required_json
 def api_grade_delete(request, pk):
