@@ -52,6 +52,11 @@ class MoneyField(forms.IntegerField):
         return super().to_python(value)
 
 
+METHOD_TILES = [   # (qiymat, nom, izoh, ikonka) — to'lov formasidagi tanlov plitkalari
+    ('cash', 'Naqd', 'kassaga', 'p-coins'), ('terminal', "To'lov tizimi", 'Payme, Click…', 'p-phone'),
+    ('card', 'Plastik karta', 'terminal orqali', 'p-wallet'), ('transfer', "Bank o'tkazmasi", 'hisob raqamga', 'p-sheet')]
+
+
 class PaymentForm(forms.Form):
     amount = MoneyField(label="Summa (so'm)", min_value=1)
     method = forms.ChoiceField(label="To'lov usuli", choices=Payment.Method.choices)
@@ -143,7 +148,8 @@ def pay(request, pk):
     if monthly and monthly != bill['debt']:
         quick.append(('1 oylik', monthly))
     return render(request, 'panel/pay.html', {'nav': 'finance', 'student': student, 'bill': bill, 'form': form,
-                                              'quick': [(label, int(v)) for label, v in quick]})
+                                              'quick': [(label, int(v)) for label, v in quick],
+                                              'methods': METHOD_TILES, 'method': form['method'].value() or 'cash'})
 
 
 @require_POST

@@ -2,6 +2,22 @@
 {% load app_extras %}
 {% block title %}To'lov qabul qilish{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> To'lov qabul qilish{% endblock %}
+{% block head %}
+<style>
+  .methods { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+  .mth { margin:0 !important; cursor:pointer; }
+  .mth input { position:absolute; opacity:0; pointer-events:none; }
+  .mth .box { display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; padding:12px 6px; height:100%; border-radius:14px;
+    border:1.5px solid var(--line-strong); background:var(--input-bg); color:var(--ink); transition:border-color .15s, background .15s, box-shadow .15s; }
+  .mth .box .ic { width:22px; height:22px; color:var(--dim); margin-bottom:2px; }
+  .mth .box b { font-size:13.5px; line-height:1.2; } .mth .box small { font-size:11.5px; color:var(--dim); font-weight:500; line-height:1.2; }
+  .mth:hover .box { border-color:var(--accent); }
+  .mth input:checked + .box { border-color:var(--accent); background:var(--tint); box-shadow:0 0 0 3px rgba(var(--glow),.18); }
+  .mth input:checked + .box .ic, .mth input:checked + .box b { color:var(--accent-deep); }
+  .mth input:focus-visible + .box { outline:2px solid var(--accent); outline-offset:2px; }
+  @media (max-width:560px){ .methods { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+</style>
+{% endblock %}
 {% block content %}
 <div class="card" style="max-width:560px">
   <h2>{{ student.user.last_name }} {{ student.user.first_name }} <small>{{ student.group|default:"" }}</small></h2>
@@ -13,7 +29,12 @@
     {% if quick %}<div class="quick" style="display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 16px">
       {% for label, v in quick %}<button type="button" class="btn small" data-sum="{{ v }}">{{ label }} · {{ v|money }}</button>{% endfor %}
     </div>{% endif %}
-    {% include 'panel/_field.html' with f=form.method %}
+    <div class="field"><label id="methodLbl">To'lov usuli</label>
+      <div class="methods" role="radiogroup" aria-labelledby="methodLbl">
+        {% for value, name, note, icon in methods %}<label class="mth"><input type="radio" name="method" value="{{ value }}" {% if method == value %}checked{% endif %}>
+          <span class="box"><svg class="ic"><use href="#{{ icon }}"/></svg><b>{{ name }}</b><small>{{ note }}</small></span></label>{% endfor %}
+      </div>{{ form.method.errors }}
+    </div>
     {% include 'panel/_field.html' with f=form.paid_on %}
     {% include 'panel/_field.html' with f=form.note %}
     <div class="hint" style="margin-bottom:12px">Qisman to'lov mumkin. Qarzdan ortiqcha summa keyingi oylar hisobiga o'tadi.</div>
