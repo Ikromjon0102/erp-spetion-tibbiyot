@@ -1,1 +1,1 @@
-<div class="field {{ cls }}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% if f.help_text %}<div class="hint">{{ f.help_text }}</div>{% endif %}{{ f.errors }}</div>
+<div class="field {{ cls }}"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %}<span class="req" title="Majburiy maydon" aria-hidden="true">*</span>{% endif %}</label>{{ f }}{% if f.help_text %}<div class="hint">{{ f.help_text }}</div>{% endif %}{{ f.errors }}</div>

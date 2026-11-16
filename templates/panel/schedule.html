@@ -9,7 +9,20 @@
 </form>
 <div class="card" style="padding:6px 10px">
   <h2 style="padding:8px 8px 0;margin:0">{% if group %}{{ group.name }} sinfi{% elif teacher %}{{ teacher.last_name }} {{ teacher.first_name }}{% else %}Jadval{% endif %} <small class="muted">· haftasiga {{ total }} ta dars</small></h2>
-  <div class="tbl-wrap"><table class="tbl" style="min-width:760px">
+  <div class="sch-m">
+    {% if grid %}<div class="sch-days" id="schDays">{% for d, name in days %}<button type="button" data-d="{{ forloop.counter0 }}">{{ name|slice:":2" }}</button>{% endfor %}</div>
+    {% for d, name in days %}<div class="sch-day" data-d="{{ forloop.counter0 }}" hidden>
+      {% for row in grid %}{% for cell in row.days %}{% if forloop.counter0 == forloop.parentloop.parentloop.counter0 %}{% for les in cell %}
+      <{% if 'schedule.change' in panel_can %}a href="{% url 'panel:lesson_edit' les.pk %}"{% else %}div{% endif %} class="sch-row">
+        <div class="tm">{{ les.start|time:"H:i" }}<small>{{ les.end|time:"H:i" }}</small></div>
+        <div class="in"><b>{{ les.teaching.subject }}</b><small>{% if group %}{% if les.teaching.teacher %}{{ les.teaching.teacher.last_name }} {{ les.teaching.teacher.first_name }}{% else %}ustozsiz{% endif %}{% else %}{{ les.teaching.group }}{% endif %}{% if les.room %} · {{ les.room }}-xona{% endif %}</small></div>
+        <span class="pr">{{ row.period }}-soat</span>
+      </{% if 'schedule.change' in panel_can %}a{% else %}div{% endif %}>{% endfor %}{% endif %}{% endfor %}{% endfor %}
+      <div class="empty sch-empty" hidden>Bu kuni dars yo'q</div>
+    </div>{% endfor %}
+    {% else %}<div class="empty">Bu tanlov uchun dars yo'q</div>{% endif %}
+  </div>
+  <div class="tbl-wrap sch-d"><table class="tbl" style="min-width:760px">
     <thead><tr><th style="width:90px">Soat</th>{% for d, name in days %}<th>{{ name }}</th>{% endfor %}</tr></thead>
     <tbody>
     {% for row in grid %}<tr>
@@ -26,4 +39,23 @@
     </tbody>
   </table></div>
 </div>
+{% endblock %}
+{% block js %}
+<script>
+/* Telefonda dars jadvali: kun tanlanadi (data-live qidiruvdan keyin ham ishlashi uchun hodisa hujjatga bog'langan) */
+(function(){
+  function show(i){
+    document.querySelectorAll('#schDays button').forEach(function(b){ b.classList.toggle('on', b.dataset.d === String(i)); });
+    document.querySelectorAll('.sch-day').forEach(function(p){
+      p.hidden = p.dataset.d !== String(i);
+      var e = p.querySelector('.sch-empty'); if (e) e.hidden = !!p.querySelector('.sch-row');
+    });
+  }
+  function today(){ var d = (new Date().getDay() + 6) % 7; return d > 5 ? 0 : d; }
+  var cur = today(); show(cur);
+  document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('#schDays button'); if (b){ cur = +b.dataset.d; show(cur); } });
+  new MutationObserver(function(){ if (document.getElementById('schDays') && !document.querySelector('#schDays button.on')) show(cur); })
+    .observe(document.querySelector('.content'), {childList: true});
+})();
+</script>
 {% endblock %}

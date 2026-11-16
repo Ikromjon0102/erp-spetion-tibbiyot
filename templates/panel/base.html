@@ -183,6 +183,35 @@
     .mlinks .sep { height:1px; background:var(--line); margin:6px 0; }
     .mlinks .out { color:var(--bad); } .mlinks form { margin:0; }
   }
+  /* ---- majburiy maydon belgisi ---- */
+  .field label .req { color:var(--bad); margin-left:3px; }
+  /* ---- butun qator bosiladi ---- */
+  .tbl tbody tr.rowlink { cursor:pointer; }
+  /* ---- fayl tanlash ---- */
+  .filepick { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .filepick input[type=file] { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .filepick .fname { color:var(--dim); font-size:13.5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:240px; }
+  .filepick .fname.has { color:var(--ink); font-weight:600; }
+  .filepick img { width:44px; height:44px; object-fit:cover; border-radius:10px; border:1px solid var(--line); }
+  .filepick input[type=file]:focus-visible + .btn { outline:2px solid var(--accent); outline-offset:2px; }
+  /* ---- bosh sahifa kartalari ---- */
+  .dash-stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  @media (max-width:960px){ .dash-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
+  /* ---- tablar: davomi borligini ko'rsatish ---- */
+  .tabs { scrollbar-width:none; } .tabs::-webkit-scrollbar { display:none; }
+  .tabs.more { -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent); mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent); }
+  /* ---- dars jadvali: telefonda kun bo'yicha ro'yxat ---- */
+  .sch-m { display:none; }
+  @media (max-width:960px){
+    .sch-d { display:none; } .sch-m { display:block; padding:8px; }
+    .sch-days { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:12px; }
+    .sch-days button { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:9px 0; font-weight:800; font-size:13.5px; }
+    .sch-days button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .sch-row { display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:14px; background:var(--tint); margin-bottom:8px; color:inherit; }
+    .sch-row .tm { font:700 13px 'Space Mono',monospace; flex-shrink:0; width:52px; } .sch-row .tm small { display:block; font-weight:400; color:var(--dim); font-size:11px; }
+    .sch-row .in { flex:1; min-width:0; } .sch-row .in b { display:block; } .sch-row .in small { color:var(--dim); font-size:12.5px; }
+    .sch-row .pr { color:var(--dim); font:700 11px 'Space Mono',monospace; flex-shrink:0; }
+  }
 </style>
 {% include 'ui/_glass.html' %}
 {% block head %}{% endblock %}
@@ -391,6 +420,52 @@ document.querySelectorAll('form[data-live]').forEach(function(form){
   }
   window.__wireLive = wire; wire(form);
 });
+</script>
+<script>
+/* Kichik qulayliklar: fayl tanlash tugmasi, bosiladigan qatorlar, tablar davomi */
+(function(){
+  function enhanceFiles(root){
+    (root.querySelectorAll ? root.querySelectorAll('input[type=file]:not([data-fp])') : []).forEach(function(inp){
+      inp.setAttribute('data-fp', '');
+      var image = (inp.accept || '').indexOf('image') > -1;
+      var wrap = document.createElement('span'); wrap.className = 'filepick';
+      inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn';
+      btn.innerHTML = '<svg class="ic"><use href="#' + (image ? 'p-image' : 'p-upload') + '"/></svg>' + (image ? 'Rasm tanlash' : 'Fayl tanlash');
+      var name = document.createElement('span'); name.className = 'fname'; name.textContent = 'tanlanmagan';
+      var img = document.createElement('img'); img.alt = ''; img.hidden = true;
+      wrap.appendChild(btn); wrap.appendChild(img); wrap.appendChild(name);
+      btn.onclick = function(){ inp.click(); };
+      inp.addEventListener('change', function(){
+        var f = inp.files && inp.files[0];
+        name.textContent = f ? f.name : 'tanlanmagan'; name.classList.toggle('has', !!f);
+        if (f && image && /^image\//.test(f.type)){ img.src = URL.createObjectURL(f); img.hidden = false; } else { img.hidden = true; }
+      });
+    });
+  }
+  function markRows(root){
+    (root.querySelectorAll ? root.querySelectorAll('.tbl tbody tr:not(.rowlink)') : []).forEach(function(tr){ if (tr.querySelector('td a.name')) tr.classList.add('rowlink'); });
+  }
+  function tabsHint(){
+    document.querySelectorAll('.tabs').forEach(function(t){ t.classList.toggle('more', t.scrollWidth - t.clientWidth - t.scrollLeft > 8); });
+  }
+  function scan(root){ enhanceFiles(root); markRows(root); }
+  scan(document);
+  new MutationObserver(function(list){ list.forEach(function(m){ m.addedNodes.forEach(function(n){ if (n.nodeType === 1) scan(n.parentNode || n); }); }); })
+    .observe(document.body, {childList: true, subtree: true});
+  document.addEventListener('click', function(e){
+    if (e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.target.closest('a, button, input, select, textarea, label, form')) return;
+    if (String(getSelection())) return;                       // matn belgilanayotgan bo'lsa, o'tmaymiz
+    var tr = e.target.closest('tr.rowlink'); if (!tr) return;
+    var a = tr.querySelector('td a.name'); if (a) a.click();
+  });
+  document.querySelectorAll('.tabs').forEach(function(t){
+    t.addEventListener('scroll', tabsHint, {passive: true});
+    t.addEventListener('click', function(e){ var b = e.target.closest('button'); if (b && b.scrollIntoView) b.scrollIntoView({inline: 'center', block: 'nearest', behavior: 'smooth'}); });
+  });
+  window.addEventListener('resize', tabsHint); window.addEventListener('load', tabsHint); tabsHint();
+})();
 </script>
 {% include 'ui/_modal.html' %}
 {% block js %}{% endblock %}
