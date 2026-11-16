@@ -27,16 +27,16 @@
 </form>
 
 <div class="card" style="padding:6px 10px">
-  <div class="tbl-wrap"><table class="tbl stack">
+  <div class="tbl-wrap"><table class="tbl stack people">
     <thead><tr><th>O'quvchi</th><th>Sinf</th><th>Ota-ona</th>{% if show_state %}<th>Bugun</th>{% endif %}{% if show_debt %}<th>Qarz</th>{% endif %}</tr></thead>
     <tbody>
     {% for r in rows %}
       <tr>
-        <td><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
-        <td>{{ r.s.group|default:"—" }}</td>
-        <td>{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <span class="muted mono">{{ r.parent.phone }}</span>{% endif %}{% if r.extra_parents %} <span class="badge gray">+{{ r.extra_parents }}</span>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
-        {% if show_state %}<td>{% if r.state %}<span class="dot {{ r.state.0 }}"></span>{{ r.state.1 }}{% endif %}</td>{% endif %}
-        {% if show_debt %}<td>{% if r.debt %}<span class="badge bad">{{ r.debt|money }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>{% endif %}
+        <td class="c-name"><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
+        <td class="c-group">{{ r.s.group|default:"sinfsiz" }}</td>
+        <td class="c-parent">{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <span class="muted mono">{{ r.parent.phone }}</span>{% endif %}{% if r.extra_parents %} <span class="badge gray">+{{ r.extra_parents }}</span>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
+        {% if show_state %}<td class="c-state">{% if r.state %}<span class="dot {{ r.state.0 }}"></span>{{ r.state.1 }}{% endif %}</td>{% endif %}
+        {% if show_debt %}<td class="c-debt">{% if r.debt %}<span class="badge bad">{{ r.debt|money }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>{% endif %}
       </tr>
     {% empty %}
       <tr><td colspan="5"><div class="empty">Hech narsa topilmadi</div></td></tr>

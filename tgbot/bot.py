@@ -1,10 +1,12 @@
-"""Bot buyruqlari: bog'lash (kontakt yoki kod), /bugun, /baholar, /chiqish."""
+"""Bot buyruqlari: bog'lash (kontakt yoki kod), /bugun, /baholar, /parol (parolni tiklash), /chiqish."""
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.utils import timezone
 
 from access.models import AccessEvent
 from accounts.models import User
+from accounts.passwords import issue_temp_password
 from accounts.phone import to_digits
 from journal.models import Grade
 
@@ -13,7 +15,10 @@ from .services import app_url, esc, send
 
 CONTACT_KB = {'keyboard': [[{'text': '📱 Telefon raqamni yuborish', 'request_contact': True}]],
               'resize_keyboard': True, 'one_time_keyboard': True}
-MENU_KB = {'keyboard': [[{'text': '📍 Bugun'}, {'text': '📝 Baholar'}]], 'resize_keyboard': True}
+MENU_KB = {'keyboard': [[{'text': '📍 Bugun'}, {'text': '📝 Baholar'}], [{'text': '🔑 Parolni tiklash'}]], 'resize_keyboard': True}
+RESET_YES = '✅ Ha, yangi parol'
+RESET_KB = {'keyboard': [[{'text': RESET_YES}], [{'text': 'Bekor qilish'}]], 'resize_keyboard': True, 'one_time_keyboard': True}
+RESET_COOLDOWN = 10 * 60      # soniya: bir hisobga ketma-ket parol so'rab bo'lmaydi
 
 WELCOME = ("Assalomu alaykum! Bu — maktab boti. Farzandingizning maktabga kelgani-ketgani, baholari, vazifalari va "
            "e'lonlar shu yerga keladi.\n\nBoshlash uchun maktabda ro'yxatdan o'tgan telefon raqamingizni yuboring "
@@ -79,10 +84,45 @@ def handle(update):
         # Mini App faqat inline tugma yoki menyu tugmasi orqali ochilganda initData oladi (klaviatura tugmasida bo'sh bo'ladi)
         return send(chat_id, 'Ilovani ochish uchun tugmani bosing 👇',
                     reply_markup={'inline_keyboard': [[{'text': '📱 Ilovani ochish', 'web_app': {'url': app_url()}}]]})
+    if low in ('/parol', '🔑 parolni tiklash'):
+        if not _can_reset(linked.user):
+            return send(chat_id, "Bu hisobning parolini bot orqali tiklab bo'lmaydi. Maktab ma'muriyatiga murojaat qiling.",
+                        reply_markup=MENU_KB)
+        return send(chat_id, "Yangi bir martalik parol berilsinmi?\n\nEski parolingiz ishlamay qoladi, saytga birinchi kirishda "
+                             "yangi parol o'rnatasiz.", reply_markup=RESET_KB)
+    if low == RESET_YES.lower():
+        return reset_password(chat_id, linked.user)
+    if low == 'bekor qilish':
+        return send(chat_id, 'Bekor qilindi. Parolingiz o\'zgarmadi.', reply_markup=MENU_KB)
     if low == '/chiqish':
         linked.delete()
         return send(chat_id, "Bog'lanish o'chirildi. Qayta ulash uchun /start", reply_markup={'remove_keyboard': True})
-    send(chat_id, 'Buyruqlar: /bugun — bugungi holat, /baholar — oxirgi baholar, /chiqish — uzish', reply_markup=MENU_KB)
+    send(chat_id, 'Buyruqlar: /bugun — bugungi holat, /baholar — oxirgi baholar, /parol — parolni tiklash, /chiqish — uzish',
+         reply_markup=MENU_KB)
+
+
+def _can_reset(user):
+    """Bot orqali faqat oddiy ota-ona hisobi parolini tiklash mumkin (ustoz, xodim va admin — ma'muriyat orqali)."""
+    from panel.models import StaffProfile
+    return (user.is_active and user.role == User.Role.PARENT and not user.is_superuser and not user.is_staff
+            and not StaffProfile.objects.filter(user=user).exists())
+
+
+def reset_password(chat_id, user):
+    from panel.models import AuditLog
+    if not _can_reset(user):
+        return send(chat_id, "Bu hisobning parolini bot orqali tiklab bo'lmaydi. Maktab ma'muriyatiga murojaat qiling.",
+                    reply_markup=MENU_KB)
+    key = f'tg-reset:{user.pk}'
+    if not cache.add(key, 1, RESET_COOLDOWN):
+        return send(chat_id, "Parol yaqinda berilgan. Birozdan keyin (10 daqiqa) qayta urinib ko'ring.", reply_markup=MENU_KB)
+    password = issue_temp_password(user)
+    AuditLog.objects.create(actor=user, actor_name=user.get_full_name() or user.username, verb='Parolni Telegram orqali tikladi',
+                            target_type='user', target_id=user.pk, target_label=(user.get_full_name() or user.username)[:200])
+    send(chat_id, f"🔑 Bir martalik parol: <code>{esc(password)}</code>\n"
+                  f"Login: <code>{esc(user.phone or user.username)}</code>\n\n"
+                  "Saytga shu parol bilan kiring — darhol o'zingizning yangi parolingizni o'rnatasiz. "
+                  "Bu xabarni kirgach o'chirib tashlang.", reply_markup=MENU_KB)
 
 
 def _hm(e):

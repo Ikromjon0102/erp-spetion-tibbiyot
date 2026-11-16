@@ -49,6 +49,29 @@ class BotTests(TestCase):
         self.assertEqual(TelegramLink.objects.get(chat_id=5).user, self.parent)
         self.assertIn('Aliev', self.texts()[-1])
 
+    def test_password_reset_via_bot_for_parent_only(self):
+        from django.core.cache import cache
+        cache.clear()
+        TelegramLink.objects.create(user=self.parent, chat_id=5)
+        self.post(self.msg(text='🔑 Parolni tiklash'))                       # avval so'raydi, parol o'zgarmaydi
+        self.parent.refresh_from_db()
+        self.assertTrue(self.parent.check_password('x'))
+        self.post(self.msg(text='✅ Ha, yangi parol'))
+        self.parent.refresh_from_db()
+        self.assertFalse(self.parent.check_password('x'))
+        self.assertTrue(self.parent.must_change_password)
+        password = self.texts()[-1].split('<code>')[1].split('</code>')[0]
+        self.assertTrue(self.parent.check_password(password))
+        self.post(self.msg(text='✅ Ha, yangi parol'))                       # ketma-ket so'rab bo'lmaydi
+        self.parent.refresh_from_db()
+        self.assertTrue(self.parent.check_password(password))
+        teacher = User.objects.create_user('t', password='x', role='teacher', phone='+998901234567')
+        self.st.parents.add(teacher)
+        TelegramLink.objects.create(user=teacher, chat_id=6)
+        self.post({'message': {'chat': {'id': 6}, 'from': {'id': 6}, 'text': '✅ Ha, yangi parol'}})
+        teacher.refresh_from_db()
+        self.assertTrue(teacher.check_password('x'))                         # ustoz paroli bot orqali tiklanmaydi
+
     def test_foreign_contact_refused(self):
         self.post(self.msg(contact={'phone_number': '998911112233', 'user_id': 99}))
         self.assertFalse(TelegramLink.objects.exists())

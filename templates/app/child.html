@@ -124,6 +124,7 @@
   .num { font:700 11px 'Space Mono',monospace; color:var(--faint); width:14px; flex-shrink:0; }
 
   /* to'lov */
+  .mon-sep { font:700 11px 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); padding:12px 0 4px; }
   .payinfo { padding:14px; } .payinfo .txt { white-space:pre-wrap; word-break:break-word; font-size:14.5px; line-height:1.6; font-weight:500; }
   .payinfo .copy { margin-top:10px; padding:8px 14px; border-radius:10px; border:1.5px solid var(--line-strong); background:none; font-weight:700; font-size:13.5px; color:var(--accent-deep); }
   .hwall { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:13px 14px; margin-bottom:12px; border-radius:16px; border:1.5px solid var(--line); background:var(--card); font-weight:700; font-size:15px; color:var(--ink); }
@@ -266,13 +267,13 @@
   {% if access_days %}
   <div class="card" style="padding:4px 14px">
     {% for d in access_days %}
+    {% ifchanged d.date.month %}<div class="mon-sep">{{ d.date|date:"F Y" }}</div>{% endifchanged %}
     <div class="day-row">
       <div class="wd"><b>{{ d.date|wd }}</b><span>{{ d.date|date:"d" }}</span></div>
       <div class="io">
         <div class="in"><small>Keldi</small><b>{{ d.arrived|time:"H:i"|default:"—" }}</b></div>
         <div><small>Ketdi</small><b>{{ d.left|time:"H:i"|default:"—" }}</b></div>
       </div>
-      <small class="muted">{{ d.date|date:"F" }}</small>
     </div>
     {% endfor %}
   </div>
