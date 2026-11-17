@@ -149,6 +149,10 @@
   .scores button { padding:15px 0; border-radius:13px; border:0; color:#fff; font-weight:800; font-size:22px; }
   .scores button:active { transform:scale(.94); }
   .scores button.sel { outline:3px solid var(--ink); outline-offset:2px; }
+  .scores button:disabled { opacity:.25; }
+  .stu.away .stu-main { color:var(--dim); }
+  .stu.away .stu-main:disabled { cursor:default; }
+  .stu.away .hint { margin:0; padding:0 12px 10px; }
 
   .tabbar .badge { position:absolute; top:10px; left:calc(50% + 8px); width:9px; height:9px; border-radius:50%; background:var(--bad); border:2px solid var(--card); }
   .tabbar button { position:relative; }
@@ -221,6 +225,7 @@ const ERR = {
   time: "Davomatni faqat dars kuni, dars boshlangandan keyin belgilash mumkin",
   grade_time: "Baho faqat dars kuni, dars boshlangandan keyin qo'yiladi",
   bad_score: "Baho 1 dan 5 gacha bo'lishi kerak",
+  absent: "Darsda yo'q o'quvchiga baho qo'yib bo'lmaydi",
   bad_rows: "Ma'lumot noto'g'ri",
   bad_text: "Vazifa matnini yozing (2000 belgigacha)",
   bad_date: "Topshirish sanasini kiriting",
@@ -431,7 +436,7 @@ function renderAll(){ renderToday(); renderWeek(); renderClasses(); if (tab === 
 let sh = null;
 function openSheet(l, date, kind){
   if (!l || String(l.teacherId) !== meId) return;
-  sh = {l, date, kind, stage: 'loading', students: [], m: [], editable: false, saved: false, given: {}, gkind: 'current', open: null,
+  sh = {l, date, kind, stage: 'loading', students: [], m: [], editable: false, saved: false, given: {}, away: {}, busy: false, gkind: 'current', open: null,
         hw: {items: [], text: '', due: '', editId: null, confirmId: null}};
   $('shMeta').textContent = `${date.slice(8)}.${date.slice(5, 7)} · ${l.period}-dars · ${l.start}–${l.end}`;
   $('shTitle').textContent = l['class']; $('shSub').textContent = l.subject;
@@ -454,7 +459,11 @@ async function loadSheet(){
     else {
       c.students = r.students; c.editable = r.editable;
       if (c.kind === 'att'){ c.m = r.students.map(s => s.s); c.saved = r.saved; }
-      else { c.given = r.given || {}; c.open = c.editable && r.students.length ? r.students[0].id : null; }
+      else {
+        c.given = r.given || {}; c.away = r.away || {};
+        const first = r.students.find(s => !c.away[s.id]);      // darsda yo'q o'quvchi o'tkazib yuboriladi
+        c.open = c.editable && first ? first.id : null;
+      }
     }
     c.stage = 'ready';
   } catch(e) {
@@ -536,18 +545,21 @@ async function saveAtt(){
 }
 
 // --- baho: o'quvchini bosing -> baho tugmasini bosing (saqlanadi). Keyingi o'quvchi avtomatik ochiladi.
+// O'sha bahoni qayta bosish — bekor qiladi. Darsda yo'q (kelmadi / sababli) o'quvchiga baho qo'yilmaydi.
 const KINDS = [['current', 'Joriy'], ['test', 'Nazorat'], ['exam', 'Imtihon']];
 const gcls = n => n >= 5 ? 'g5' : n === 4 ? 'g4' : n === 3 ? 'g3' : n === 2 ? 'g2' : 'g1';
 function renderGrade(c, body, bar, noStudents){
   const note = c.editable ? '' : `<div class="note">${ERR.grade_time}.</div>`;
   const kinds = c.editable ? `<div class="kindseg">${KINDS.map(([k, t]) => `<button data-kind="${k}" class="${c.gkind === k ? 'on' : ''}">${t}</button>`).join('')}</div>` : '';
   const rows = c.students.map((s, i) => {
-    const g = c.given[s.id], open = c.open === s.id && c.editable;
-    const chips = g ? `<span class="gc ${gcls(g.score)}">${g.score}</span>` : '';
-    const scores = open ? `<div class="scores">${[5, 4, 3, 2, 1].map(n => `<button class="${gcls(n)}${g && g.score === n ? ' sel' : ''}" data-sid="${s.id}" data-n="${n}">${n}</button>`).join('')}</div>` : '';
-    return `<div class="stu ${open ? 'open' : ''}" data-row="${s.id}"><button class="stu-main" data-open="${s.id}"><span class="n">${pad2(i + 1)}</span><span class="nm">${esc(s.name)}</span>${chips}</button>${scores}</div>`;
+    // aw — darsda yo'q: baho qo'yilmaydi; oldin qo'yilgan bahosi bo'lsa, faqat bekor qilish mumkin
+    const g = c.given[s.id], aw = ST[c.away[s.id]], open = c.open === s.id && c.editable && (!aw || !!g);
+    const chips = (g ? `<span class="gc ${gcls(g.score)}">${g.score}</span>` : '') + (aw ? `<span class="pill ${aw[1]}">${aw[0]}</span>` : '');
+    const scores = open ? `<div class="scores">${[5, 4, 3, 2, 1].map(n => `<button class="${gcls(n)}${g && g.score === n ? ' sel' : ''}" data-sid="${s.id}" data-n="${n}"${aw && g.score !== n ? ' disabled' : ''}>${n}</button>`).join('')}</div>`
+      + (aw ? `<div class="hint">O'quvchi darsda yo'q. Bahoni bekor qilish uchun ${g.score} ni bosing.</div>` : '') : '';
+    return `<div class="stu ${open ? 'open' : ''}${aw ? ' away' : ''}" data-row="${s.id}"><button class="stu-main" data-open="${s.id}"${aw && !g && c.editable ? ' disabled' : ''}><span class="n">${pad2(i + 1)}</span><span class="nm">${esc(s.name)}</span>${chips}</button>${scores}</div>`;
   }).join('');
-  const hint = c.editable && c.students.length ? '<div class="hint" style="margin:-2px 2px 10px">Bir darsga bitta baho: qayta bossangiz, baho almashadi.</div>' : '';
+  const hint = c.editable && c.students.length ? `<div class="hint" style="margin:-2px 2px 10px">Bir darsga bitta baho: boshqa bahoni bossangiz almashadi, o'sha bahoni qayta bossangiz bekor bo'ladi.</div>` : '';
   body.innerHTML = note + noStudents + kinds + hint + rows;
   bar.innerHTML = `<button class="btn big${c.editable ? '' : ' ghost'}" id="shDone">${c.editable ? 'Tayyor' : 'Yopish'}</button>`; $('shDone').onclick = closeSheet;
   body.onclick = e => {
@@ -557,19 +569,22 @@ function renderGrade(c, body, bar, noStudents){
   };
 }
 function advanceGrade(c, sid){
-  const i = c.students.findIndex(x => x.id === sid), nxt = c.students[i + 1];
-  c.open = nxt ? nxt.id : null;                         // keyingi o'quvchi avtomatik ochiladi
+  const i = c.students.findIndex(x => x.id === sid), nxt = c.students.slice(i + 1).find(x => !c.away[x.id]);
+  c.open = nxt ? nxt.id : null;                         // keyingi (darsda bor) o'quvchi avtomatik ochiladi
   renderSheet();
   const el = $('shBody').querySelector('.stu.open'); if (el) el.scrollIntoView({block: 'center', behavior: 'smooth'});
 }
 async function giveGrade(sid, score){
   const c = sh; vib();
+  if (c.busy) return;                                   // oldingi bosish hali saqlanmoqda (ikki marta tez bosilganda)
   const cur = c.given[sid];
-  if (cur && cur.score === score){ advanceGrade(c, sid); return; }   // o'sha baho: o'zgarish yo'q
+  if (cur && cur.score === score) return removeGrade(c, sid, cur);   // o'sha baho qayta bosildi: bekor qilamiz
+  if (c.away[sid]){ toast(ERR.absent); return; }
+  c.busy = true;
   try {
     const r = await api(`/ustoz/api/baho/${c.l.id}/saqlash/`, {date: c.date, student: sid, score, kind: c.gkind});
     if (sh !== c) return;
-    if (!r.ok){ toast(errText(r.err, 'grade')); return; }
+    if (!r.ok){ toast(errText(r.err, 'grade')); if (r.err === 'absent') loadSheet(); return; }
     c.given[sid] = {id: r.grade.id, score};
     advanceGrade(c, sid);
     const name = c.students.find(x => x.id === sid).name.split(' ')[0];
@@ -578,7 +593,21 @@ async function giveGrade(sid, score){
   } catch(e) {
     if (e instanceof AuthError) return;
     toast('Saqlanmadi. Internetni tekshiring');
-  }
+  } finally { c.busy = false; }
+}
+async function removeGrade(c, sid, cur){
+  c.busy = true;
+  try {
+    const r = await api(`/ustoz/api/baho/${c.l.id}/ochirish/`, {id: cur.id, restore: null});
+    if (sh !== c) return;
+    if (!r.ok){ toast(r.err === 'time' ? errText('time', 'grade') : "Bu bahoni bekor qilib bo'lmadi"); return; }
+    delete c.given[sid];
+    if (c.away[sid]) c.open = null;                     // darsda yo'q o'quvchi: qayta baho qo'yib bo'lmaydi
+    renderSheet();
+    toast(`${c.students.find(x => x.id === sid).name.split(' ')[0]}: ${cur.score} bekor qilindi`);
+  } catch(e) {
+    if (!(e instanceof AuthError)) toast("Bekor qilib bo'lmadi. Internetni tekshiring");
+  } finally { c.busy = false; }
 }
 async function undoGrade(c, sid, gid, restore){
   try {

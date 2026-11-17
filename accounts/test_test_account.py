@@ -71,7 +71,7 @@ class TestAccountTests(TestCase):
 
         for day in (old_day, future, timezone.localdate().isoformat()):
             r = self.client.post(f'/ustoz/api/dars/{lesson.id}/saqlash/',
-                                 json.dumps({'date': day, 'rows': [{'id': kid.id, 's': 'absent'}]}), content_type='application/json')
+                                 json.dumps({'date': day, 'rows': [{'id': kid.id, 's': 'late'}]}), content_type='application/json')   # kelmaganga baho qo'yilmaydi
             self.assertTrue(r.json()['ok'], day)
             self.assertTrue(self.client.get(f'/ustoz/api/dars/{lesson.id}/?date={day}').json()['editable'])
             g = self.client.post(f'/ustoz/api/baho/{lesson.id}/saqlash/',

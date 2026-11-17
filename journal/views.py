@@ -164,10 +164,16 @@ def _grade_json(g):
             'date': g.date.isoformat(), 'comment': g.comment}
 
 
+# Darsda yo'q o'quvchi (kelmadi yoki sababli) — unga baho qo'yilmaydi. Kechikkan o'quvchi darsda hisoblanadi.
+NOT_IN_CLASS = (Attendance.Status.ABSENT, Attendance.Status.EXCUSED)
+
+
 @teacher_required_json
 def api_grade(request, pk):
     lesson = _own_lesson(request, pk)
     day = _parse_date(request.GET.get('date'))
+    away = dict(Attendance.objects.filter(lesson=lesson, date=day, status__in=NOT_IN_CLASS)
+                .values_list('student_id', 'status'))
     # shu dars soatida qo'yilgan baholar: o'quvchi -> {id, score} (bir darsda bitta baho)
     given = {g.student_id: {'id': g.id, 'score': g.score}
              for g in Grade.objects.filter(lesson=lesson, date=day)}
@@ -175,6 +181,7 @@ def api_grade(request, pk):
         'ok': True,
         'students': [{'id': s.id, 'name': _student_name(s)} for s in _group_students(lesson)],
         'given': given,
+        'away': away,          # darsda yo'q o'quvchilar: o'quvchi -> holat (ularga baho qo'yib bo'lmaydi)
         'editable': _editable(lesson, day, request.teacher),  # davomat bilan bir xil qoida
     })
 
@@ -246,6 +253,8 @@ def api_grade_save(request, pk):
     if not _editable(lesson, day, request.teacher):   # davomat bilan bir xil: faqat dars kuni va dars boshlangach
         return JsonResponse({'ok': False, 'err': 'time'})
     student = get_object_or_404(lesson.teaching.group.students.select_related('user'), pk=student_id)
+    if Attendance.objects.filter(student=student, lesson=lesson, date=day, status__in=NOT_IN_CLASS).exists():
+        return JsonResponse({'ok': False, 'err': 'absent'})   # darsda yo'q o'quvchiga baho qo'yilmaydi
     kind = body.get('kind')
     kind = kind if kind in Grade.Kind.values else Grade.Kind.CURRENT
     with transaction.atomic():

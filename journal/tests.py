@@ -217,6 +217,33 @@ class TeacherApiTests(TestCase):
         self.assertEqual(self.post(self.grade_url('saqlash/'), {**base, 'student': outsider.id}).status_code, 404)
         self.assertEqual(Grade.objects.count(), 0)
 
+    # --- darsda yo'q o'quvchiga baho qo'yilmaydi
+    def test_absent_or_excused_student_cannot_be_graded(self):
+        s0, s1, s2 = self.students
+        self.save_att(at(9), [{'id': s0.id, 's': 'absent'}, {'id': s1.id, 's': 'excused'}, {'id': s2.id, 's': 'late'}])
+        self.assertEqual(self.give(s0, 5), {'ok': False, 'err': 'absent'})
+        self.assertEqual(self.give(s1, 4), {'ok': False, 'err': 'absent'})
+        self.assertTrue(self.give(s2, 3)['ok'])                                    # kechikkan o'quvchi darsda
+        self.assertEqual(list(Grade.objects.values_list('student_id', flat=True)), [s2.id])
+        away = self.get(self.grade_url() + f'?date={DAY.date()}').json()['away']
+        self.assertEqual(away, {str(s0.id): 'absent', str(s1.id): 'excused'})
+
+    def test_absence_in_another_lesson_or_day_does_not_block_grade(self):
+        lesson2 = Lesson.objects.create(teaching=self.lesson.teaching, weekday=0, period=2, start=time(9, 20), end=time(10, 5))
+        s0 = self.students[0]
+        Attendance.objects.create(student=s0, lesson=lesson2, date=DAY.date(), status='absent')
+        Attendance.objects.create(student=s0, lesson=self.lesson, date=DAY.date().replace(day=9), status='absent')
+        self.assertTrue(self.give(s0, 5)['ok'])
+        self.assertEqual(self.get(self.grade_url() + f'?date={DAY.date()}').json()['away'], {})
+
+    def test_grade_given_before_marking_absent_can_still_be_removed(self):
+        s0 = self.students[0]
+        r = self.give(s0, 4)
+        self.save_att(at(9, 5), [{'id': s0.id, 's': 'absent'}])
+        self.assertEqual(self.give(s0, 5, now=at(9, 6)), {'ok': False, 'err': 'absent'})   # almashtirib bo'lmaydi
+        self.assertTrue(self.post(self.grade_url('ochirish/'), {'id': r['grade']['id'], 'restore': None}, now=at(9, 7)).json()['ok'])
+        self.assertFalse(Grade.objects.exists())
+
     # --- baho ham davomat kabi faqat dars kuni va dars boshlangach
     def test_grades_follow_the_same_time_rule_as_attendance(self):
         row = {'date': str(DAY.date()), 'student': self.students[0].id, 'score': 5}
