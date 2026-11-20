@@ -66,11 +66,8 @@ class AssignForm(forms.Form):
 
 def _initial_password(user):
     """Boshlang'ich parol — telefonning oxirgi 4 raqami; birinchi kirishda almashtirish shart."""
-    password = user.phone_digits[-4:]
-    user.set_password(password)
-    user.must_change_password = True
-    user.save()
-    return password
+    from accounts.passwords import initial_password
+    return initial_password(user)
 
 
 def _secret(request, text):

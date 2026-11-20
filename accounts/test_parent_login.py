@@ -111,7 +111,7 @@ class ParentPasswordCommandTests(TestCase):
         self.assertEqual({r['Login (telefon)'] for r in rows}, {'+998 90 111-22-33', '+998 90 444-55-66'})
         for r in rows:
             user = User.objects.get(phone=r['Login (telefon)'])
-            self.assertTrue(user.check_password(r['Bir martalik parol']))
+            self.assertTrue(user.check_password(r["Boshlang'ich parol (oxirgi 4 raqam)"]))
             self.assertTrue(user.must_change_password)
         self.has.refresh_from_db()
         self.assertTrue(self.has.check_password('mening-parolim'))    # paroli borga tegilmadi
@@ -119,14 +119,14 @@ class ParentPasswordCommandTests(TestCase):
 
     def test_second_run_does_nothing_and_phone_reissues_one(self):
         self.run_cmd()
-        first = {r['Login (telefon)']: r['Bir martalik parol'] for r in self.rows()}
+        first = {r['Login (telefon)']: r["Boshlang'ich parol (oxirgi 4 raqam)"] for r in self.rows()}
         self.run_cmd()  # hammasida parol bor: fayl qayta yozilmaydi
-        self.assertEqual({r['Login (telefon)']: r['Bir martalik parol'] for r in self.rows()}, first)
+        self.assertEqual({r['Login (telefon)']: r["Boshlang'ich parol (oxirgi 4 raqam)"] for r in self.rows()}, first)
 
         self.run_cmd('--phone', '90-111-22-33')
         (row,) = self.rows()
         self.assertEqual(row['Login (telefon)'], '+998 90 111-22-33')
-        self.assertNotEqual(row['Bir martalik parol'], first['+998 90 111-22-33'])
+        self.assertEqual(row["Boshlang'ich parol (oxirgi 4 raqam)"], first['+998 90 111-22-33'])   # qayta berilsa ham oxirgi 4 raqam
         self.p2.refresh_from_db()
         self.assertTrue(self.p2.check_password(first['+998 90 444-55-66']))  # boshqasi o'zgarmadi
 

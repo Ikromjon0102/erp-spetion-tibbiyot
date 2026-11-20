@@ -7,7 +7,7 @@
   {% include 'panel/_field.html' with f=form.first_name %}
   {% include 'panel/_field.html' with f=form.phone %}
   {% if link %}<input type="hidden" name="oquvchi" value="{{ link.pk }}"><p>Farzandi: <b>{{ link.user.last_name }} {{ link.user.first_name }}</b> {% if link.group %}<span class="muted">({{ link.group }})</span>{% endif %}</p>{% endif %}
-  {% if not p %}<div class="hint" style="margin-bottom:12px">Bir martalik parol yaratiladi va bir marta ko'rsatiladi; ota-ona birinchi kirishda yangisini qo'yadi. Farzandni keyin ota-ona kartasidan biriktirasiz.</div>{% endif %}
+  {% if not p %}<div class="hint" style="margin-bottom:12px">Boshlang'ich parol — telefonning oxirgi 4 raqami; ota-ona birinchi kirishda yangisini qo'yadi. Farzandni keyin ota-ona kartasidan biriktirasiz.</div>{% endif %}
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% if p %}{% url 'panel:parent' p.pk %}{% else %}{% url 'panel:parents' %}{% endif %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

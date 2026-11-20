@@ -20,7 +20,7 @@ from access.sync import sync_in_background
 from access.services import day_summaries, is_break_time
 from academics.models import Group
 from accounts.models import Student, User
-from accounts.passwords import issue_temp_password
+from accounts.passwords import initial_password
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username, group_name_from_filename, import_students
 from journal.models import Attendance
@@ -217,7 +217,7 @@ def student_add(request):
             parent, created = _attach_parent(request, student, d['parent_name'].strip(), d['parent_phone'])
             who = parent.get_full_name() or parent.username
             messages.success(request, f"{user.get_full_name()} qo'shildi, ota-onasi biriktirildi: {who}"
-                             + (" (yangi hisob; kirish uchun \"Ota-onalar\" yorlig'ida bir martalik parol bering)." if created else " (mavjud hisob)."))
+                             + (" (yangi hisob; kirish uchun \"Ota-onalar\" yorlig'ida parolni tiklang)." if created else " (mavjud hisob)."))
         else:
             messages.success(request, f"{user.get_full_name()} qo'shildi. Endi ota-onasini biriktiring.")
         if upload:
@@ -256,7 +256,7 @@ def parent_add(request, pk):
         messages.error(request, ' '.join(e for errs in form.errors.values() for e in errs))
         return _back(student)
     user, created = _attach_parent(request, student, form.cleaned_data['name'], form.cleaned_data['phone'])
-    messages.success(request, f"{user.get_full_name() or user.username} biriktirildi" + (" (yangi hisob; kirish uchun bir martalik parol bering)." if created else '.'))
+    messages.success(request, f"{user.get_full_name() or user.username} biriktirildi" + (" (yangi hisob; kirish uchun parolni tiklang)." if created else '.'))
     return _back(student)
 
 
@@ -274,17 +274,17 @@ def parent_remove(request, pk, parent_id):
 @panel_required('students.change')
 @require_POST
 def parent_password(request, pk, parent_id):
-    """Ota-onaga bir martalik parol (login — telefon raqami). Parol faqat shu yerda bir marta ko'rsatiladi."""
+    """Ota-ona parolini boshlang'ich holatga (telefonning oxirgi 4 raqami) qaytaradi; login — telefon raqami."""
     student = get_object_or_404(Student, pk=pk)
     parent = get_object_or_404(student.parents, pk=parent_id)
     if parent.role != User.Role.PARENT or StaffProfile.objects.filter(user=parent).exists():
         messages.error(request, "Bu hisob ustoz yoki xodimga tegishli, uning parolini bu yerdan o'zgartirib bo'lmaydi.")
         return _back(student)
-    password = issue_temp_password(parent)
-    audit.log(request, 'Bir martalik parol berdi', parent, label=parent.get_full_name() or parent.username, target_type='user')
+    password = initial_password(parent)
+    audit.log(request, "Parolni boshlang'ich holatga qaytardi", parent, label=parent.get_full_name() or parent.username, target_type='user')
     messages.add_message(request, messages.SUCCESS,
-                         f"{parent.get_full_name() or parent.username} — login: {parent.phone or parent.username} · bir martalik parol: {password}  "
-                         "(faqat hozir ko'rinadi, ota-onaga yetkazing)", extra_tags='secret')
+                         f"{parent.get_full_name() or parent.username} — login: {parent.phone or parent.username} · boshlang'ich parol: {password} "
+                         "(telefonning oxirgi 4 raqami; birinchi kirishda almashtiradi)", extra_tags='secret')
     return _back(student)
 
 

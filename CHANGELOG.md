@@ -14,6 +14,9 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **Hujjatlar (`docs/`):** `runbook.md` (server, joylash, zaxira, cron, bot), `terminallar.md` (terminallar, Face ID, rasm yuborish), `kirish-chiqish-qoidalari.md` (holat va xabar qoidalari, qarorlar). README da havolalar.
 - **`tools/push_faces.py`** — terminallarga rasm yuborish skripti repoga ko'chirildi (avval vaqtinchalik papkada edi): terminalni MAC bo'yicha topadi (DHCP IP o'zgarsa ham), `test`/`sync`/`status` va `prune` (terminaldan ortiqchalarni ro'yxatlash, `--apply` bilan o'chirish) rejimlari; parol faqat `HIK_PASS` muhit o'zgaruvchisidan. `tools/terminals.json` — terminallar ro'yxati (MAC, IP). `access/hikvision.py` ga `list_users()` va `user_count()` qo'shildi.
 
+### O'zgartirildi
+- **Ota-ona boshlang'ich paroli = telefonning oxirgi 4 raqami** (ustozlardagi kabi, birinchi kirishda almashtirish shart). Avval panelda qo'shilgan ota-onaga tasodifiy bir martalik parol berilardi va telefonning oxirgi 4 raqami ishlamasdi. Endi ota-ona qo'shilganda, «Parolni tiklash» (ota-ona sahifasi va o'quvchi sahifasidagi ota-onalar jadvali) va `issue_parent_passwords` buyrug'i shu qoidaga o'tdi (buyruq CSV ustuni: «Boshlang'ich parol (oxirgi 4 raqam)»). Xodimlar (panelga kirish) va Telegram `/parol` oldingidek tasodifiy bir martalik parol beradi.
+
 ### Tuzatildi
 - **Kirish/chiqish holati:** o'quvchi terminalni ketma-ket (kirish/chiqish) skan qilganda «Uyga ketdi» noto'g'ri chiqardi (oxirgi chiqishdan keyingi kirish hisobga olinmasdi). Endi oxirgi skan hal qiladi (ota-ona sahifasi, panel, Telegram bot).
 - **Dars jadvali filtri:** ustoz tanlansa sinf tozalanadi (va aksincha), 5-sinfga qaytib ketmaydi.

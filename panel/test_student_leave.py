@@ -80,3 +80,20 @@ class LeaveTimeSettingTests(TestCase):
         self.assertEqual(leave_from(), time(15, 30))
         self.client.post('/panel/qurilmalar/chiqish-vaqti/', {'leave_from': 'xato'})
         self.assertEqual(leave_from(), time(15, 30))
+
+
+@FAST
+class ParentInitialPasswordTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        make_staff('dir', 'Direktor')
+        self.client.login(username='dir', password='x')
+
+    def test_new_parent_gets_last_four_digits_and_can_log_in(self):
+        r = self.client.post('/panel/ota-onalar/yangi/', {'last_name': 'Test', 'first_name': 'Ota', 'phone': '999797367'}, follow=True)
+        parent = User.objects.get(phone_digits='998999797367')
+        self.assertTrue(parent.must_change_password)
+        self.assertTrue(parent.check_password('7367'))
+        self.assertIn("boshlang'ich parol: 7367", ' '.join(str(m) for m in r.context['messages']))
+        self.client.logout()
+        self.assertEqual(self.client.post('/login/', {'username': '999797367', 'password': '7367'}).status_code, 302)

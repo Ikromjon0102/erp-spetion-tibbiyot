@@ -48,9 +48,9 @@
   {% for p in parents %}<tr>
     <td><b>{{ p.get_full_name|default:p.username }}</b>{% if p.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
     {% if show_phone %}<td class="mono">{{ p.phone|default:"—" }}</td>{% endif %}
-    <td>{% if p.has_usable_password %}{% if p.must_change_password %}<span class="badge warn">bir martalik parol</span>{% else %}<span class="badge">faol</span>{% endif %}{% else %}<span class="badge gray">parol berilmagan</span>{% endif %}</td>
+    <td>{% if p.has_usable_password %}{% if p.must_change_password %}<span class="badge warn">birinchi kirish kutilmoqda</span>{% else %}<span class="badge">faol</span>{% endif %}{% else %}<span class="badge gray">parol berilmagan</span>{% endif %}</td>
     {% if can_change %}<td style="text-align:right;white-space:nowrap">
-      {% if not p.is_teacher %}<form method="post" action="{% url 'panel:parent_password' s.pk p.pk %}" style="display:inline">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol</button></form>{% endif %}
+      {% if not p.is_teacher %}<form method="post" action="{% url 'panel:parent_password' s.pk p.pk %}" style="display:inline">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Parolni tiklash</button></form>{% endif %}
       <form method="post" action="{% url 'panel:parent_remove' s.pk p.pk %}" style="display:inline" data-confirm="{{ p.get_full_name|default:p.username }} bu o'quvchidan ajratilsinmi? Hisobning o'zi o'chmaydi." data-confirm-ok="Ajratish" data-confirm-danger>{% csrf_token %}<button class="btn small danger"><svg class="ic"><use href="#p-unlink"/></svg>Ajratish</button></form>
     </td>{% endif %}
   </tr>{% endfor %}</tbody></table></div>

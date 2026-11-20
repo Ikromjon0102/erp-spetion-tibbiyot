@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.models import Student, User
-from accounts.passwords import issue_temp_password
+from accounts.passwords import initial_password
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username
 
@@ -88,10 +88,10 @@ def parent_create(request):
         student = Student.objects.filter(pk=link_id).first() if link_id else None
         if student:
             student.parents.add(user)
-        password = issue_temp_password(user)
+        password = initial_password(user)
         audit.log(request, "Ota-ona qo'shdi", user, label=user.get_full_name() or user.username,
                   details={'telefon': d['phone'], 'farzand': student.user.get_full_name() if student else '—'}, target_type='parent')
-        _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · bir martalik parol: {password}  (faqat hozir ko'rinadi; birinchi kirishda almashtiradi)")
+        _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · boshlang'ich parol: {password} (telefonning oxirgi 4 raqami; birinchi kirishda almashtiradi)")
         return redirect('panel:parent', pk=user.pk)
     return render(request, 'panel/parent_form.html', {'nav': 'parents', 'form': form, 'title': "Ota-ona qo'shish", 'link': link})
 
@@ -158,7 +158,7 @@ def parent_password(request, pk):
     if not _can_reset(parent):
         messages.error(request, "Bu hisob ustoz yoki xodimga tegishli — parolini bu yerdan o'zgartirib bo'lmaydi")
     else:
-        password = issue_temp_password(parent)
-        audit.log(request, 'Bir martalik parol berdi', parent, label=parent.get_full_name() or parent.username, target_type='parent')
-        _secret(request, f"{parent.get_full_name() or parent.username} — login: {parent.phone or parent.username} · bir martalik parol: {password}  (faqat hozir ko'rinadi)")
+        password = initial_password(parent)
+        audit.log(request, 'Parolni boshlang\'ich holatga qaytardi', parent, label=parent.get_full_name() or parent.username, target_type='parent')
+        _secret(request, f"{parent.get_full_name() or parent.username} — login: {parent.phone or parent.username} · boshlang'ich parol: {password} (telefonning oxirgi 4 raqami; birinchi kirishda almashtiradi)")
     return redirect('panel:parent', pk=parent.pk)

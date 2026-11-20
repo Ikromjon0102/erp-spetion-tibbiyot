@@ -296,7 +296,8 @@ class StudentsTests(TestCase):
         self.parent.refresh_from_db()
         self.assertTrue(self.parent.must_change_password and self.parent.has_usable_password())
         msg = next(str(m) for m in r.context['messages'])
-        password = msg.split('bir martalik parol: ')[1].split()[0]
+        password = msg.split("boshlang'ich parol: ")[1].split()[0]
+        self.assertEqual(password, '2233')       # telefonning oxirgi 4 raqami (ustozlardagi kabi)
         self.assertTrue(self.parent.check_password(password))
         self.assertEqual(self.client.post('/login/', {'username': '90 111 22 33', 'password': password}).status_code, 302)  # telefon bilan kiradi
         # ustoz-ota-onaning parolini reception o'zgartira olmaydi
