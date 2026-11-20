@@ -33,6 +33,14 @@ def wd(day):
 
 
 @register.simple_tag
+def photo_url(user):
+    """Kichik (96px) yuz rasmi manzili; rasm bo'lmasa bo'sh matn."""
+    if not getattr(user, 'photo', None):
+        return ''
+    return f"{reverse('face_photo', args=[user.pk])}?s=1&v={user.photo.name.rsplit('/', 1)[-1][:-4]}"
+
+
+@register.simple_tag
 def avatar(user):
     """Ro'yxatlar uchun avatar: rasmi bo'lsa kichik (96px) rasm, bo'lmasa bosh harflar."""
     if getattr(user, 'photo', None):

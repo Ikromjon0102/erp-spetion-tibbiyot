@@ -8,7 +8,8 @@
   .kid { display:block; background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow); padding:14px; margin-bottom:12px; }
   .kid:active { background:var(--tint); }
   .kid-top { display:flex; align-items:center; gap:12px; }
-  .kid-av { width:48px; height:48px; border-radius:15px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font:800 17px 'Inter',sans-serif; flex-shrink:0; }
+  .kid-av img, .hero-av img { width:100%; height:100%; object-fit:cover; display:block; }
+  .kid-av { overflow:hidden; width:48px; height:48px; border-radius:15px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font:800 17px 'Inter',sans-serif; flex-shrink:0; }
   .kid-name { flex:1; min-width:0; } .kid-name b { display:block; font-size:16.5px; } .kid-name small { color:var(--dim); }
   .kid .go { color:var(--faint); }
   .pres { display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--tint); font-weight:600; font-size:13.5px; }
@@ -27,7 +28,7 @@
 {% for c in children %}
 <a class="kid" href="{% url 'student_detail' c.pk %}">
   <div class="kid-top">
-    <div class="kid-av">{{ c.user|initials }}</div>
+    {% photo_url c.user as ph %}<div class="kid-av">{% if ph %}<img src="{{ ph }}" alt="">{% else %}{{ c.user|initials }}{% endif %}</div>
     <div class="kid-name"><b>{{ c.user.last_name }} {{ c.user.first_name }}</b><small>{{ c.group|default:"Guruh biriktirilmagan" }}</small></div>
     <svg class="ic go"><use href="#i-next"/></svg>
   </div>

@@ -40,7 +40,8 @@
   /* hero */
   .hero { background:linear-gradient(135deg,#14532D 0%,#166534 60%,#1B7F3B 100%); color:#fff; border-radius:22px; padding:16px; margin-bottom:12px; box-shadow:0 8px 22px rgba(22,101,52,.28); }
   .hero-top { display:flex; align-items:center; gap:12px; }
-  .hero-av { width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.18); display:grid; place-items:center; font:800 19px 'Inter',sans-serif; flex-shrink:0; }
+  .hero-av img { width:100%; height:100%; object-fit:cover; display:block; }
+  .hero-av { overflow:hidden; width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.18); display:grid; place-items:center; font:800 19px 'Inter',sans-serif; flex-shrink:0; }
   .hero-name { font-weight:800; font-size:18px; line-height:1.2; }
   .hero-sub { opacity:.85; font-size:13.5px; margin-top:2px; }
   .presence { margin-top:14px; display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.14); border-radius:14px; padding:11px 13px; font-weight:700; font-size:14.5px; }
@@ -160,7 +161,7 @@
 
   <div class="hero">
     <div class="hero-top">
-      <div class="hero-av">{{ student.user|initials }}</div>
+      {% photo_url student.user as ph %}<div class="hero-av">{% if ph %}<img src="{{ ph }}" alt="">{% else %}{{ student.user|initials }}{% endif %}</div>
       <div>
         <div class="hero-name">{{ student.user.last_name }} {{ student.user.first_name }}</div>
         <div class="hero-sub">{{ student.group|default:"Guruh biriktirilmagan" }}</div>

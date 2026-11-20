@@ -91,3 +91,25 @@ class AvatarThumbTests(TestCase):
         u.photo.name = 'faces/5-abc123.jpg'
         html = Template('{% load app_extras %}{% avatar u %}').render(Context({'u': u}))
         self.assertIn(f'/rasm/{u.pk}/?s=1&amp;v=5-abc123', html)
+
+
+class ParentSeesChildPhotoTests(TestCase):
+    def test_parent_gets_child_thumb_and_stranger_does_not(self):
+        import io, tempfile
+        from PIL import Image
+        from django.test import override_settings
+        from academics.models import Group
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, override_settings(MEDIA_ROOT=tmp):
+            from accounts.photos import save_photo
+            ku = User.objects.create(username='kid', first_name='Vali', last_name='Aliyev', role='student')
+            kid = Student.objects.create(user=ku, group=Group.objects.create(name='5-Sinf'), access_id='9901')
+            buf = io.BytesIO(); Image.new('RGB', (400, 500), (120, 90, 60)).save(buf, 'JPEG'); buf.seek(0)
+            save_photo(ku, buf)
+            parent = User.objects.create(username='p1', role='parent'); kid.parents.add(parent)
+            other = User.objects.create(username='p2', role='parent')
+            self.client.force_login(parent)
+            r = self.client.get(f'/rasm/{ku.pk}/?s=1')
+            self.assertEqual((r.status_code, r['Content-Type']), (200, 'image/jpeg'))
+            r.close()
+            self.client.force_login(other)
+            self.assertEqual(self.client.get(f'/rasm/{ku.pk}/?s=1').status_code, 403)
