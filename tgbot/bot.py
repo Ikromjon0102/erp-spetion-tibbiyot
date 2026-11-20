@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.utils import timezone
 
-from access.models import AccessEvent
+from access.services import today_summary
 from accounts.models import User
 from accounts.passwords import issue_temp_password
 from accounts.phone import to_digits
@@ -125,20 +125,15 @@ def reset_password(chat_id, user):
                   "Bu xabarni kirgach o'chirib tashlang.", reply_markup=MENU_KB)
 
 
-def _hm(e):
-    return timezone.localtime(e.occurred_at).strftime('%H:%M')
-
-
 def today(chat_id, user):
-    day, lines = timezone.localdate(), []
+    lines = []
     for k in children_of(user):
-        ev = list(AccessEvent.objects.filter(student=k, occurred_at__date=day).order_by('occurred_at'))
-        ins, outs = [e for e in ev if e.direction == 'in'], [e for e in ev if e.direction == 'out']
+        row = today_summary(k)
         s = '❌ hali kelmagan'
-        if ins:
-            s = f'✅ keldi {_hm(ins[0])}'
-            if outs and outs[-1].occurred_at > ins[0].occurred_at:
-                s += f', 🚪 chiqdi {_hm(outs[-1])}'
+        if row and row['arrived']:
+            s = f"✅ keldi {row['arrived']:%H:%M}"
+            if row['left']:
+                s += f", 🚪 chiqdi {row['left']:%H:%M}"
         lines.append(f'<b>{esc(k.user.get_full_name())}</b>: {s}')
     send(chat_id, '\n'.join(lines) or 'Farzand topilmadi')
 

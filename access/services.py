@@ -14,6 +14,7 @@ def day_summaries(student, days=14):
         row = result.setdefault(local.date(), {'date': local.date(), 'arrived': None, 'left': None})
         if e.direction == Device.Direction.IN:
             row['arrived'] = row['arrived'] or local
+            row['left'] = None      # chiqqandan keyin yana kirish skani — o'quvchi maktabda (oxirgi skan hal qiladi)
         else:
             row['left'] = local
     return [result[d] for d in sorted(result, reverse=True)]

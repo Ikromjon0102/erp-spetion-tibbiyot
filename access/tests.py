@@ -94,3 +94,33 @@ class HikvisionPushTests(TestCase):
         (row,) = day_summaries(self.student)
         self.assertEqual(row['arrived'].strftime('%H:%M'), '08:01')  # birinchi kirish
         self.assertEqual(row['left'].strftime('%H:%M'), '15:00')     # oxirgi chiqish
+
+
+class RepeatedScanTests(TestCase):
+    """Tanaffusda o'quvchilar kirish/chiqish terminallarini ketma-ket skan qiladi: oxirgi skan hal qiladi."""
+
+    def setUp(self):
+        self.entry = Device.objects.create(name='Kirish-1', direction='in')
+        self.exit = Device.objects.create(name='Chiqish-1', direction='out')
+        user = User.objects.create(username='s2', first_name='Qobil', last_name='Yunus', role='student')
+        self.student = Student.objects.create(user=user, group=Group.objects.create(name='7-Sinf'), access_id='1002')
+        self.day = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    def scan(self, device, minute):
+        AccessEvent.objects.create(device=device, employee_no='1002', student=self.student, direction=device.direction,
+                                   occurred_at=self.day + timedelta(hours=9, minutes=minute))
+
+    def row(self):
+        return day_summaries(self.student, days=1)[0]
+
+    def test_last_scan_in_means_still_at_school(self):
+        for dev, m in ((self.exit, 0), (self.entry, 1), (self.entry, 2), (self.exit, 3), (self.entry, 4)):
+            self.scan(dev, m)
+        r = self.row()
+        self.assertEqual(r['arrived'].minute, 1)
+        self.assertIsNone(r['left'])
+
+    def test_last_scan_out_means_left(self):
+        for dev, m in ((self.entry, 0), (self.exit, 1), (self.entry, 2), (self.exit, 5)):
+            self.scan(dev, m)
+        self.assertEqual(self.row()['left'].minute, 5)

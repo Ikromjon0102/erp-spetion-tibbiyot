@@ -81,6 +81,7 @@ def _presence_map(student_ids, today):
         s = state.setdefault(e.student_id, {'in': None, 'out': None})
         if e.direction == 'in':
             s['in'] = s['in'] or timezone.localtime(e.occurred_at)
+            s['out'] = None     # oxirgi skan kirish bo'lsa — maktabda
         else:
             s['out'] = timezone.localtime(e.occurred_at)
     return state
