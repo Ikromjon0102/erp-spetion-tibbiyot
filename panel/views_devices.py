@@ -10,13 +10,14 @@ from django.views.decorators.http import require_POST
 from access.hikvision import Client, DeviceError
 from access.models import Device, FaceSync
 from access.sync import eligible_users, pending_count, sync_device, sync_in_background
-from accounts.face_ids import next_teacher_id as _next_teacher_id
+from accounts.face_ids import next_staff_id, next_teacher_id as _next_teacher_id
 from accounts.models import Student, User
 from accounts.photos import PhotoError, prepare as prepare_photo, remove_photo, save_photo
 from billing.reports import real_students
 
 from . import audit
 from .access import can, panel_required, perms_of
+from .models import StaffProfile
 
 IMAGE_EXT = ('.jpg', '.jpeg', '.png')
 ZIP_LIMIT = 60 * 1024 * 1024
@@ -67,8 +68,8 @@ def apply_photo(request, user, upload, label):
     except PhotoError as e:
         messages.error(request, str(e))
         return False
-    if user.role == User.Role.TEACHER and not user.access_id:
-        user.access_id = next_teacher_id()
+    if not user.access_id and user.role in (User.Role.TEACHER, User.Role.STAFF):
+        user.access_id = next_teacher_id() if user.role == User.Role.TEACHER else next_staff_id()
         user.save(update_fields=['access_id'])
     audit.log(request, 'Yuz rasmini yukladi', user, label=label, target_type='photo')
     sync_in_background(user.pk)
@@ -123,6 +124,36 @@ def teacher_photo_delete(request, pk):
     sync_in_background()
     messages.success(request, "Rasm o'chirildi (qurilmadan ham olib tashlanadi)")
     return redirect('panel:teacher', pk=pk)
+
+
+def _staff_user(pk):
+    profile = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
+    if profile.user.role == User.Role.STUDENT or profile.user.is_demo:
+        raise Http404
+    return profile.user
+
+
+@require_POST
+@panel_required('staff.manage')
+def staff_photo(request, pk):
+    user = _staff_user(pk)
+    upload = request.FILES.get('photo')
+    if not upload:
+        messages.error(request, 'Rasm tanlanmadi')
+    else:
+        apply_photo(request, user, upload, user.get_full_name())
+    return redirect('panel:staff_detail', pk=pk)
+
+
+@require_POST
+@panel_required('staff.manage')
+def staff_photo_delete(request, pk):
+    user = _staff_user(pk)
+    remove_photo(user)
+    audit.log(request, "Yuz rasmini o'chirdi", user, label=user.get_full_name(), target_type='photo')
+    sync_in_background()
+    messages.success(request, "Rasm o'chirildi (qurilmadan ham olib tashlanadi)")
+    return redirect('panel:staff_detail', pk=pk)
 
 
 @panel_required('devices.view')

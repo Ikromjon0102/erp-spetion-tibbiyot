@@ -18,8 +18,8 @@ _lock = threading.Lock()
 
 
 def eligible_users():
-    """Qurilmada bo'lishi kerak odamlar: rasmi va Face ID si bor, faol o'quvchi/ustozlar (sinov hisoblari emas)."""
-    users = (User.objects.filter(is_active=True, role__in=[User.Role.STUDENT, User.Role.TEACHER], is_demo=False)
+    """Qurilmada bo'lishi kerak odamlar: rasmi va Face ID si bor, faol o'quvchi/ustoz/xodimlar (sinov hisoblari emas)."""
+    users = (User.objects.filter(is_active=True, role__in=[User.Role.STUDENT, User.Role.TEACHER, User.Role.STAFF], is_demo=False)
              .exclude(photo='').exclude(photo__isnull=True).exclude(username__startswith='sinov_')
              .select_related('student'))
     return [u for u in users if u.device_id]

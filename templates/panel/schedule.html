@@ -4,8 +4,8 @@
 {% block actions %}{% if 'schedule.change' in panel_can %}<a data-modal class="btn primary" href="{% url 'panel:lesson_add' %}{% if group %}?sinf={{ group.pk }}{% endif %}"><svg class="ic"><use href="#p-plus"/></svg>Dars qo'shish</a>{% endif %}{% endblock %}
 {% block content %}
 <form method="get" class="filters" data-live>
-  <select name="sinf"><option value="">— sinf bo'yicha —</option>{% for g in groups %}<option value="{{ g.pk }}" {% if group.pk == g.pk %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
-  <select name="ustoz"><option value="">— ustoz bo'yicha —</option>{% for t in teachers %}<option value="{{ t.pk }}" {% if teacher.pk == t.pk %}selected{% endif %}>{{ t.last_name }} {{ t.first_name }}</option>{% endfor %}</select>
+  <select name="sinf" onchange="this.form.elements.ustoz.value=''"><option value="">— sinf bo'yicha —</option>{% for g in groups %}<option value="{{ g.pk }}" {% if group.pk == g.pk %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+  <select name="ustoz" onchange="this.form.elements.sinf.value=''"><option value="">— ustoz bo'yicha —</option>{% for t in teachers %}<option value="{{ t.pk }}" {% if teacher.pk == t.pk %}selected{% endif %}>{{ t.last_name }} {{ t.first_name }}</option>{% endfor %}</select>
 </form>
 <div class="card" style="padding:6px 10px">
   <h2 style="padding:8px 8px 0;margin:0">{% if group %}{{ group.name }} sinfi{% elif teacher %}{{ teacher.last_name }} {{ teacher.first_name }}{% else %}Jadval{% endif %} <small class="muted">· haftasiga {{ total }} ta dars</small></h2>

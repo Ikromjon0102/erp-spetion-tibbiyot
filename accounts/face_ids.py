@@ -1,10 +1,11 @@
 """Hikvision Face ID (Employee ID) larni avtomatik berish.
 
-O'quvchilar 9001 dan, ustoz/xodimlar 7001 dan boshlanadi. Raqam har doim diapazondagi eng kattasidan keyingisi bo'ladi
+O'quvchilar 9001 dan, ustozlar 7001 dan, xodimlar (direktor va b.) 8001 dan boshlanadi. Raqam har doim diapazondagi eng kattasidan keyingisi bo'ladi
 (bo'shab qolgan raqamlar qayta berilmaydi), shuning uchun qurilmada qolgan eski odam bilan adashib ketmaydi.
 """
 STUDENT_BASE = 9001
 TEACHER_BASE = 7001
+STAFF_BASE = 8001
 BAND = 1000      # 9001..9999, 7001..7999
 
 
@@ -29,3 +30,7 @@ def next_student_id(taken=None):
 
 def next_teacher_id(taken=None):
     return _next(TEACHER_BASE, _used() if taken is None else taken)
+
+
+def next_staff_id(taken=None):
+    return _next(STAFF_BASE, _used() if taken is None else taken)

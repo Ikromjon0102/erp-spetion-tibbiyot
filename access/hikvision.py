@@ -39,11 +39,23 @@ class Client:
         self.s.auth = HTTPDigestAuth(device.username, device.password)
         self.s.verify = False   # qurilmalarda odatda o'z-o'zidan imzolangan sertifikat
 
+    def _fresh_session(self):
+        s = requests.Session()
+        s.auth = HTTPDigestAuth(self.s.auth.username, self.s.auth.password)
+        s.verify = False
+        self.s = s
+
     def _req(self, method, path, **kw):
-        try:
-            return self.s.request(method, self.base + path, timeout=TIMEOUT, **kw)
-        except requests.exceptions.RequestException as e:
-            raise DeviceError(f"Qurilmaga ulanib bo'lmadi: {e.__class__.__name__}")
+        # Digest nonce bir necha so'rovdan keyin eskirib 401 berishi mumkin: yangi sessiya bilan qayta uriniladi
+        for attempt in range(3):
+            try:
+                r = self.s.request(method, self.base + path, timeout=TIMEOUT, **kw)
+            except requests.exceptions.RequestException as e:
+                raise DeviceError(f"Qurilmaga ulanib bo'lmadi: {e.__class__.__name__}")
+            if r.status_code != 401 or attempt == 2:
+                return r
+            self._fresh_session()
+        return r
 
     def info(self):
         r = self._req('GET', '/ISAPI/System/deviceInfo')

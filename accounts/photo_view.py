@@ -18,7 +18,8 @@ def face_photo(request, pk):
     student = getattr(target, 'student', None)
     allowed = (me.pk == target.pk or me.is_superuser or can(me, 'devices.view')
                or (student and (can(me, 'students.view') or student.parents.filter(pk=me.pk).exists()))
-               or (target.is_teacher and can(me, 'teachers.view')))
+               or (target.is_teacher and can(me, 'teachers.view'))
+               or (target.role == User.Role.STAFF and can(me, 'staff.view')))
     if not allowed:
         raise PermissionDenied
     resp = FileResponse(target.photo.open('rb'), content_type='image/jpeg')
