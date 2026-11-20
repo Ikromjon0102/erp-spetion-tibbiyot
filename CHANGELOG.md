@@ -2,7 +2,7 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
-## Joylanmagan
+## 2026-11-20 (kechqurun)
 
 ### Qo'shildi
 - **O'quvchini maktabdan chiqarish / butunlay o'chirish.** Panel → O'quvchi sahifasi → «Maktabdan chiqarish»: o'quvchi sinf, ro'yxatlar, qarzdorlar, hisobotlar va ota-ona ilovasidan yo'qoladi, kirishi yopiladi, terminaldan olinadi; baho, davomat va to'lov tarixi saqlanadi. Ro'yxatda Holat → «Chiqqanlar (arxiv)» da ko'rinadi, u yerdan «Qaytarish» (oxirgi sinfiga) yoki «Butunlay o'chirish» (faqat chiqarilganlar uchun, tasdiq bilan; baho/davomat/to'lov ham o'chadi, ota-ona hisoblari qoladi). Migratsiya: `accounts.0007`.
