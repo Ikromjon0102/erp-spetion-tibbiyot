@@ -1,0 +1,19 @@
+# O'zgarishlar tarixi
+
+Yangi o'zgarishlar yuqoridan qo'shiladi.
+
+## 2026-11-20
+
+### Qo'shildi
+- **Yuz rasmlari terminallarga yuklandi:** 62 ta o'quvchi/ustoz (5, 7, 8, 9-sinflar) va direktor (Face ID 8001) — jami 63 kishi, 4 ta Hikvision terminalda.
+- **Xodimlar uchun yuz rasmi:** Panel → Xodimlar → xodim sahifasida rasm yuklash/o'chirish. Face ID 8001 dan avtomatik beriladi, xodimlar terminalga ham yuboriladi.
+- **Rasmli avatar:** panelda o'quvchilar, ustozlar, xodimlar, qarzdorlar, ota-onalar ro'yxatida va ota-ona ilovasida (farzand kartasi va sahifasi) bosh harflar o'rniga yuz rasmi. Ro'yxatlarda 96 px kichik nusxa ishlatiladi (diskda keshlanadi), shuning uchun sahifa og'irlashmaydi.
+
+### Tuzatildi
+- **Kirish/chiqish holati:** o'quvchi terminalni ketma-ket (kirish/chiqish) skan qilganda "Uyga ketdi" noto'g'ri chiqardi. Endi oxirgi skan hal qiladi (ota-ona sahifasi, panel, Telegram bot).
+- **Dars jadvali filtri:** ustoz tanlansa sinf tozalanadi (va aksincha), 5-sinfga qaytib ketmaydi.
+- **Tungi rejimda `select` ro'yxati:** ochiladigan menyuning foni va matni ikkalasi ham och bo'lib o'qib bo'lmasdi. Panelga `color-scheme` va `option` ranglari qo'shildi.
+- **Terminal bilan aloqa:** Hikvision 401 (eskirgan Digest nonce) bersa, yangi sessiya bilan qayta uriniladi (ko'p rasm yuborishda uzilib qolmasligi uchun).
+
+### Texnik
+- Terminal IP lari o'zgargan (DHCP): .108, .109 (kirish), .110, .104 (chiqish). Routerda MAC bo'yicha qotirish tavsiya etiladi.

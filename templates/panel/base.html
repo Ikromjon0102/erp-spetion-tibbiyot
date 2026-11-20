@@ -10,6 +10,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap');
   :root{
+    color-scheme:light;
     --bg:#F3F6F3; --card:#FFFFFF; --line:#E3EAE4; --line-strong:#C9D6CD;
     --ink:#14201A; --dim:#617367; --faint:#9FB0A5;
     --accent:#166534; --accent-deep:#14532D; --on-accent:#fff; --tint:#ECF6EF; --tint-line:#A9D5B8;
@@ -19,11 +20,13 @@
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
+      color-scheme:dark;
       --bg:#0C130F; --card:#141F19; --line:#223027; --line-strong:#33483B; --ink:#E6EFE8; --dim:#98AC9E; --faint:#5C7064;
       --accent:#2E7D4F; --accent-deep:#7FD49C; --tint:#16291E; --tint-line:#27543A; --bad:#EF6B63; --bad-tint:#3A1A18;
       --late:#F0A84E; --late-tint:#3A2A12; --exc:#7FA2FF; --exc-tint:#18233F; --side:#08120C; --shadow:none; }
   }
   :root[data-theme="dark"]{
+      color-scheme:dark;
       --bg:#0C130F; --card:#141F19; --line:#223027; --line-strong:#33483B; --ink:#E6EFE8; --dim:#98AC9E; --faint:#5C7064;
       --accent:#2E7D4F; --accent-deep:#7FD49C; --tint:#16291E; --tint-line:#27543A; --bad:#EF6B63; --bad-tint:#3A1A18;
       --late:#F0A84E; --late-tint:#3A2A12; --exc:#7FA2FF; --exc-tint:#18233F; --side:#08120C; --shadow:none; }
@@ -106,6 +109,7 @@
   .field { margin-bottom:16px; } .field label { display:block; font-weight:700; font-size:13px; color:var(--dim); margin-bottom:6px; }
   input[type=text], input[type=search], input[type=tel], input[type=date], input[type=number], input[type=password], input[type=file], select, textarea {
     width:100%; font:500 14.5px 'Inter',sans-serif; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line-strong); background:var(--card); color:var(--ink); }
+  option, optgroup { background:var(--card); color:var(--ink); }
   .filters input, .filters select { width:auto; min-width:150px; } .filters input[type=search] { min-width:260px; }
   input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); }
   textarea { min-height:120px; resize:vertical; line-height:1.5; }
