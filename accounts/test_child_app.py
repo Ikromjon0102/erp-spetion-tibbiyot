@@ -79,7 +79,9 @@ class ChildAppTests(TestCase):
         self.assertIn('08:05 dan beri', presence(self.kid, now)['text'])
         make(dout, 10)
         p = presence(self.kid, now)
-        self.assertEqual((p['state'], p['text']), ('out', 'Uyga ketdi · 10:05'))
+        self.assertEqual((p['state'], p['text']), ('out', 'Tashqarida · 10:05 dan'))      # 16:00 dan oldin: tanaffus
+        p = presence(self.kid, now.replace(hour=17))
+        self.assertEqual((p['state'], p['text']), ('out', 'Uyga ketdi · 10:05'))          # 16:00 dan keyin: uyga ketdi
 
     # --- ruxsatlar va ko'rinish
     def test_payments_visible_only_to_parent_and_admin(self):

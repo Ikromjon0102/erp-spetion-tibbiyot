@@ -1,5 +1,7 @@
 import secrets
+from datetime import time
 
+from django.core.cache import cache
 from django.db import models
 
 
@@ -79,3 +81,47 @@ class FaceSync(models.Model):
         unique_together = ('device', 'user')
         verbose_name = 'Rasm sync holati'
         verbose_name_plural = 'Rasm sync holati'
+
+
+LEAVE_CACHE_KEY = 'access_leave_notify_from'
+
+
+class AccessSettings(models.Model):
+    """Kirish-chiqish sozlamalari (bitta yozuv). Paneldan o'zgartiriladi."""
+    leave_notify_from = models.TimeField(
+        'Chiqish xabarlari boshlanadigan vaqt', default=time(16, 0),
+        help_text="Shu vaqtdan oldingi chiqish skanlari tanaffus hisoblanadi: ota-onaga «chiqdi» xabari yuborilmaydi, holat «Tashqarida» bo'ladi")
+
+    class Meta:
+        verbose_name = 'Kirish-chiqish sozlamasi'
+        verbose_name_plural = 'Kirish-chiqish sozlamalari'
+
+    @classmethod
+    def get(cls):
+        return cls.objects.get_or_create(pk=1)[0]
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+        cache.delete(LEAVE_CACHE_KEY)
+
+
+def leave_from():
+    """Chiqish xabarlari boshlanadigan vaqt (datetime.time); 30 soniya keshlanadi."""
+    value = cache.get(LEAVE_CACHE_KEY)
+    if value is None:
+        value = AccessSettings.get().leave_notify_from
+        cache.set(LEAVE_CACHE_KEY, value, 30)
+    return value
+
+
+class PresenceNotice(models.Model):
+    """Ota-onaga yuborilgan «keldi» / «chiqdi» xabarlari: har bir o'quvchi uchun kuniga har turdan bittadan."""
+    KINDS = [('in', 'Keldi'), ('left', 'Chiqdi')]
+    student = models.ForeignKey('accounts.Student', on_delete=models.CASCADE, related_name='presence_notices')
+    date = models.DateField()
+    kind = models.CharField(max_length=4, choices=KINDS)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'date', 'kind')

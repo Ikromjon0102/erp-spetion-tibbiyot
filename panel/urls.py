@@ -40,6 +40,7 @@ urlpatterns = [
     path('ota-onalar/<int:pk>/farzand/<int:student_id>/ajratish/', views_parents.parent_unlink, name='parent_unlink'),
 
     path('qurilmalar/', views_devices.devices, name='devices'),
+    path('qurilmalar/chiqish-vaqti/', views_devices.access_settings, name='access_settings'),
     path('qurilmalar/yangi/', views_devices.device_edit, name='device_add'),
     path('qurilmalar/<int:pk>/', views_devices.device_edit, name='device_edit'),
     path('qurilmalar/<int:pk>/tekshirish/', views_devices.device_test, name='device_test'),

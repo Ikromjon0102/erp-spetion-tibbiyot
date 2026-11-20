@@ -63,3 +63,20 @@ class StudentLeaveTests(TestCase):
         html = self.client.get(f'/panel/oquvchilar/{self.s.pk}/').content.decode()
         self.assertIn('Butunlay o', html)
         self.assertIn('Qaytarish', html)
+
+
+@FAST
+class LeaveTimeSettingTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        make_staff('dir', 'Direktor')
+        self.client.login(username='dir', password='x')
+
+    def test_change_from_panel(self):
+        from datetime import time
+        from access.models import leave_from
+        self.assertContains(self.client.get('/panel/qurilmalar/'), 'name="leave_from"')
+        self.client.post('/panel/qurilmalar/chiqish-vaqti/', {'leave_from': '15:30'})
+        self.assertEqual(leave_from(), time(15, 30))
+        self.client.post('/panel/qurilmalar/chiqish-vaqti/', {'leave_from': 'xato'})
+        self.assertEqual(leave_from(), time(15, 30))

@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from access.services import day_summaries
+from access.services import day_summaries, is_break_time
 from academics.constants import DAY_CODES, DAY_NAMES
 from academics.models import Lesson
 from journal.models import Attendance, Homework, HomeworkRead
@@ -59,6 +59,10 @@ def presence(student, now=None):
     row = next((r for r in day_summaries(student, days=1) if r['date'] == today), None)
     if row and row['arrived'] and not row['left']:
         return {'state': 'in', 'text': f"Maktabda · {row['arrived']:%H:%M} dan beri", 'arrived': row['arrived'], 'left': None}
+    if row and row['left'] and is_break_time(now):      # chiqish xabarlari vaqtidan oldin: tanaffus, uyga ketmagan
+        sub = f"Kelgan: {row['arrived']:%H:%M}" if row['arrived'] else ''
+        return {'state': 'out', 'text': f"Tashqarida · {row['left']:%H:%M} dan", 'sub': sub,
+                'arrived': row['arrived'], 'left': None}
     if row and row['left']:
         sub = f"Kelgan: {row['arrived']:%H:%M}" if row['arrived'] else ''
         return {'state': 'out', 'text': f"Uyga ketdi · {row['left']:%H:%M}", 'sub': sub,

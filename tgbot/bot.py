@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.utils import timezone
 
-from access.services import today_summary
+from access.services import is_break_time, today_summary
 from accounts.models import User
 from accounts.passwords import issue_temp_password
 from accounts.phone import to_digits
@@ -133,7 +133,7 @@ def today(chat_id, user):
         if row and row['arrived']:
             s = f"✅ keldi {row['arrived']:%H:%M}"
             if row['left']:
-                s += f", 🚪 chiqdi {row['left']:%H:%M}"
+                s += f", 🚶 tashqarida {row['left']:%H:%M} dan" if is_break_time() else f", 🚪 chiqdi {row['left']:%H:%M}"
         lines.append(f'<b>{esc(k.user.get_full_name())}</b>: {s}')
     send(chat_id, '\n'.join(lines) or 'Farzand topilmadi')
 

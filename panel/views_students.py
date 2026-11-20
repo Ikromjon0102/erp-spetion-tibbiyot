@@ -17,7 +17,7 @@ from django.views.decorators.http import require_POST
 
 from access.models import AccessEvent
 from access.sync import sync_in_background
-from access.services import day_summaries
+from access.services import day_summaries, is_break_time
 from academics.models import Group
 from accounts.models import Student, User
 from accounts.passwords import issue_temp_password
@@ -75,7 +75,7 @@ def _presence_state(p, today, wait_label):
     if p and p['in'] and not p['out']:
         return 'in', 'Maktabda'
     if p and p['out']:
-        return 'out', 'Ketdi'
+        return 'out', 'Tashqarida' if is_break_time() else 'Ketdi'
     if today.weekday() > 5:
         return 'off', 'Dam olish kuni'
     return 'wait', wait_label

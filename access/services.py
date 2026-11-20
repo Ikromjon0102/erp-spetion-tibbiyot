@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from .models import Device
+from .models import Device, leave_from
 
 
 def day_summaries(student, days=14):
@@ -23,3 +23,9 @@ def day_summaries(student, days=14):
 def today_summary(student):
     today = timezone.localdate()
     return next((r for r in day_summaries(student, days=1) if r['date'] == today), None)
+
+
+def is_break_time(now=None):
+    """Hozir chiqish xabarlari boshlanadigan vaqtdan oldinmi (u holda chiqib ketgan o'quvchi «tashqarida» hisoblanadi)."""
+    now = now or timezone.localtime()
+    return now.time() < leave_from()

@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from access.hikvision import Client, DeviceError
-from access.models import Device, FaceSync
+from access.models import AccessSettings, Device, FaceSync
 from access.sync import eligible_users, pending_count, sync_device, sync_in_background
 from accounts.face_ids import next_staff_id, next_teacher_id as _next_teacher_id
 from accounts.models import Student, User
@@ -170,7 +170,27 @@ def devices(request):
              'teachers_photo': User.objects.filter(role=User.Role.TEACHER, is_demo=False).exclude(photo='').exclude(photo__isnull=True).count(),
              'ready': len(people)}
     errors = list(FaceSync.objects.filter(ok=False).select_related('user', 'device').order_by('-updated_at')[:15])
-    return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted})
+    return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted,
+                                                  'leave_from': AccessSettings.get().leave_notify_from})
+
+
+@require_POST
+@panel_required('devices.manage')
+def access_settings(request):
+    from datetime import datetime
+    try:
+        value = datetime.strptime(request.POST.get('leave_from', '').strip(), '%H:%M').time()
+    except ValueError:
+        messages.error(request, "Vaqtni SS:DD ko'rinishida kiriting (masalan 16:00)")
+        return redirect('panel:devices')
+    obj = AccessSettings.get()
+    old = obj.leave_notify_from
+    obj.leave_notify_from = value
+    obj.save()
+    audit.log(request, "Chiqish xabari vaqtini o'zgartirdi", label='Kirish-chiqish sozlamasi', target_type='settings',
+              details={'vaqt': audit.change(old.strftime('%H:%M'), value.strftime('%H:%M'))})
+    messages.success(request, f"Chiqish xabarlari {value:%H:%M} dan boshlab yuboriladi")
+    return redirect('panel:devices')
 
 
 @panel_required('devices.manage')

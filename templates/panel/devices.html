@@ -8,6 +8,11 @@
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-image"/></svg></span><div class="k">Ustozlar rasmi</div><div class="v">{{ stats.teachers_photo }}<small class="muted"> / {{ stats.teachers }}</small></div><div class="s">rasmi yuklangan</div></div>
   <div class="stat good"><span class="ico"><svg class="ic"><use href="#p-check"/></svg></span><div class="k">Qurilmaga tayyor</div><div class="v">{{ stats.ready }}</div><div class="s">rasm va Face ID bor</div></div>
 </div>
+<div class="card"><h2>Chiqish xabarlari</h2>
+  <p class="muted" style="margin:4px 0 10px">Ota-onaga «maktabdan chiqdi» xabari va «Uyga ketdi» holati shu vaqtdan keyin beriladi. Undan oldingi chiqish skanlari tanaffus hisoblanadi («Tashqarida»). Xabar kuniga bitta, takroriy skanlar xabar bermaydi. Barcha skanlar saqlanadi.</p>
+  {% if manage %}<form method="post" action="{% url 'panel:access_settings' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">{% csrf_token %}<input type="time" name="leave_from" value="{{ leave_from|time:'H:i' }}" required style="width:auto"> <button class="btn primary">Saqlash</button></form>
+  {% else %}<b class="mono">{{ leave_from|time:'H:i' }}</b>{% endif %}
+</div>
 <div class="card" style="padding:6px 10px"><h2 style="padding:8px 8px 0;margin:0">Qurilmalar</h2>
   <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Qurilma</th><th>Manzil</th><th>Oxirgi signal</th><th>Rasmlar</th><th></th></tr></thead><tbody>
   {% for r in rows %}<tr>

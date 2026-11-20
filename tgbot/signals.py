@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from access.models import AccessEvent
+from access.models import AccessEvent, PresenceNotice, leave_from
 from journal.models import Grade, Homework
 from notices.models import Announcement
 
@@ -16,17 +16,36 @@ def _parents(student):
     return list(student.parents.all())
 
 
+def access_text(student, kind, when):
+    name = esc(student.user.get_full_name())
+    t = timezone.localtime(when).strftime('%H:%M')
+    if kind == 'in':
+        return f'✅ <b>{name}</b> {t} da maktabga keldi'
+    return f'🚪 <b>{name}</b> {t} da maktabdan chiqdi'
+
+
+def notify_presence(student, kind, when, date):
+    """Kuniga har turdan bitta xabar (takroriy skanlar xabar bermaydi). Xabar yuborilsa True."""
+    _, new = PresenceNotice.objects.get_or_create(student=student, date=date, kind=kind)
+    if new:
+        notify(_parents(student), access_text(student, kind, when), f'/oquvchi/{student.pk}/')
+    return new
+
+
 @receiver(post_save, sender=AccessEvent)
 def on_access(sender, instance, created, **kw):
+    """Keldi: kunning birinchi kirish skani. Chiqdi: faqat sozlangan vaqtdan (boshlang'ich 16:00) keyingi birinchi chiqish skani;
+    undan oldingi chiqishlar tanaffus hisoblanadi (ularni `send_leave_notices` buyrug'i shu vaqt kelganda hal qiladi)."""
     if not created or not instance.student_id or instance.occurred_at < timezone.now() - timedelta(minutes=30):
         return
-    t = timezone.localtime(instance.occurred_at).strftime('%H:%M')
-    name = esc(instance.student.user.get_full_name())
+    local = timezone.localtime(instance.occurred_at)
     if instance.direction == 'in':
-        text = f'✅ <b>{name}</b> {t} da maktabga keldi'
+        kind = 'in'
+    elif local.time() >= leave_from():
+        kind = 'left'
     else:
-        text = f'🚪 <b>{name}</b> {t} da maktabdan chiqdi'
-    notify(_parents(instance.student), text, f'/oquvchi/{instance.student_id}/')
+        return
+    notify_presence(instance.student, kind, instance.occurred_at, local.date())
 
 
 @receiver(post_save, sender=Grade)

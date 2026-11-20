@@ -2,6 +2,11 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Joylanmagan
+
+### Qo'shildi
+- **Chiqish xabarlari vaqti (boshlang'ich 16:00), paneldan o'zgartiriladi:** Panel → Qurilmalar → «Chiqish xabarlari». Barcha skanlar saqlanadi. Ota-onaga «keldi» xabari kunning birinchi kirishida, «chiqdi» xabari esa faqat shu vaqtdan keyin va kuniga bittadan boradi (takroriy skan xabar bermaydi). Shu vaqtdan oldingi chiqish skani tanaffus: holat «Tashqarida · HH:MM dan» (ota-ona ilovasi, panel, bot), «Uyga ketdi» emas. Vaqt kelganda oxirgi skani «chiqish» bo'lgan o'quvchilarga xabarni `send_leave_notices` buyrug'i (cron, har 5 daqiqada) yuboradi. Migratsiya: `access.0004`.
+
 ## 2026-11-20 (kechqurun)
 
 ### Qo'shildi
