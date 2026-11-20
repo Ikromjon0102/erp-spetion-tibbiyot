@@ -85,6 +85,26 @@ class Client:
                       files={'FaceDataRecord': (None, meta, 'application/json'), 'FaceImage': ('face.jpg', jpeg, 'image/jpeg')})
         _check(r, 'Yuz rasmini yozish')
 
+    def user_count(self):
+        """(foydalanuvchilar soni, yuzi bog'langanlar soni)."""
+        r = self._req('GET', '/ISAPI/AccessControl/UserInfo/Count?format=json')
+        info = (_check(r, 'Foydalanuvchilar sonini olish') or {}).get('UserInfoCount') or {}
+        return info.get('userNumber', 0), info.get('bindFaceUserNumber', 0)
+
+    def list_users(self):
+        """Qurilmadagi barcha foydalanuvchilar: [(employeeNo, ism), ...]."""
+        out, pos = [], 0
+        while True:
+            body = {'UserInfoSearchCond': {'searchID': '1', 'searchResultPosition': pos, 'maxResults': 30}}
+            r = self._req('POST', '/ISAPI/AccessControl/UserInfo/Search?format=json', data=json.dumps(body),
+                          headers={'Content-Type': 'application/json'})
+            data = (_check(r, "Foydalanuvchilar ro'yxatini olish") or {}).get('UserInfoSearch') or {}
+            rows = data.get('UserInfo') or []
+            out += [(str(x.get('employeeNo', '')), x.get('name', '')) for x in rows]
+            if data.get('responseStatusStrg') != 'MORE' or not rows:
+                return out
+            pos += len(rows)
+
     def delete_user(self, employee_no):
         body = {'UserInfoDelCond': {'EmployeeNoList': [{'employeeNo': employee_no}]}}
         r = self._req('PUT', '/ISAPI/AccessControl/UserInfo/Delete?format=json', data=json.dumps(body),

@@ -1,0 +1,6 @@
+[
+  {"name": "Kirish-1",  "direction": "in",  "mac": "88:de:39:8e:19:83", "ip": "192.168.68.108"},
+  {"name": "Kirish-2",  "direction": "in",  "mac": "88:de:39:8e:19:50", "ip": "192.168.68.109"},
+  {"name": "Chiqish-1", "direction": "out", "mac": "88:de:39:8e:19:8d", "ip": "192.168.68.110"},
+  {"name": "Chiqish-2", "direction": "out", "mac": "88:de:39:8e:19:81", "ip": "192.168.68.104"}
+]

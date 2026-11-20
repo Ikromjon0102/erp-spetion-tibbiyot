@@ -3,6 +3,12 @@
 Rollar: **Ma'muriyat** (Django admin), **Ustoz** (dars jadvali, davomat, baholar), **Ota-ona** (farzandlari ta'limi,
 maktabga kelish-ketish vaqti, to'lovlar), **O'quvchi** (o'z natijalari).
 
+## Hujjatlar (`docs/`)
+- [`docs/runbook.md`](docs/runbook.md) — server (med.spetion.uz), joylash, zaxira, cron, Telegram bot, nosozlikda nima qilish.
+- [`docs/terminallar.md`](docs/terminallar.md) — Hikvision terminallar, Face ID qoidalari, rasmlarni yuborish (`tools/push_faces.py`).
+- [`docs/kirish-chiqish-qoidalari.md`](docs/kirish-chiqish-qoidalari.md) — holatlar va Telegram xabarlari qoidalari, qarorlar.
+- [`CHANGELOG.md`](CHANGELOG.md) — o'zgarishlar tarixi.
+
 ## Ishga tushirish
     pip install -r requirements.txt
     python manage.py migrate

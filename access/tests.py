@@ -124,3 +124,47 @@ class RepeatedScanTests(TestCase):
         for dev, m in ((self.entry, 0), (self.exit, 1), (self.entry, 2), (self.exit, 5)):
             self.scan(dev, m)
         self.assertEqual(self.row()['left'].minute, 5)
+
+
+class HikvisionClientListTests(TestCase):
+    def make_client(self):
+        from .hikvision import Client
+        return Client(Device(name='T', direction='in', host='1.2.3.4', username='admin', password='x'))
+
+    @staticmethod
+    def resp(body, status=200):
+        from unittest import mock
+        r = mock.Mock(status_code=status, text=json.dumps(body))
+        r.json.return_value = body
+        return r
+
+    def test_list_users_pages_until_done(self):
+        from unittest import mock
+        pages = [
+            self.resp({'UserInfoSearch': {'responseStatusStrg': 'MORE', 'UserInfo': [{'employeeNo': '9001', 'name': 'A'}, {'employeeNo': '9002', 'name': 'B'}]}}),
+            self.resp({'UserInfoSearch': {'responseStatusStrg': 'OK', 'UserInfo': [{'employeeNo': '9003', 'name': 'C'}]}}),
+        ]
+        c = self.make_client()
+        with mock.patch.object(c, '_req', side_effect=pages) as req:
+            self.assertEqual(c.list_users(), [('9001', 'A'), ('9002', 'B'), ('9003', 'C')])
+        self.assertEqual(json.loads(req.call_args_list[1].kwargs['data'])['UserInfoSearchCond']['searchResultPosition'], 2)
+
+    def test_user_count(self):
+        from unittest import mock
+        c = self.make_client()
+        with mock.patch.object(c, '_req', return_value=self.resp({'UserInfoCount': {'userNumber': 91, 'bindFaceUserNumber': 90}})):
+            self.assertEqual(c.user_count(), (91, 90))
+
+
+class PushFacesToolTests(TestCase):
+    def test_arp_parsing_windows_and_linux_and_mac_normalising(self):
+        import importlib.util, pathlib
+        from unittest import mock
+        spec = importlib.util.spec_from_file_location('push_faces', pathlib.Path(__file__).resolve().parent.parent / 'tools' / 'push_faces.py')
+        tool = importlib.util.module_from_spec(spec); spec.loader.exec_module(tool)
+        win = '  192.168.68.108       88-de-39-8e-19-83     dynamic   \n'
+        nix = '? (192.168.68.109) at 88:DE:39:8E:19:50 [ether] on eth0\n'
+        with mock.patch.object(tool.subprocess, 'run', return_value=mock.Mock(stdout=win + nix)):
+            table = tool.arp_table()
+        self.assertEqual(table['88:de:39:8e:19:83'], '192.168.68.108')
+        self.assertEqual(table['88:de:39:8e:19:50'], '192.168.68.109')
