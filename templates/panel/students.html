@@ -32,7 +32,7 @@
     <tbody>
     {% for r in rows %}
       <tr>
-        <td class="c-name"><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
+        <td class="c-name">{% avatar r.s.user %}<a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
         <td class="c-group">{{ r.s.group|default:"sinfsiz" }}</td>
         <td class="c-parent">{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <span class="muted mono">{{ r.parent.phone }}</span>{% endif %}{% if r.extra_parents %} <span class="badge gray">+{{ r.extra_parents }}</span>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
         {% if show_state %}<td class="c-state">{% if r.state %}<span class="dot {{ r.state.0 }}"></span>{{ r.state.1 }}{% endif %}</td>{% endif %}

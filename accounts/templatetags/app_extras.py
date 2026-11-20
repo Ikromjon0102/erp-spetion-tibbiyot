@@ -1,4 +1,6 @@
 from django import template
+from django.urls import reverse
+from django.utils.html import format_html
 
 from academics.constants import DAY_CODES
 
@@ -28,3 +30,13 @@ def initials(user):
 def wd(day):
     """Sana -> hafta kuni qisqartmasi (Du, Se, Ch, Pa, Ju, Sh, Ya)."""
     return (DAY_CODES + ['Ya'])[day.weekday()]
+
+
+@register.simple_tag
+def avatar(user):
+    """Ro'yxatlar uchun avatar: rasmi bo'lsa kichik (96px) rasm, bo'lmasa bosh harflar."""
+    if getattr(user, 'photo', None):
+        # rasm fayli har yuklashda yangi nom oladi, shuning uchun nom URL ga qo'shiladi (kesh yangilanadi)
+        src = f"{reverse('face_photo', args=[user.pk])}?s=1&v={user.photo.name.rsplit('/', 1)[-1][:-4]}"
+        return format_html('<span class="av has-img"><img src="{}" alt="" loading="lazy" width="32" height="32"></span>', src)
+    return format_html('<span class="av">{}</span>', initials(user))

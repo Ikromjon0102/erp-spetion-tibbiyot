@@ -13,7 +13,7 @@
     <thead><tr><th>Ota-ona</th><th>Telefon (login)</th><th>Farzandlari</th><th>Holat</th><th>Oxirgi kirish</th></tr></thead>
     <tbody>
     {% for u in page %}<tr>
-      <td><span class="av">{{ u|initials }}</span><a class="name" href="{% url 'panel:parent' u.pk %}">{{ u.get_full_name|default:u.username }}</a>{% if u.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
+      <td>{% avatar u %}<a class="name" href="{% url 'panel:parent' u.pk %}">{{ u.get_full_name|default:u.username }}</a>{% if u.is_teacher %} <span class="badge blue">ustoz</span>{% endif %}</td>
       <td class="mono">{{ u.phone|default:"—" }}</td>
       <td>{% for c in u.children.all %}{{ c.user.last_name }} {{ c.user.first_name }}{% if c.group %} <span class="muted">({{ c.group }})</span>{% endif %}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="badge warn">biriktirilmagan</span>{% endfor %}</td>
       <td>{% if not u.is_active %}<span class="badge gray">nofaol</span>{% elif u.must_change_password %}<span class="badge warn">birinchi kirish kutilmoqda</span>{% elif not u.has_usable_password %}<span class="badge warn">parol berilmagan</span>{% else %}<span class="badge">faol</span>{% endif %}</td>

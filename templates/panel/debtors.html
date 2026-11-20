@@ -30,7 +30,7 @@
     <tbody>
     {% for r in page %}
       <tr>
-        <td><span class="av">{{ r.s.user|initials }}</span><a class="name" href="{% url 'panel:student' r.s.pk %}#pay">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
+        <td>{% avatar r.s.user %}<a class="name" href="{% url 'panel:student' r.s.pk %}#pay">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
         <td>{{ r.s.group|default:"—" }}</td>
         <td>{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <a class="muted mono" href="tel:{{ r.parent.phone|cut:" " }}">{{ r.parent.phone }}</a>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
         <td><span class="mlabel">Qarz:</span><b>{{ r.debt|money }}</b></td>

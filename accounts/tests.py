@@ -80,3 +80,14 @@ class LoginThrottleTests(TestCase):
         self.u.refresh_from_db(); nophone.refresh_from_db()
         self.assertTrue(self.u.check_password('4567'))
         self.assertTrue(nophone.check_password('keep'))  # telefonsiz foydalanuvchi o'zgarmadi
+
+
+class AvatarThumbTests(TestCase):
+    def test_avatar_tag_uses_thumb_when_photo_and_initials_otherwise(self):
+        from django.template import Context, Template
+        u = User.objects.create(username='a1', first_name='Vali', last_name='Aliyev', role='teacher')
+        html = Template('{% load app_extras %}{% avatar u %}').render(Context({'u': u}))
+        self.assertIn('>AV<', html)
+        u.photo.name = 'faces/5-abc123.jpg'
+        html = Template('{% load app_extras %}{% avatar u %}').render(Context({'u': u}))
+        self.assertIn(f'/rasm/{u.pk}/?s=1&amp;v=5-abc123', html)

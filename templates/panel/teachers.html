@@ -12,7 +12,7 @@
     <thead><tr><th>Ustoz</th><th>Telefon (login)</th><th>Fanlar</th><th>Sinflar</th><th>Holat</th><th>Oxirgi kirish</th></tr></thead>
     <tbody>
     {% for r in rows %}<tr>
-      <td><span class="av">{{ r.u|initials }}</span><a class="name" href="{% url 'panel:teacher' r.u.pk %}">{{ r.u.last_name }} {{ r.u.first_name }}</a>{% if r.u.has_children %} <span class="badge blue">ota-ona ham</span>{% endif %}</td>
+      <td>{% avatar r.u %}<a class="name" href="{% url 'panel:teacher' r.u.pk %}">{{ r.u.last_name }} {{ r.u.first_name }}</a>{% if r.u.has_children %} <span class="badge blue">ota-ona ham</span>{% endif %}</td>
       <td class="mono">{{ r.u.phone|default:"—" }}</td>
       <td>{% for s in r.subjects %}<span class="badge gray">{{ s }}</span> {% empty %}<span class="muted">—</span>{% endfor %}</td>
       <td>{{ r.groups|join:", "|default:"—" }}</td>
