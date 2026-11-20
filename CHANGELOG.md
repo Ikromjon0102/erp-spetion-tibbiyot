@@ -5,6 +5,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 ## 2026-11-20
 
 ### Qo'shildi
+- **6 va 10-sinf o'quvchilari terminallarga yuklandi** (6-sinf 12, 10-sinf 16): endi 4 ta terminalda jami 91 kishi (o'quvchilar 90 + direktor).
 - **Yuz rasmlari terminallarga yuklandi:** 62 ta o'quvchi/ustoz (5, 7, 8, 9-sinflar) va direktor (Face ID 8001) — jami 63 kishi, 4 ta Hikvision terminalda.
 - **Xodimlar uchun yuz rasmi:** Panel → Xodimlar → xodim sahifasida rasm yuklash/o'chirish. Face ID 8001 dan avtomatik beriladi, xodimlar terminalga ham yuboriladi.
 - **Rasmli avatar:** panelda o'quvchilar, ustozlar, xodimlar, qarzdorlar, ota-onalar ro'yxatida va ota-ona ilovasida (farzand kartasi va sahifasi) bosh harflar o'rniga yuz rasmi. Ro'yxatlarda 96 px kichik nusxa ishlatiladi (diskda keshlanadi), shuning uchun sahifa og'irlashmaydi.
