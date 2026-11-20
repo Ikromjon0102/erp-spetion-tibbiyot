@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from access.models import AccessEvent
+from access.sync import sync_in_background
 from access.services import day_summaries
 from academics.models import Group
 from accounts.models import Student, User
@@ -39,7 +40,13 @@ def _back(student):
 
 
 def _filtered(request, granted):
-    qs = real_students().select_related('user', 'group').prefetch_related('parents').order_by('user__last_name', 'user__first_name')
+    holat = request.GET.get('holat', '')
+    if holat == 'chiqqan' and 'students.change' in granted:      # maktabdan chiqqanlar (arxiv)
+        qs = (Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=False, left_at__isnull=False)
+              .select_related('user', 'group'))
+    else:
+        qs = real_students().select_related('user', 'group')
+    qs = qs.prefetch_related('parents').order_by('user__last_name', 'user__first_name')
     q = request.GET.get('q', '').strip()
     if q:
         name = Q()
@@ -53,7 +60,6 @@ def _filtered(request, granted):
     group = request.GET.get('sinf', '')
     if group.isdigit():
         qs = qs.filter(group_id=int(group))
-    holat = request.GET.get('holat', '')
     today = timezone.localdate()
     if holat == 'kelmagan' and 'monitoring.view' in granted:
         arrived = AccessEvent.objects.filter(direction='in', occurred_at__date=today, student__isnull=False).values('student_id')
@@ -112,7 +118,7 @@ def students(request):
     return render(request, 'panel/students.html', {
         'nav': 'students', 'page': page, 'rows': rows, 'groups': Group.objects.all(), 'q': request.GET.get('q', ''),
         'sinf': request.GET.get('sinf', ''), 'holat': request.GET.get('holat', ''), 'qs': params.urlencode(),
-        'show_phone': 'sensitive.phones' in granted, 'show_state': presence is not None, 'show_debt': debts is not None,
+        'show_phone': 'sensitive.phones' in granted, 'can_change': 'students.change' in granted, 'show_state': presence is not None, 'show_debt': debts is not None,
     })
 
 
@@ -306,3 +312,52 @@ def students_import(request):
                 audit.log(request, "Excel'dan o'quvchilar yukladi", label=f"{group}: {report['created']} ta yangi", target_type='student',
                           details={'yangi': report['created'], 'oldindan bor': report['existing'], 'yangi ota-ona hisobi': report['parents_new']})
     return render(request, 'panel/students_import.html', {'nav': 'students', 'form': form, 'report': report})
+
+
+# ------------------------------------------------------------------ maktabdan chiqarish / o'chirish
+
+@require_POST
+@panel_required('students.change')
+def student_leave(request, pk):
+    student = get_object_or_404(Student.objects.select_related('user', 'group'), pk=pk)
+    if student.has_left:
+        return redirect('panel:student', pk=pk)
+    label, group = student.user.get_full_name(), student.group.name if student.group_id else ''
+    student.leave()
+    audit.log(request, "O'quvchini maktabdan chiqardi", student, label=label, target_type='student', details={'sinf': group})
+    sync_in_background()
+    messages.success(request, f"{label} maktabdan chiqarildi: ro'yxatlar va terminallardan olinadi. Ma'lumotlari saqlandi (Holat → Chiqqanlar).")
+    return redirect('panel:students')
+
+
+@require_POST
+@panel_required('students.change')
+def student_restore(request, pk):
+    student = get_object_or_404(Student.objects.select_related('user'), pk=pk)
+    if student.has_left:
+        label = student.user.get_full_name()
+        student.restore()
+        audit.log(request, "O'quvchini qaytardi", student, label=label, target_type='student')
+        sync_in_background()
+        messages.success(request, f"{label} qaytarildi" + ('' if student.group_id else " (sinfi topilmadi, sinfni tanlang)") + '.')
+    return redirect('panel:student', pk=pk)
+
+
+@require_POST
+@panel_required('students.change')
+def student_delete(request, pk):
+    """Butunlay o'chirish: faqat avval maktabdan chiqarilgan o'quvchi. Baho, davomat va to'lov tarixi ham o'chadi."""
+    student = get_object_or_404(Student.objects.select_related('user'), pk=pk)
+    if not student.has_left:
+        messages.error(request, "Avval o'quvchini maktabdan chiqaring, so'ng butunlay o'chirish mumkin.")
+        return redirect('panel:student', pk=pk)
+    label, user = student.user.get_full_name(), student.user
+    gone = {'baho': student.grades.count(), 'davomat': student.attendance.count(), "to'lov": student.fee_payments.count()}
+    with transaction.atomic():
+        if user.photo:
+            user.photo.delete(save=False)
+        user.delete()                    # Student va unga bog'liq yozuvlar ham o'chadi; ota-ona hisoblari qoladi
+    audit.log(request, "O'quvchini butunlay o'chirdi", label=label, target_type='student', details=gone)
+    sync_in_background()
+    messages.success(request, f"{label} butunlay o'chirildi.")
+    return redirect('panel:students')

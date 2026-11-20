@@ -26,7 +26,7 @@ WELCOME = ("Assalomu alaykum! Bu — maktab boti. Farzandingizning maktabga kelg
 
 
 def children_of(user):
-    return list(user.children.select_related('user', 'group'))
+    return list(user.children.filter(user__is_active=True).select_related('user', 'group'))
 
 
 def link(chat_id, username, user):

@@ -15,11 +15,12 @@
     <option value="">Barcha sinflar</option>
     {% for g in groups %}<option value="{{ g.pk }}" {% if sinf == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>{% endfor %}
   </select>
-  {% if show_state or show_debt %}
+  {% if show_state or show_debt or can_change %}
   <select name="holat">
     <option value="">Hammasi</option>
     {% if show_state %}<option value="kelmagan" {% if holat == 'kelmagan' %}selected{% endif %}>Bugun kelmaganlar</option>{% endif %}
     {% if show_debt %}<option value="qarz" {% if holat == 'qarz' %}selected{% endif %}>Qarzdorlar</option>{% endif %}
+    {% if can_change %}<option value="chiqqan" {% if holat == 'chiqqan' %}selected{% endif %}>Chiqqanlar (arxiv)</option>{% endif %}
   </select>
   {% endif %}
   <button class="btn" type="submit"><svg class="ic"><use href="#p-search"/></svg>Qidirish</button>
@@ -33,7 +34,7 @@
     {% for r in rows %}
       <tr>
         <td class="c-name">{% avatar r.s.user %}<a class="name" href="{% url 'panel:student' r.s.pk %}">{{ r.s.user.last_name }} {{ r.s.user.first_name }}</a></td>
-        <td class="c-group">{{ r.s.group|default:"sinfsiz" }}</td>
+        <td class="c-group">{% if r.s.left_at %}{{ r.s.left_group_name|default:"—" }} <span class="muted">· chiqqan {{ r.s.left_at|date:"d.m.Y" }}</span>{% else %}{{ r.s.group|default:"sinfsiz" }}{% endif %}</td>
         <td class="c-parent">{% if r.parent %}{{ r.parent.get_full_name|default:r.parent.username }}{% if show_phone and r.parent.phone %} <span class="muted mono">{{ r.parent.phone }}</span>{% endif %}{% if r.extra_parents %} <span class="badge gray">+{{ r.extra_parents }}</span>{% endif %}{% else %}<span class="badge warn">ota-ona yo'q</span>{% endif %}</td>
         {% if show_state %}<td class="c-state">{% if r.state %}<span class="dot {{ r.state.0 }}"></span>{{ r.state.1 }}{% endif %}</td>{% endif %}
         {% if show_debt %}<td class="c-debt">{% if r.debt %}<span class="badge bad">{{ r.debt|money }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>{% endif %}

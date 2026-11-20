@@ -21,7 +21,7 @@ DEVICE_ALIVE = timedelta(minutes=10)
 
 def real_students():
     """Panelda ko'rinadigan o'quvchilar: sinov hisobining namunaviy o'quvchilari (sinov_...) chiqarib tashlanadi."""
-    return Student.objects.exclude(user__username__startswith='sinov_')
+    return Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
 
 
 def missing_attendance(today, now):

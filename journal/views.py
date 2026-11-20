@@ -56,7 +56,7 @@ def teacher_home(request):
     user = request.user
     # Ustoz o'zi ham ota-ona bo'lsa: farzandlarining bugungi holati bosh sahifada ko'rinadi
     kids = []
-    for c in user.children.select_related('user', 'group'):
+    for c in user.children.filter(user__is_active=True).select_related('user', 'group'):
         p = presence(c)
         kids.append({'name': f'{c.user.last_name} {c.user.first_name}'.strip(), 'group': c.group.name if c.group else '',
                      'state': p['state'], 'text': p['text'], 'url': reverse('student_detail', args=[c.pk])})

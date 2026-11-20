@@ -3,10 +3,14 @@
 {% block title %}{{ s.user.get_full_name }}{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:students' %}" style="font-weight:600">O'quvchilar</a> <span class="muted">/</span> {{ s.user.last_name }} {{ s.user.first_name }}{% endblock %}
 {% block actions %}
-  {% if can_change %}<a class="btn" href="{% url 'panel:student_edit' s.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>{% endif %}
+  {% if can_change %}<a class="btn" href="{% url 'panel:student_edit' s.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
+  {% if not s.has_left %}<form method="post" action="{% url 'panel:student_leave' s.pk %}" style="display:inline" data-confirm="{{ s.user.last_name }} {{ s.user.first_name }} maktabdan chiqarilsinmi? U ro'yxatlar, sinf va terminallardan olinadi; baho, davomat va to'lov tarixi saqlanadi." data-confirm-ok="Maktabdan chiqarish">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg>Maktabdan chiqarish</button></form>{% endif %}{% endif %}
 {% endblock %}
 
 {% block content %}
+{% if s.has_left %}<div class="msg" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:220px"><b>Maktabdan chiqqan</b> ({{ s.left_at|date:"d.m.Y" }}{% if s.left_group_name %}, oxirgi sinfi: {{ s.left_group_name }}{% endif %}). Ro'yxatlarda va terminalda yo'q, tarixi saqlangan.</span>
+  {% if can_change %}<form method="post" action="{% url 'panel:student_restore' s.pk %}">{% csrf_token %}<button class="btn primary">Qaytarish</button></form>
+  <form method="post" action="{% url 'panel:student_delete' s.pk %}" data-confirm="{{ s.user.last_name }} {{ s.user.first_name }} BUTUNLAY o'chirilsinmi? Uning barcha baholari, davomati va to'lov tarixi ham o'chadi. Bu amalni ortga qaytarib bo'lmaydi." data-confirm-ok="Butunlay o'chirish">{% csrf_token %}<button class="btn" style="color:var(--bad)"><svg class="ic"><use href="#p-trash"/></svg>Butunlay o'chirish</button></form>{% endif %}</div>{% endif %}
 <div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
   {% if s.user.photo %}<img src="{% url 'face_photo' s.user.pk %}" alt="" style="width:56px;height:56px;border-radius:16px;object-fit:cover">{% else %}<span class="av" style="width:56px;height:56px;border-radius:16px;font-size:20px;margin:0">{{ s.user|initials }}</span>{% endif %}
   <div style="flex:1;min-width:200px"><div style="font-size:19px;font-weight:800">{{ s.user.last_name }} {{ s.user.first_name }}</div>

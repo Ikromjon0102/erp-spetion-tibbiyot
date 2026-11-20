@@ -22,7 +22,7 @@ def announcements_for(user):
         groups.add(user.student.group_id)
     if user.is_parent or user.has_children:
         audiences.add('parents')
-        groups |= set(user.children.values_list('group_id', flat=True))
+        groups |= set(user.children.filter(user__is_active=True).values_list('group_id', flat=True))
     return qs.filter(audience__in=audiences).filter(Q(group__isnull=True) | Q(group_id__in=groups))
 
 

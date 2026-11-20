@@ -88,6 +88,9 @@ class Student(models.Model):
         'Face ID (qurilmadagi ID)', max_length=32, unique=True, null=True, blank=True,
         help_text='Bo\'sh qoldirsangiz avtomatik beriladi (9001 dan). Qurilmada ID allaqachon kiritilgan bo\'lsa, shuni yozing')
 
+    left_at = models.DateField('Maktabdan chiqqan sana', null=True, blank=True, editable=False)
+    left_group_name = models.CharField('Chiqqandagi sinfi', max_length=60, blank=True, editable=False)
+
     class Meta:
         verbose_name = 'O\'quvchi'
         verbose_name_plural = 'O\'quvchilar'
@@ -103,6 +106,30 @@ class Student(models.Model):
         if self.access_id:  # ID keyinroq kiritilsa, oldin kelgan "egasiz" kirish-chiqishlar ham bog'lanadi
             from access.models import AccessEvent
             AccessEvent.objects.filter(student__isnull=True, employee_no=self.access_id).update(student=self)
+
+    @property
+    def has_left(self):
+        return self.left_at is not None and not self.user.is_active
+
+    def leave(self):
+        """Maktabdan chiqarish: ro'yxatlar, sinf va terminaldan chiqadi, tarixi (baho, davomat, to'lov) saqlanadi."""
+        from django.utils import timezone
+        with transaction.atomic():
+            self.left_group_name = self.group.name if self.group_id else ''
+            self.left_at = timezone.localdate()
+            self.group = None
+            self.save(update_fields=['left_at', 'left_group_name', 'group'])
+            self.user.is_active = False
+            self.user.save(update_fields=['is_active'])
+
+    def restore(self):
+        from academics.models import Group
+        with transaction.atomic():
+            self.group = Group.objects.filter(name=self.left_group_name).first() if self.left_group_name else None
+            self.left_at, self.left_group_name = None, ''
+            self.save(update_fields=['left_at', 'left_group_name', 'group'])
+            self.user.is_active = True
+            self.user.save(update_fields=['is_active'])
 
     def __str__(self):
         return str(self.user)

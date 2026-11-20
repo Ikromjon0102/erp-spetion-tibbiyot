@@ -29,7 +29,7 @@ TITLES = {k: t for k, t, _ in REPORTS}
 
 def real_students():
     """Haqiqiy o'quvchilar (sinov hisobining namunaviy o'quvchilari — `sinov_...` — chiqarib tashlanadi)."""
-    return Student.objects.exclude(user__username__startswith='sinov_')
+    return Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
 
 
 def _natural(name):

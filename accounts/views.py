@@ -95,7 +95,7 @@ def home(request):
     u = request.user
     if request.GET.get('rejim') == 'ota-ona':  # menyudagi "Farzandlarim"
         request.session['mode'] = 'parent'
-    children = list(u.children.select_related('user', 'group'))
+    children = list(u.children.filter(user__is_active=True).select_related('user', 'group'))
     panel = has_panel(u)
     mode = request.session.get('mode')
     if panel and (mode == 'panel' or not (u.is_teacher or children)):
@@ -141,7 +141,7 @@ def homework_read(request):
     except (ValueError, KeyError, TypeError):
         return JsonResponse({'ok': False}, status=400)
     user = request.user
-    groups = set(user.children.values_list('group_id', flat=True))
+    groups = set(user.children.filter(user__is_active=True).values_list('group_id', flat=True))
     if hasattr(user, 'student'):
         groups.add(user.student.group_id)
     marked = 0
