@@ -7,6 +7,8 @@ class Group(models.Model):
     year = models.PositiveSmallIntegerField('O\'quv yili (boshlanishi)', default=2026)
     branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='groups',
                                verbose_name='Filial')
+    monthly_price = models.DecimalField("Oylik narx (so'm)", max_digits=12, decimal_places=0, null=True, blank=True,
+                                        help_text="Bo'sh qoldirilsa, tashkilotning umumiy oylik narxi olinadi. Masalan o'quv markazda kursga qarab")
 
     class Meta:
         verbose_name = 'Guruh'

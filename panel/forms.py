@@ -86,8 +86,15 @@ class StaffCreateForm(forms.Form):
 class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = ['name', 'year']
-        labels = {'name': 'Sinf nomi', 'year': "O'quv yili (boshlanishi)"}
+        fields = ['name', 'year', 'monthly_price']
+        labels = {'name': 'Sinf nomi', 'year': "O'quv yili (boshlanishi)", 'monthly_price': "Oylik narx (so'm), ixtiyoriy"}
+        help_texts = {'monthly_price': "Bo'sh qoldirilsa, tashkilotning umumiy oylik narxi olinadi. O'quv markazda kursga qarab alohida narx qo'yish mumkin"}
+
+    def clean_monthly_price(self):
+        value = self.cleaned_data.get('monthly_price')
+        if value is not None and value < 0:
+            raise forms.ValidationError("Narx manfiy bo'lishi mumkin emas")
+        return value or None
 
 
 class AnnouncementForm(forms.ModelForm):

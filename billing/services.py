@@ -32,6 +32,39 @@ def academic_months(year_start):
     return [date(year_start, m, 1) for m in range(9, 13)] + [date(year_start + 1, m, 1) for m in range(1, 7)]
 
 
+def org_of(student):
+    """O'quvchining tashkiloti (filial orqali); filiali bo'lmasa asosiy tashkilot."""
+    from org.models import default_branch
+    branch = student.branch or default_branch()
+    return branch.organization
+
+
+def price_for(student, cfg):
+    """Oylik narx: guruhning o'z narxi bo'lsa shu, aks holda tashkilotning umumiy narxi."""
+    group = student.group
+    if group is not None and group.monthly_price:
+        return group.monthly_price
+    return cfg.monthly_price
+
+
+def _cfg_by_org(students):
+    """{tashkilot_id: BillingSettings} — berilgan o'quvchilar tashkilotlari uchun."""
+    result = {}
+    for s in students:
+        org = org_of(s)
+        if org.pk not in result:
+            result[org.pk] = BillingSettings.get(org)
+    return result
+
+
+def _students(ids):
+    from accounts.models import Student
+    out = []
+    for chunk in _chunks(ids):
+        out += list(Student.objects.filter(pk__in=chunk).select_related('group', 'branch__organization'))
+    return out
+
+
 def billed_months(today=None, cfg=None):
     """Joriy o'quv yilida hisob yoziladigan oylar: hisob boshlanish oyidan bugungi oygacha."""
     today = today or timezone.localdate()
@@ -81,26 +114,34 @@ def _assignments(student_ids):
 
 def ensure_charges(student_ids, today=None):
     """Yetishmayotgan oylik hisoblarni yaratadi (narx belgilangan bo'lsa). Qayta chaqirish xavfsiz."""
-    cfg = BillingSettings.get()
-    if cfg.monthly_price <= 0:
-        return 0
-    months = billed_months(today, cfg)
     ids = sorted({int(i) for i in student_ids})
-    if not months or not ids:
+    if not ids:
+        return 0
+    students = _students(ids)
+    cfgs = _cfg_by_org(students)
+    months_by_org = {oid: billed_months(today, c) for oid, c in cfgs.items()}
+    all_months = sorted({m for ms in months_by_org.values() for m in ms})
+    if not all_months:
         return 0
     existing = set()
     for chunk in _chunks(ids):
-        existing |= set(Charge.objects.filter(student_id__in=chunk, month__in=months).values_list('student_id', 'month'))
-    missing = [(sid, m) for sid in ids for m in months if (sid, m) not in existing]
+        existing |= set(Charge.objects.filter(student_id__in=chunk, month__in=all_months).values_list('student_id', 'month'))
+    missing = []     # (o'quvchi, oy, narx)
+    for s in students:
+        cfg = cfgs[org_of(s).pk]
+        price = price_for(s, cfg)
+        if price <= 0:
+            continue
+        missing += [(s, m, price) for m in months_by_org[org_of(s).pk] if (s.pk, m) not in existing]
     if not missing:
         return 0
-    assignments = _assignments({sid for sid, _ in missing})
+    assignments = _assignments({s.pk for s, _, _ in missing})
     created = []
-    for sid, m in missing:
-        a = best_discount(assignments[sid], m)
+    for s, m, price in missing:
+        a = best_discount(assignments[s.pk], m)
         pct = a.discount.percent if a else ZERO
-        created.append(Charge(student_id=sid, month=m, base_price=cfg.monthly_price, discount_percent=pct,
-                              discount_label=_label(a), amount=price_after(cfg.monthly_price, pct)))
+        created.append(Charge(student_id=s.pk, month=m, base_price=price, discount_percent=pct,
+                              discount_label=_label(a), amount=price_after(price, pct)))
     Charge.objects.bulk_create(created, ignore_conflicts=True)
     return len(created)
 
@@ -123,17 +164,26 @@ def recalc_charges(student, from_month=None):
     return changed
 
 
-def recalc_current_month(today=None):
-    """Narx o'zgargandan keyin joriy oy hisoblarini yangi narx bilan qayta yozadi (o'tgan oylar o'zgarmaydi)."""
+def recalc_current_month(today=None, organization=None, group=None):
+    """Narx o'zgargandan keyin joriy oy hisoblarini yangi narx bilan qayta yozadi (o'tgan oylar o'zgarmaydi).
+    `organization` — shu tashkilot o'quvchilari, `group` — shu guruh o'quvchilari; ikkalasi ham bo'lmasa hammasi."""
     today = today or timezone.localdate()
-    cfg = BillingSettings.get()
     month = first_of_month(today)
-    count = 0
-    for charge in Charge.objects.filter(month=month, cancelled=False).select_related('student'):
-        pct = charge.discount_percent
-        amount = price_after(cfg.monthly_price, pct)
-        if (charge.base_price, charge.amount) != (cfg.monthly_price, amount):
-            charge.base_price, charge.amount = cfg.monthly_price, amount
+    qs = Charge.objects.filter(month=month, cancelled=False).select_related('student__group', 'student__branch__organization')
+    if group is not None:
+        qs = qs.filter(student__group=group)
+    if organization is not None:
+        qs = qs.filter(student__branch__organization=organization)
+    cfgs, count = {}, 0
+    for charge in qs:
+        org = org_of(charge.student)
+        cfg = cfgs.setdefault(org.pk, BillingSettings.get(org))
+        price = price_for(charge.student, cfg)
+        if price <= 0:
+            continue
+        amount = price_after(price, charge.discount_percent)
+        if (charge.base_price, charge.amount) != (price, amount):
+            charge.base_price, charge.amount = price, amount
             charge.save(update_fields=['base_price', 'amount'])
             count += 1
     return count
@@ -142,7 +192,7 @@ def recalc_current_month(today=None):
 def account(student, today=None):
     """Bitta o'quvchining to'liq hisobi: oylar bo'yicha taqsimot, qarz, avans, to'lovlar tarixi."""
     today = today or timezone.localdate()
-    cfg = BillingSettings.get()
+    cfg = BillingSettings.get(org_of(student))
     ensure_charges([student.pk], today)
     charges = list(student.charges.filter(cancelled=False).order_by('month'))
     payments = list(student.fee_payments.select_related('received_by').order_by('-paid_on', '-id'))
@@ -162,21 +212,23 @@ def account(student, today=None):
         'debt': sum((r['debt'] for r in rows), ZERO), 'advance': remaining,
         'overdue': sum((r['debt'] for r in rows if r['overdue']), ZERO),
         'discounts': list(student.discounts.select_related('discount', 'assigned_by')),
-        'price': cfg.monthly_price, 'pay_info': cfg.pay_info.strip(),
+        'price': price_for(student, cfg), 'pay_info': cfg.pay_info.strip(),
     }
 
 
 def summaries(student_ids, today=None):
     """Ko'p o'quvchi uchun qisqa hisob: {id: {charged, paid, debt, advance, overdue}} (ro'yxatlar va hisobotlar uchun)."""
     today = today or timezone.localdate()
-    cfg = BillingSettings.get()
     ids = sorted({int(i) for i in student_ids})
     ensure_charges(ids, today)
+    students = _students(ids)
+    cfgs = _cfg_by_org(students)
+    due_cfg = {s.pk: cfgs[org_of(s).pk] for s in students}      # har o'quvchining o'z tashkiloti to'lov muddati
     charged, overdue_charged, paid = defaultdict(lambda: ZERO), defaultdict(lambda: ZERO), defaultdict(lambda: ZERO)
     for chunk in _chunks(ids):
         for sid, month, amount in Charge.objects.filter(student_id__in=chunk, cancelled=False).values_list('student_id', 'month', 'amount'):
             charged[sid] += amount
-            if today > due_date(month, cfg):
+            if today > due_date(month, due_cfg[sid]):
                 overdue_charged[sid] += amount
         for row in Payment.objects.filter(student_id__in=chunk, voided=False).values('student_id').annotate(t=Sum('amount')):
             paid[row['student_id']] = row['t']

@@ -5,6 +5,7 @@
 <form method="post" class="card" style="max-width:520px">{% csrf_token %}
   {% include 'panel/_field.html' with f=form.name %}
   {% include 'panel/_field.html' with f=form.year %}
+  {% include 'panel/_field.html' with f=form.monthly_price %}
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:groups' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

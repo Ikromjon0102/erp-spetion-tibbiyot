@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -16,7 +17,7 @@ from billing import exports, reports
 from billing.models import BillingSettings, Discount, Payment, StudentDiscount
 from billing.services import account, first_of_month, recalc_charges, recalc_current_month, summaries
 
-from org.scope import scope_groups, scope_via_student
+from org.scope import current_org, orgs_for, pick_branch, scope_discounts, scope_groups, scope_via_student
 
 from . import audit
 from .access import panel_required, perms_of
@@ -77,6 +78,17 @@ class DiscountForm(forms.ModelForm):
         model = Discount
         fields = ['name', 'percent', 'description', 'is_active']
 
+    def __init__(self, *args, organization=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.organization = organization or (self.instance.organization if self.instance.pk else None)
+
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        clash = Discount.objects.filter(organization=self.organization, name=name).exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise forms.ValidationError('Bu nomdagi chegirma allaqachon bor')
+        return name
+
 
 class SettingsForm(forms.Form):
     monthly_price = forms.IntegerField(label="Oylik narx (so'm)", min_value=0)
@@ -99,7 +111,7 @@ def finance(request):
         found = list(qs.order_by('user__last_name', 'user__first_name')[:15])
     recent = scope_via_student(Payment.objects.exclude(student__user__username__startswith='sinov_'), request.user).select_related('student__user', 'student__group', 'received_by')[:15]
     month_start = first_of_month(today)
-    ctx = {'nav': 'finance', 'cfg': BillingSettings.get(), 'q': q, 'found': found, 'recent': recent, 'granted': perms_of(request.user),
+    ctx = {'nav': 'finance', 'cfg': BillingSettings.get(current_org(request)), 'q': q, 'found': found, 'recent': recent, 'granted': perms_of(request.user),
            'today_sum': _paid_sum(scope_via_student(Payment.objects.filter(paid_on=today), request.user)),
            'month_sum': _paid_sum(scope_via_student(Payment.objects.filter(paid_on__gte=month_start), request.user))}
     ctx.update(totals(request.user))
@@ -173,17 +185,20 @@ def payment_void(request, pk):
 
 @panel_required('payments.view')
 def discounts(request):
-    rows = [{'d': d, 'count': d.assignments.count()} for d in Discount.objects.all()]
+    rows = [{'d': d, 'count': d.assignments.count()} for d in scope_discounts(Discount.objects.all(), request.user).select_related('organization')]
     return render(request, 'panel/discounts.html', {'nav': 'finance', 'rows': rows, 'granted': perms_of(request.user)})
 
 
 @panel_required('payments.discounts')
 def discount_edit(request, pk=None):
-    obj = get_object_or_404(Discount, pk=pk) if pk else None
-    form = DiscountForm(request.POST or None, instance=obj)
+    obj = get_object_or_404(scope_discounts(Discount.objects.all(), request.user), pk=pk) if pk else None
+    form = DiscountForm(request.POST or None, instance=obj, organization=current_org(request) if not obj else None)
     if request.method == 'POST' and form.is_valid():
         old = f'{obj.name} −{obj.percent:g}%' if obj else ''
-        d = form.save()
+        d = form.save(commit=False)
+        if not obj:
+            d.organization = form.organization
+        d.save()
         audit.log(request, 'Chegirmani o\'zgartirdi' if obj else "Chegirma qo'shdi", d, label=str(d),
                   details={'eski': old, 'yangi': str(d)} if obj else {'chegirma': str(d)}, target_type='discount')
         if obj:   # foiz o'zgargan bo'lsa, biriktirilgan o'quvchilar hisobi yangilanadi
@@ -198,7 +213,7 @@ def discount_edit(request, pk=None):
 @require_POST
 @panel_required('payments.discounts')
 def discount_delete(request, pk):
-    d = get_object_or_404(Discount, pk=pk)
+    d = get_object_or_404(scope_discounts(Discount.objects.all(), request.user), pk=pk)
     if d.assignments.exists():
         d.is_active = False
         d.save(update_fields=['is_active'])
@@ -216,7 +231,9 @@ def discount_delete(request, pk):
 @panel_required('payments.discounts')
 def student_discount_add(request, pk):
     student = get_object_or_404(real_students(request.user), pk=pk)
-    d = Discount.objects.filter(pk=request.POST.get('discount'), is_active=True).first()
+    from billing.services import org_of
+    d = (scope_discounts(Discount.objects.filter(pk=request.POST.get('discount'), is_active=True), request.user)
+         .filter(Q(organization__isnull=True) | Q(organization=org_of(student))).first())
     if not d:
         messages.error(request, 'Chegirmani tanlang')
         return redirect('panel:student', pk=pk)
@@ -249,7 +266,8 @@ def student_discount_remove(request, pk, sd_id):
 
 @panel_required('payments.settings')
 def finance_settings(request):
-    cfg = BillingSettings.get()
+    org = current_org(request)
+    cfg = BillingSettings.get(org)
     form = SettingsForm(request.POST or None, initial={'monthly_price': int(cfg.monthly_price), 'due_day': cfg.due_day,
                                                        'billing_start': cfg.billing_start, 'pay_info': cfg.pay_info})
     if request.method == 'POST' and form.is_valid():
@@ -258,13 +276,13 @@ def finance_settings(request):
         cfg.monthly_price, cfg.due_day, cfg.billing_start = d['monthly_price'], d['due_day'], first_of_month(d['billing_start'])
         info_changed, cfg.pay_info = cfg.pay_info.strip() != d['pay_info'].strip(), d['pay_info'].strip()
         cfg.save()
-        n = recalc_current_month() if before[0] != d['monthly_price'] else 0
+        n = recalc_current_month(organization=org) if before[0] != d['monthly_price'] else 0
         audit.log(request, "To'lov sozlamalarini o'zgartirdi", label="Moliya sozlamalari", target_type='billing',
                   details={'oylik narx': audit.change(before[0], d['monthly_price']), "to'lov muddati": audit.change(before[1], d['due_day']),
                            "to'lov yo'riqnomasi": "o'zgartirildi" if info_changed else "o'zgarmadi"})
         messages.success(request, "Saqlandi" + (f". Joriy oy uchun {n} ta hisob yangilandi (o'tgan oylar o'zgarmadi)." if n else ''))
-        return redirect('panel:finance')
-    return render(request, 'panel/finance_settings.html', {'nav': 'finance', 'form': form})
+        return redirect(f"{reverse('panel:finance')}?org={org.pk}")
+    return render(request, 'panel/finance_settings.html', {'nav': 'finance', 'form': form, 'org': org, 'orgs': list(orgs_for(request.user))})
 
 
 @panel_required('payments.reports')

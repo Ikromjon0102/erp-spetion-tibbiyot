@@ -26,13 +26,17 @@ def groups(request):
 @panel_required('groups.change')
 def group_edit(request, pk=None):
     group = get_object_or_404(scope_groups(Group.objects.all(), request.user), pk=pk) if pk else None
-    before = group.name if group else ''     # forma tekshirilganda obyekt o'zgaradi, shuning uchun eski nom oldindan olinadi
+    before = group.name if group else ''
+    before_price = group.monthly_price if group else None     # forma tekshirilganda obyekt o'zgaradi, shuning uchun eski nom oldindan olinadi
     form = GroupForm(request.POST or None, instance=group)
     if request.method == 'POST' and form.is_valid():
         saved = form.save(commit=False)
         if not group:
             saved.branch = pick_branch(request.user)
         saved.save()
+        if saved.monthly_price != before_price:
+            from billing.services import recalc_current_month
+            recalc_current_month(group=saved)
         audit.log(request, "Sinfni o'zgartirdi" if group else "Sinf qo'shdi", saved, label=saved.name, target_type='group',
                   details={'nom': audit.change(before, saved.name)} if group and before != saved.name else {})
         messages.success(request, 'Saqlandi.')

@@ -17,7 +17,10 @@ Naqd to'lov: maktab kassasi, Du–Sha 9:00–17:00"""
 
 
 class BillingSettings(models.Model):
-    """Yagona (bitta) sozlama yozuvi: oylik narx, to'lov muddati va hisob boshlanadigan oy."""
+    """Tashkilot uchun moliya sozlamasi (har tashkilotda bittadan): oylik narx, to'lov muddati va hisob boshlanadigan oy.
+    Guruhda o'z narxi (`Group.monthly_price`) bo'lsa, o'sha narx qo'llanadi."""
+    organization = models.OneToOneField('org.Organization', on_delete=models.CASCADE, null=True, blank=True,
+                                        related_name='billing_settings', verbose_name='Tashkilot')
     monthly_price = models.DecimalField('Oylik narx (so\'m)', max_digits=12, decimal_places=0, default=0)
     due_day = models.PositiveSmallIntegerField("To'lov muddati (oyning nechanchi kunigacha)", default=10,
                                                validators=[MinValueValidator(1), MaxValueValidator(28)])
@@ -35,8 +38,19 @@ class BillingSettings(models.Model):
         verbose_name_plural = 'Moliya sozlamalari'
 
     @classmethod
-    def get(cls):
-        obj, _ = cls.objects.get_or_create(pk=1, defaults={'billing_start': timezone.localdate().replace(day=1)})
+    def get(cls, organization=None):
+        """Tashkilot sozlamasi; ko'rsatilmasa — asosiy (birinchi) tashkilotniki. Yangi tashkilotda narx 0 (hisob yozilmaydi)."""
+        from org.models import default_branch
+        default_org = default_branch().organization
+        organization = organization or default_org
+        obj = cls.objects.filter(organization=organization).first()
+        if obj is None and organization.pk == default_org.pk:      # tashkilotga bog'lanmagan eski yozuv — asosiy tashkilotniki
+            obj = cls.objects.filter(organization__isnull=True).first()
+            if obj:
+                obj.organization = organization
+                obj.save(update_fields=['organization'])
+        if obj is None:
+            obj = cls.objects.create(organization=organization, billing_start=timezone.localdate().replace(day=1))
         return obj
 
     def __str__(self):
@@ -45,7 +59,9 @@ class BillingSettings(models.Model):
 
 class Discount(models.Model):
     """Chegirma turi (katalog): nomi va foizi. Standart holatda hech kimda chegirma yo'q — kerakli o'quvchiga biriktiriladi."""
-    name = models.CharField('Nomi', max_length=100, unique=True)
+    organization = models.ForeignKey('org.Organization', on_delete=models.PROTECT, null=True, blank=True, related_name='discounts',
+                                     verbose_name='Tashkilot', help_text="Bo'sh bo'lsa, hamma tashkilotda ishlatiladi")
+    name = models.CharField('Nomi', max_length=100)
     percent = models.DecimalField('Foiz (%)', max_digits=5, decimal_places=2,
                                   validators=[MinValueValidator(0), MaxValueValidator(100)])
     description = models.CharField('Izoh', max_length=200, blank=True,
@@ -55,6 +71,7 @@ class Discount(models.Model):
 
     class Meta:
         ordering = ['-percent', 'name']
+        constraints = [models.UniqueConstraint(fields=['organization', 'name'], name='uniq_discount_name_per_org')]
         verbose_name = 'Chegirma'
         verbose_name_plural = 'Chegirmalar'
 

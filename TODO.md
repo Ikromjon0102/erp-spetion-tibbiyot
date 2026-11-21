@@ -11,7 +11,8 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 
 - [x] 1. `org` ilovasi: `Organization` (tur, brend rangi, modullar), `Branch`; `Group.branch`, `Device.branch`; mavjud yozuvlar «Tibbiyot maktabi / Asosiy»ga bog'landi
 - [x] 2. Ma'lumotlarni filial bo'yicha ajratish (panel, e'lonlar, terminallar, hisobotlar) — `org/scope.py`, `org/test_isolation.py`
-  - [ ] 2a. Hali global qolganlar: oylik narx/to'lov muddati/rekvizitlar (`BillingSettings`), chegirmalar, chiqish xabari vaqti (`AccessSettings`) — tashkilot bo'yicha bo'lishi kerak; guruh nomi hozircha tizimda noyob (filial ichida noyob qilish kerak)
+  - [x] 2a-1. Narx, to'lov muddati, rekvizitlar va chegirmalar tashkilot bo'yicha; guruhda ixtiyoriy narx
+  - [ ] 2a-2. Hali global: chiqish xabari vaqti (`AccessSettings`); guruh nomi tizimda noyob (filial ichida noyob qilish kerak); Telegram bot xabarlarida tashkilot nomi
   - [ ] 2b. Panelda ustoz va xodimning filiallarini tanlash/o'zgartirish oynasi (hozir yaratuvchining filialiga tushadi, boshqasini admin orqali)
   - [ ] 2c. `tools/push_faces.py` qurilma filialiga qarab yuborsin
 - [ ] 3. Ota-ona ilovasi: farzandlar turli tashkilotdan bitta ro'yxatda, farzand almashganda ilova fon rangi o'zgaradi (tashkilot brendi), bitta telefon = bitta hisob (sinov: 3 farzand 3 tashkilotda)

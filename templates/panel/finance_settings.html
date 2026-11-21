@@ -2,7 +2,15 @@
 {% block title %}To'lov sozlamalari{% endblock %}
 {% block heading %}<a class="muted" href="{% url 'panel:finance' %}" style="font-weight:600">To'lovlar</a> <span class="muted">/</span> Sozlamalar{% endblock %}
 {% block content %}
+{% if orgs|length > 1 %}
+<form method="get" class="card" style="max-width:620px;margin-bottom:12px">
+  <label class="muted" style="font-size:13px">Tashkilot</label>
+  <select name="org" onchange="this.form.submit()">{% for o in orgs %}<option value="{{ o.pk }}"{% if o.pk == org.pk %} selected{% endif %}>{{ o.name }}</option>{% endfor %}</select>
+</form>
+{% endif %}
 <form method="post" class="card" style="max-width:620px">{% csrf_token %}
+  <input type="hidden" name="org" value="{{ org.pk }}">
+  {% if orgs|length == 1 %}<div class="hint" style="margin-bottom:8px">Tashkilot: <b>{{ org.name }}</b></div>{% endif %}
   {% include 'panel/_field.html' with f=form.monthly_price %}
   {% include 'panel/_field.html' with f=form.due_day %}
   {% include 'panel/_field.html' with f=form.billing_start %}

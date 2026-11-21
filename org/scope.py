@@ -3,7 +3,7 @@
 Qoida: «maktab egasi» va superuser hamma filialni ko'radi; boshqa xodim va ustoz faqat `user.branches` dagi filiallarni.
 Ota-ona va o'quvchi bu yerdagi qoidalarga bo'ysunmaydi: ular faqat o'z farzandi/o'z ma'lumotini ko'radi.
 """
-from .models import Branch
+from .models import Branch, Organization
 
 
 def _is_all(user):
@@ -78,6 +78,32 @@ def scope_staff(qs, user):
 def scope_audit(qs, user):
     ids = branch_ids(user)
     return qs if ids is None else qs.filter(actor__branches__in=ids).distinct()
+
+
+def orgs_for(user):
+    """Foydalanuvchi ko'ra oladigan tashkilotlar."""
+    return Organization.objects.filter(is_active=True, branches__in=branches_for(user)).distinct()
+
+
+def current_org(request):
+    """Moliya sozlamalari kabi tashkilotga tegishli sahifalarda qaysi tashkilot tanlangani: `?org=<id>`, bo'lmasa xodimning birinchisi.
+    Faqat o'zi ko'ra oladigan tashkilotni tanlay oladi."""
+    orgs = list(orgs_for(request.user))
+    wanted = request.POST.get('org') or request.GET.get('org') or ''
+    for o in orgs:
+        if str(o.pk) == wanted:
+            return o
+    mine = pick_branch(request.user).organization
+    return next((o for o in orgs if o.pk == mine.pk), orgs[0] if orgs else mine)
+
+
+def scope_discounts(qs, user):
+    """Chegirmalar: o'z tashkilotlariniki va umumiy (tashkilotsiz)."""
+    from django.db.models import Q
+    ids = branch_ids(user)
+    if ids is None:
+        return qs
+    return qs.filter(Q(organization__isnull=True) | Q(organization__in=orgs_for(user)))
 
 
 def pick_branch(user, group=None):

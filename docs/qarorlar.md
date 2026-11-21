@@ -29,6 +29,12 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - **Yangi yozuvlar** yaratuvchining filialiga tushadi. Yangi ustoz/xodim hisobi asosiy filialga biriktiriladi (signal), keyin aniqlashtiriladi.
 - **Hali global:** oylik narx va to'lov sozlamalari, chegirmalar, chiqish xabari vaqti, guruh nomi noyobligi (TODO 2a).
 
+## 1b. Narx va chegirmalar (2026-11-21)
+- **Oylik narx tashkilot bo'yicha** (`BillingSettings` har tashkilotda bittadan), **guruhda ixtiyoriy o'zgartiriladi** (`Group.monthly_price`): bo'sh bo'lsa tashkilot narxi, to'lgan bo'lsa guruhniki. Maktab va bog'chada guruh narxi bo'sh qoladi, o'quv markazda kursga qarab to'ldiriladi. Rad etilgan: o'quvchi bo'yicha alohida narx (buning o'rniga chegirma tizimi).
+- **Chegirmalar saqlanadi** va tashkilot bo'yicha ishlaydi (`Discount.organization`; bo'sh = hamma tashkilotda). Chegirma foizi guruh narxidan ham hisoblanadi; bir necha bo'lsa eng kattasi.
+- Yangi tashkilotda narx 0 bo'ladi: narx kiritilmaguncha hisob yozilmaydi (xato summa chiqmasligi uchun). To'lov muddati va qarz hisobi o'quvchining o'z tashkiloti sozlamasi bo'yicha.
+- Narx o'zgarsa faqat joriy oy hisobi yangilanadi; o'tgan oylar o'zgarmaydi (eski qoida saqlandi).
+
 ## 2. Brend
 - Logo hamma tashkilotda bir xil; **ilova fon rangi** tashkilotga qarab: tibbiyot to'q yashil `#166534`, asosiy maktab to'q ko'k, o'quv markaz qizil, bog'cha to'q sariq. Rang `Organization.brand_color` da.
 - Ota-ona farzandni almashtirsa, ilova rangi o'sha farzand tashkilotiga o'tadi.

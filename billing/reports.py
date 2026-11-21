@@ -147,8 +147,7 @@ def sinflar(today=None, user=None):
 
 def chegirmalar(today=None, user=None):
     today = today or timezone.localdate()
-    cfg = BillingSettings.get()
-    rep = _base('chegirmalar', f'{today:%d.%m.%Y} holatiga · oylik narx {cfg.monthly_price:,.0f} so\'m'.replace(',', ' '))
+    rep = _base('chegirmalar', f'{today:%d.%m.%Y} holatiga')
     rep['headers'] = ["O'quvchi", 'Sinf', 'Chegirma', 'Foiz', 'Qaysi oydan', 'Qaysi oygacha', 'Sabab', 'Oyiga tejaydi']
     rep['kinds'] = ['text', 'text', 'text', 'pct', 'text', 'text', 'text', 'money']
     rows = []
@@ -157,8 +156,12 @@ def chegirmalar(today=None, user=None):
     if user is not None:
         from org.scope import scope_via_student
         qs = scope_via_student(qs, user)
-    for sd in qs:
-        saving = (cfg.monthly_price * sd.discount.percent / Decimal(100)).quantize(Decimal(1))
+    from .services import org_of, price_for
+    cfgs = {}
+    for sd in qs.select_related('student__group', 'student__branch__organization'):
+        org = org_of(sd.student)
+        price = price_for(sd.student, cfgs.setdefault(org.pk, BillingSettings.get(org)))
+        saving = (price * sd.discount.percent / Decimal(100)).quantize(Decimal(1))
         rows.append([_fio(sd.student), sd.student.group.name if sd.student.group else '—', sd.discount.name, sd.discount.percent,
                      f'{sd.valid_from:%m.%Y}' if sd.valid_from else 'boshidan', f'{sd.valid_to:%m.%Y}' if sd.valid_to else 'muddatsiz',
                      sd.note, saving])
