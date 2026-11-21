@@ -1,0 +1,15 @@
+{% extends 'panel/base.html' %}
+{% block title %}Yangi oylik qoidasi{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:salary_rules' %}" style="font-weight:600">Oylik qoidalari</a> <span class="muted">/</span> Yangi qoida{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:560px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.employee %}
+  {% include 'panel/_field.html' with f=form.branch %}
+  {% include 'panel/_field.html' with f=form.kind %}
+  {% include 'panel/_field.html' with f=form.amount %}
+  {% include 'panel/_field.html' with f=form.percent %}
+  {% include 'panel/_field.html' with f=form.effective_from %}
+  {{ form.non_field_errors }}
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:salary_rules' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}

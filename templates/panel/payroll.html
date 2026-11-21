@@ -1,0 +1,37 @@
+{% extends 'panel/base.html' %}
+{% block title %}Oyliklar{% endblock %}
+{% block heading %}Oyliklar{% endblock %}
+{% block actions %}
+<a class="btn" href="{% url 'panel:salary_rules' %}"><svg class="ic"><use href="#p-gear"/></svg>Oylik qoidalari</a>
+{% if can_manage and branch %}<form method="post" action="{% url 'panel:payroll_calculate' %}" style="display:inline">{% csrf_token %}<input type="hidden" name="oy" value="{{ month|date:'Y-m' }}"><input type="hidden" name="filial" value="{{ branch.pk }}"><button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Hisoblash</button></form>{% endif %}
+{% endblock %}
+{% block content %}
+<form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px">
+  <a class="btn" href="?oy={{ prev_month|date:'Y-m' }}{% if branch %}&filial={{ branch.pk }}{% endif %}" aria-label="Oldingi oy">‹</a>
+  <b style="min-width:110px;text-align:center">{{ month|date:"F Y" }}</b>
+  <a class="btn" href="?oy={{ next_month|date:'Y-m' }}{% if branch %}&filial={{ branch.pk }}{% endif %}" aria-label="Keyingi oy">›</a>
+  <input type="hidden" name="oy" value="{{ month|date:'Y-m' }}">
+  {% if branches|length > 1 %}<select name="filial" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.pk }}"{% if branch and b.pk == branch.pk %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>{% elif branch %}<span class="muted">{{ branch }}</span>{% endif %}
+</form>
+
+<div class="card" style="display:flex;gap:18px;flex-wrap:wrap">
+  <div><div class="muted" style="font-size:12.5px">To'lanishi kerak</div><b style="font-size:20px">{{ totals.total|floatformat:0 }} so'm</b></div>
+  <div><div class="muted" style="font-size:12.5px">To'langan</div><b style="font-size:20px">{{ totals.paid|floatformat:0 }} so'm</b></div>
+  <div><div class="muted" style="font-size:12.5px">Qoldiq</div><b style="font-size:20px">{{ totals.remaining|floatformat:0 }} so'm</b></div>
+</div>
+
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th>Hisob</th><th style="text-align:right">Hisoblangan</th><th style="text-align:right">Mukofot / ushlanma</th><th style="text-align:right">Jami</th><th style="text-align:right">To'langan</th><th style="text-align:right">Qoldiq</th><th></th></tr></thead><tbody>
+  {% for s in slips %}<tr>
+    <td><b>{{ s.employee.last_name }} {{ s.employee.first_name }}</b></td>
+    <td class="muted" style="font-size:12.5px">{{ s.calc_note }}{% if s.note %}<br>{{ s.note }}{% endif %}</td>
+    <td style="text-align:right">{{ s.base_amount|floatformat:0 }}</td>
+    <td style="text-align:right">{% if s.bonus %}+{{ s.bonus|floatformat:0 }}{% endif %}{% if s.deduction %} −{{ s.deduction|floatformat:0 }}{% endif %}{% if not s.bonus and not s.deduction %}—{% endif %}</td>
+    <td style="text-align:right"><b>{{ s.total|floatformat:0 }}</b></td>
+    <td style="text-align:right">{{ s.paid|floatformat:0 }}</td>
+    <td style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|floatformat:0 }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
+    <td style="text-align:right">{% if can_manage %}<a class="btn" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> <a class="btn" href="{% url 'panel:payslip_edit' s.pk %}"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="8"><div class="empty">{% if has_rules %}Bu oy hisoblanmagan. «Hisoblash» tugmasini bosing.{% else %}Avval «Oylik qoidalari»da xodimlarga oylik belgilang.{% endif %}</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

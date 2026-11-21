@@ -54,6 +54,16 @@ CATALOG = [
         ('view', "Xodimlar ro'yxatini ko'rish"),
         ('manage', "Xodim qo'shish va ruxsatlarni boshqarish"),
     ]),
+    ('expenses', "Xarajatlar", [
+        ('view', "Xarajatlar va kirim-chiqim hisobotini ko'rish"),
+        ('add', "Xarajat qo'shish"),
+        ('change', "Xarajatni tahrirlash va o'chirish"),
+        ('manage', "Takroriy xarajatlar (ijara, kommunal...)"),
+    ]),
+    ('payroll', "Oyliklar", [
+        ('view', "Oyliklarni ko'rish"),
+        ('manage', "Oylik qoidalari, hisoblash va to'lash"),
+    ]),
     ('org', "Tashkilot", [
         ('settings', "Tashkilot nomi va brend rangini o'zgartirish"),
     ]),
@@ -66,7 +76,7 @@ ALL_PERMS = [f'{module}.{action}' for module, _, actions in CATALOG for action, 
 LABELS = {f'{m}.{a}': label for m, _, actions in CATALOG for a, label in actions}
 
 # Boshqa amal tanlansa, shu modulning "ko'rish" ruxsati ham kerak (ko'rmasdan tahrirlab bo'lmaydi)
-NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments'}
+NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments', 'expenses', 'payroll'}
 
 
 def normalize(perms):
@@ -85,12 +95,13 @@ def _all_except(*excluded):
 # Lavozim namunalari: (to'liq ruxsat egasimi, ruxsatlar). Maktab egasi tahrirlay oladi.
 PRESETS = [
     ('Maktab egasi', True, ALL_PERMS),
-    ('Direktor', False, _all_except('staff.manage')),   # to'lovlarni qabul qilish ham, bekor qilish ham
+    # Xarajat va oyliklar maxfiy: Direktorda ham yo'q, «Maktab egasi» (founder) kerakli odamga alohida beradi
+    ('Direktor', False, _all_except('staff.manage', *[p for p in ALL_PERMS if p.startswith(('expenses.', 'payroll.'))])),
     ("Zam (o'quv ishlari)", False, ['students.view', 'students.change', 'teachers.view', 'teachers.change', 'schedule.view', 'schedule.change', 'parents.view', 'sensitive.grades', 'groups.view', 'groups.change',
                                     'monitoring.view', 'announcements.view', 'announcements.add', 'announcements.change']),
     ('Reception', False, ['students.view', 'teachers.view', 'parents.view', 'parents.add', 'parents.change', 'schedule.view', 'students.add', 'students.change', 'sensitive.phones', 'groups.view',
                           'monitoring.view', 'announcements.view', 'payments.view', 'payments.accept']),
     ('Hisobchi', False, ['students.view', 'sensitive.phones', 'payments.view', 'payments.reports', 'groups.view',
-                         'announcements.view']),
+                         'announcements.view', 'expenses.view', 'expenses.add', 'expenses.change', 'expenses.manage', 'payroll.view', 'payroll.manage']),
     ('Zavxoz', False, ['schedule.view', 'devices.view', 'groups.view', 'monitoring.view', 'announcements.view']),
 ]

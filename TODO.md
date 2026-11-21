@@ -16,8 +16,10 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
   - [ ] 2b. Panelda ustoz va xodimning filiallarini tanlash/o'zgartirish oynasi (hozir yaratuvchining filialiga tushadi, boshqasini admin orqali)
   - [ ] 2c. `tools/push_faces.py` qurilma filialiga qarab yuborsin
 - [x] 3. Ota-ona ilovasi: farzandlar turli tashkilotdan bitta ro'yxatda, farzand almashganda ilova rangi o'zgaradi; panelda «Tashkilot va brend» sozlamasi. Qolgan: telefon ilovasi (PWA) ikonka/manifest rangi hali bitta (yashil); `create_orgs` ni serverda ishga tushirish (deploy bilan)
-- [ ] 4. Xarajatlar: kategoriya, takrorlanuvchi shablon, chek rasmi, kirim-chiqim-foyda hisoboti (ma'muriyat/buxgalter, tashkilot bo'yicha)
-- [ ] 5. Oyliklar: qat'iy oylik (kuchga kirish sanasi bilan) yoki foiz (default 40%, ustozning o'quvchilari qilgan to'lovdan); to'langanda avtomatik xarajat
+- [x] 4. Xarajatlar: kategoriya, takroriy xarajat, chek rasmi, kirim-chiqim-foyda (faqat hisobchi va founder; `expenses.*`)
+  - [ ] 4a. Keyin: kategoriyalarni panelda qo'shish/tahrirlash (hozir faqat admin orqali); xarajatlarni Excel'ga yuklash; takroriy xarajatlar uchun serverda cron
+- [x] 5. Oyliklar: qat'iy oylik (kuchga kirish sanasi bilan) yoki foiz (default 40%); to'langanda avtomatik «Maosh» xarajati (`payroll.*`)
+  - [ ] 5a. Keyin: oylik qaydnomasi (PDF/Excel), xodimga oylik xabari (Telegram), ustoz va xodim kartasida oylik qoidasi
 - [ ] 6. Taomnoma: 14 kunlik sikl (tushlik + poldnik, ba'zi kunlar poldnik yo'q), sikl o'quv kunlari bo'yicha (med: Du–Sha; asosiy maktab: dekabrdan Sha ham), oshpaz roli, haqiqiy rasm yuklash, ota-ona sahifasida «bugun nima yedi». Maktab menyusi founderdan olingan (2 ta rasm), bog'chaniki hali yo'q
 - [ ] 7. Exam bilan integratsiya: SSO (ERP asosiy hisob), sinf/o'quvchi/ustozlarni ERP'dan olish, ota-ona ilovasida o'quvchi portfoliosi: imtihon natijalari dinamikasi
 - [ ] 8. Deploy: 2 GB droplet (~$18), Postgres, med + exam ko'chiriladi, boshqa loyihalar eski VPS'da qoladi; haftalik backup

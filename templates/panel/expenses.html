@@ -1,0 +1,48 @@
+{% extends 'panel/base.html' %}
+{% block title %}Xarajatlar{% endblock %}
+{% block heading %}Xarajatlar{% endblock %}
+{% block actions %}
+{% if can_manage %}<a class="btn" href="{% url 'panel:recurring' %}"><svg class="ic"><use href="#p-cal"/></svg>Takroriy</a>{% endif %}
+{% if can_payroll %}<a class="btn" href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
+{% if can_add %}<a class="btn primary" href="{% url 'panel:expense_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi xarajat</a>{% endif %}
+{% endblock %}
+{% block content %}
+<form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px">
+  <a class="btn" href="?oy={{ prev_month|date:'Y-m' }}{% if branch %}&filial={{ branch.pk }}{% endif %}" aria-label="Oldingi oy">‹</a>
+  <b style="min-width:110px;text-align:center">{{ month|date:"F Y" }}</b>
+  <a class="btn" href="?oy={{ next_month|date:'Y-m' }}{% if branch %}&filial={{ branch.pk }}{% endif %}" aria-label="Keyingi oy">›</a>
+  <input type="hidden" name="oy" value="{{ month|date:'Y-m' }}">
+  {% if branches|length > 1 %}<select name="filial" onchange="this.form.submit()"><option value="">Hamma filial</option>{% for b in branches %}<option value="{{ b.pk }}"{% if branch and b.pk == branch.pk %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>{% endif %}
+  <select name="kategoriya" onchange="this.form.submit()"><option value="">Hamma kategoriya</option>{% for c in categories %}<option value="{{ c.pk }}"{% if category == c.pk|stringformat:"s" %} selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+</form>
+
+<div class="card" style="display:flex;gap:18px;flex-wrap:wrap">
+  <div><div class="muted" style="font-size:12.5px">Kirim (o'quvchi to'lovlari)</div><b style="font-size:20px">{{ income|floatformat:0 }} so'm</b></div>
+  <div><div class="muted" style="font-size:12.5px">Chiqim (xarajatlar)</div><b style="font-size:20px">{{ total|floatformat:0 }} so'm</b></div>
+  <div><div class="muted" style="font-size:12.5px">Foyda / zarar</div><b style="font-size:20px;color:{% if profit < 0 %}var(--bad){% else %}var(--accent-deep){% endif %}">{{ profit|floatformat:0 }} so'm</b></div>
+</div>
+
+{% if by_cat %}
+<div class="card" style="padding:10px 14px">
+  <div class="muted" style="font-size:12.5px;margin-bottom:6px">Kategoriya bo'yicha</div>
+  {% for c in by_cat %}<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:200px;flex-shrink:0">{{ c.name }}</span>
+    <span style="flex:1;height:8px;background:var(--tint);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:{{ c.pct }}%;background:var(--accent)"></i></span>
+    <b style="min-width:120px;text-align:right">{{ c.sum|floatformat:0 }}</b></div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Sana</th><th>Kategoriya</th><th>Kimga / izoh</th>{% if branches|length > 1 %}<th>Filial</th>{% endif %}<th style="text-align:right">Summa</th><th></th></tr></thead><tbody>
+  {% for e in page %}<tr>
+    <td>{{ e.date|date:"d.m.Y" }}</td><td><span class="badge">{{ e.category.name }}</span></td>
+    <td>{{ e.payee }}{% if e.note %} <span class="muted">· {{ e.note }}</span>{% endif %}</td>
+    {% if branches|length > 1 %}<td class="muted">{{ e.branch }}</td>{% endif %}
+    <td style="text-align:right"><b>{{ e.amount|floatformat:0 }}</b></td>
+    <td style="text-align:right">{% if e.receipt %}<a class="btn" href="{% url 'panel:expense_receipt' e.pk %}" target="_blank" rel="noopener">Chek</a>{% endif %}
+      {% if can_change %}<a class="btn" href="{% url 'panel:expense_edit' e.pk %}"><svg class="ic"><use href="#p-edit"/></svg></a>
+      <form method="post" action="{% url 'panel:expense_delete' e.pk %}" style="display:inline" data-confirm="Xarajat o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="6"><div class="empty">Bu oy xarajat kiritilmagan</div></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% include 'panel/_pager.html' %}
+</div>
+{% endblock %}

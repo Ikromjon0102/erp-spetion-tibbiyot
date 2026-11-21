@@ -41,6 +41,11 @@ def scope_students(qs, user):
     return _filter(qs, user, 'branch')
 
 
+def scope_by_branch(qs, user):
+    """Filialga to'g'ridan-to'g'ri bog'langan yozuvlar (xarajat, oylik qoidasi...)."""
+    return _filter(qs, user, 'branch')
+
+
 def scope_devices(qs, user):
     return _filter(qs, user, 'branch')
 

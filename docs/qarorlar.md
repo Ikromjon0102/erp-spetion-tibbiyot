@@ -35,6 +35,13 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Yangi tashkilotda narx 0 bo'ladi: narx kiritilmaguncha hisob yozilmaydi (xato summa chiqmasligi uchun). To'lov muddati va qarz hisobi o'quvchining o'z tashkiloti sozlamasi bo'yicha.
 - Narx o'zgarsa faqat joriy oy hisobi yangilanadi; o'tgan oylar o'zgarmaydi (eski qoida saqlandi).
 
+## 1c. Xarajat va oyliklar ruxsati (2026-11-21)
+- **Faqat hisobchi (buxgalter) va founder** ko'radi va boshqaradi. Direktor, zam, reception, ustoz va ota-ona ko'rmaydi. Ruxsatlar alohida: `expenses.*` va `payroll.*`.
+- **Founder xohlagan odamga alohida bera oladi:** Panel → Xodimlar → xodim sahifasida ruxsatlarni belgilaydi (mavjud ruxsat tizimi). Direktor lavozimida bu ruxsatlar boshidan yo'q.
+- Hisobchi o'z filialidagi xarajat va oyliklarni ko'radi; founder hamma tashkilotni. Kirim = o'quvchilarning haqiqiy to'lovlari; chiqim = xarajatlar (oyliklar ham «Maosh» sifatida shu yerga tushadi); foyda = kirim − chiqim.
+- **Oylik qoidasi:** maktab va bog'chada qat'iy, markazda foiz (default 40%, ustozning o'quvchilari shu oy qilgan haqiqiy to'lovdan). Kuchga kirish sanasi bilan saqlanadi. Guruhda bir nechta ustoz bo'lsa o'quvchi to'lovi ustozlar o'rtasida teng bo'linadi.
+- Oylik to'lovi avtomatik «Maosh» xarajatini yaratadi (qo'lda ikki marta kiritilmaydi).
+
 ## 2. Brend
 - Logo hamma tashkilotda bir xil; **ilova fon rangi** tashkilotga qarab: tibbiyot to'q yashil `#166534`, asosiy maktab to'q ko'k `#1E3A8A`, o'quv markaz qizil `#B91C1C`, bog'cha to'q sariq `#C2410C` (boshlang'ich; tasdiqlandi 2026-11-21). Rang `Organization.brand_color` da; butun palitra (och/qorong'i rejim) shu bitta rangdan hisoblanadi.
 - **Keyin o'zgartirish:** founder va filial adminlari panelda (Sozlamalar → Tashkilot va brend) o'z tashkilotining nomi va rangini o'zgartira oladi (`org.settings` ruxsati). Modullarni (taomnoma, xarajat) yoqish-o'chirish faqat «Maktab egasi»da.

@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:recurring' %}" style="font-weight:600">Takroriy xarajatlar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:560px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.branch %}
+  {% include 'panel/_field.html' with f=form.category %}
+  {% include 'panel/_field.html' with f=form.amount %}
+  {% include 'panel/_field.html' with f=form.payee %}
+  {% include 'panel/_field.html' with f=form.day %}
+  {% include 'panel/_field.html' with f=form.method %}
+  {% include 'panel/_field.html' with f=form.start_month %}
+  {% include 'panel/_field.html' with f=form.end_month %}
+  <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:recurring' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}

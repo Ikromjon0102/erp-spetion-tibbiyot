@@ -1,0 +1,20 @@
+{% extends 'panel/base.html' %}
+{% block title %}Takroriy xarajatlar{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:expenses' %}" style="font-weight:600">Xarajatlar</a> <span class="muted">/</span> Takroriy{% endblock %}
+{% block actions %}
+<form method="post" action="{% url 'panel:recurring_generate' %}" style="display:inline">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-check"/></svg>Shu oyga yozish</button></form>
+<a class="btn primary" href="{% url 'panel:recurring_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi</a>
+{% endblock %}
+{% block content %}
+<div class="card" style="padding:6px 10px">
+  <p class="muted" style="padding:6px 8px 0">Ijara, kommunal kabi har oy takrorlanadigan xarajatlar. «Shu oyga yozish» tugmasi (yoki server buyrug'i) har oy bir marta xarajat yozadi; qayta bosish takrorlamaydi.</p>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Kategoriya</th><th>Kimga</th><th>Filial</th><th>Kun</th><th style="text-align:right">Summa</th><th></th></tr></thead><tbody>
+  {% for r in rows %}<tr>
+    <td><span class="badge">{{ r.category.name }}</span>{% if not r.is_active %} <span class="badge gray">faolsiz</span>{% endif %}</td><td>{{ r.payee }}</td><td class="muted">{{ r.branch }}</td>
+    <td>{{ r.day }}-kun</td><td style="text-align:right"><b>{{ r.amount|floatformat:0 }}</b></td>
+    <td style="text-align:right"><a class="btn" href="{% url 'panel:recurring_edit' r.pk %}"><svg class="ic"><use href="#p-edit"/></svg></a>
+      <form method="post" action="{% url 'panel:recurring_delete' r.pk %}" style="display:inline" data-confirm="Takroriy xarajat o'chirilsinmi? Yozilgan xarajatlar qoladi." data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form></td>
+  </tr>{% empty %}<tr><td colspan="6"><div class="empty">Takroriy xarajat kiritilmagan</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

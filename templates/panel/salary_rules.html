@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}Oylik qoidalari{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:payroll' %}" style="font-weight:600">Oyliklar</a> <span class="muted">/</span> Qoidalar{% endblock %}
+{% block actions %}{% if can_manage %}<a class="btn primary" href="{% url 'panel:salary_rule_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi qoida</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="card" style="padding:6px 10px">
+  <p class="muted" style="padding:6px 8px 0">Oylik o'zgarsa yangi qoida qo'shing: u ko'rsatilgan oydan boshlab amal qiladi, eski oylarning hisobi o'zgarmaydi. Foiz — xodimning o'quvchilari shu oy qilgan haqiqiy to'lovdan.</p>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th>Filial</th><th>Qoida</th><th>Kuchga kiradi</th><th></th></tr></thead><tbody>
+  {% for x in rows %}<tr>
+    <td><b>{{ x.r.employee.last_name }} {{ x.r.employee.first_name }}</b></td><td class="muted">{{ x.r.branch }}</td>
+    <td>{{ x.r.get_kind_display }}: <b>{{ x.r.describe }}</b>{% if x.current %} <span class="badge">amalda</span>{% else %} <span class="badge gray">eski</span>{% endif %}</td>
+    <td>{{ x.r.effective_from|date:"m.Y" }}</td>
+    <td style="text-align:right">{% if can_manage %}<form method="post" action="{% url 'panel:salary_rule_delete' x.r.pk %}" style="display:inline" data-confirm="Qoida o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5"><div class="empty">Qoida kiritilmagan</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

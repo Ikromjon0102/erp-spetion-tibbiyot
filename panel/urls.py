@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org
+from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll
 
 app_name = 'panel'
 urlpatterns = [
@@ -76,6 +76,26 @@ urlpatterns = [
     path('tolovlar/chegirmalar/<int:pk>/ochirish/', views_finance.discount_delete, name='discount_delete'),
     path('tolovlar/sozlamalar/', views_finance.finance_settings, name='finance_settings'),
     path('tashkilot/', views_org.org_settings, name='org_settings'),
+
+    path('xarajatlar/', views_expenses.expenses, name='expenses'),
+    path('xarajatlar/yangi/', views_expenses.expense_add, name='expense_add'),
+    path('xarajatlar/<int:pk>/', views_expenses.expense_edit, name='expense_edit'),
+    path('xarajatlar/<int:pk>/ochirish/', views_expenses.expense_delete, name='expense_delete'),
+    path('xarajatlar/<int:pk>/chek/', views_expenses.expense_receipt, name='expense_receipt'),
+    path('xarajatlar/takroriy/', views_expenses.recurring, name='recurring'),
+    path('xarajatlar/takroriy/yangi/', views_expenses.recurring_edit, name='recurring_add'),
+    path('xarajatlar/takroriy/yozish/', views_expenses.recurring_generate, name='recurring_generate'),
+    path('xarajatlar/takroriy/<int:pk>/', views_expenses.recurring_edit, name='recurring_edit'),
+    path('xarajatlar/takroriy/<int:pk>/ochirish/', views_expenses.recurring_delete, name='recurring_delete'),
+
+    path('oyliklar/', views_payroll.payroll_page, name='payroll'),
+    path('oyliklar/hisoblash/', views_payroll.payroll_calculate, name='payroll_calculate'),
+    path('oyliklar/<int:pk>/', views_payroll.payslip_edit, name='payslip_edit'),
+    path('oyliklar/<int:pk>/tolash/', views_payroll.payslip_pay, name='payslip_pay'),
+    path('oyliklar/tolov/<int:pk>/bekor/', views_payroll.payment_delete, name='salary_payment_delete'),
+    path('oyliklar/qoidalar/', views_payroll.salary_rules, name='salary_rules'),
+    path('oyliklar/qoidalar/yangi/', views_payroll.salary_rule_add, name='salary_rule_add'),
+    path('oyliklar/qoidalar/<int:pk>/ochirish/', views_payroll.salary_rule_delete, name='salary_rule_delete'),
     path('tolovlar/hisobotlar/', views_finance.reports_page, name='reports'),
     path('tolovlar/hisobotlar/<str:key>.<str:fmt>', views_finance.report_download, name='report_download'),
     path('oquvchilar/<int:pk>/chegirma/', views_finance.student_discount_add, name='student_discount_add'),

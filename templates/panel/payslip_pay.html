@@ -1,0 +1,22 @@
+{% extends 'panel/base.html' %}
+{% block title %}Oylik to'lash{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:payroll' %}?oy={{ slip.month|date:'Y-m' }}&filial={{ slip.branch_id }}" style="font-weight:600">Oyliklar</a> <span class="muted">/</span> {{ slip.employee.last_name }} {{ slip.employee.first_name }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px">
+  <p style="margin:0 0 4px"><b>{{ slip.month|date:"F Y" }}</b> · jami <b>{{ slip.total|floatformat:0 }}</b> so'm · to'langan {{ slip.paid|floatformat:0 }} · qoldiq <b>{{ slip.remaining|floatformat:0 }}</b></p>
+</div>
+<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.amount %}
+  {% include 'panel/_field.html' with f=form.kind %}
+  {% include 'panel/_field.html' with f=form.paid_on %}
+  {% include 'panel/_field.html' with f=form.method %}
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>To'lash</button> <a class="btn" href="{% url 'panel:payroll' %}?oy={{ slip.month|date:'Y-m' }}&filial={{ slip.branch_id }}"><svg class="ic"><use href="#p-x"/></svg>Orqaga</a>
+</form>
+{% if payments %}
+<div class="card" style="max-width:520px;padding:6px 10px"><div class="muted" style="padding:6px 8px 0">To'lovlar</div>
+  <div class="tbl-wrap"><table class="tbl stack"><tbody>
+  {% for p in payments %}<tr><td>{{ p.paid_on|date:"d.m.Y" }}</td><td>{{ p.get_kind_display }}</td><td style="text-align:right"><b>{{ p.amount|floatformat:0 }}</b></td>
+    <td style="text-align:right"><form method="post" action="{% url 'panel:salary_payment_delete' p.pk %}" style="display:inline" data-confirm="To'lov bekor qilinsinmi? «Maosh» xarajati ham o'chadi." data-confirm-ok="Bekor qilish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form></td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:expenses' %}" style="font-weight:600">Xarajatlar</a> <span class="muted">/</span> {{ title }}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:560px">{% csrf_token %}
+  {% if multi %}{% include 'panel/_field.html' with f=form.branch %}{% else %}<input type="hidden" name="branch" value="{{ form.branch.value }}">{% endif %}
+  {% include 'panel/_field.html' with f=form.category %}
+  {% include 'panel/_field.html' with f=form.date %}
+  {% include 'panel/_field.html' with f=form.amount %}
+  {% include 'panel/_field.html' with f=form.payee %}
+  {% include 'panel/_field.html' with f=form.method %}
+  {% include 'panel/_field.html' with f=form.note %}
+  <div class="field"><label for="{{ form.receipt.id_for_label }}">{{ form.receipt.label }}</label><input type="file" name="receipt" id="{{ form.receipt.id_for_label }}" accept="image/*" capture="environment">{{ form.receipt.errors }}
+    {% if e and e.receipt %}<div class="hint">Hozirgi chek: <a href="{% url 'panel:expense_receipt' e.pk %}" target="_blank" rel="noopener">ko'rish</a></div>{% endif %}</div>
+  {{ form.non_field_errors }}
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}

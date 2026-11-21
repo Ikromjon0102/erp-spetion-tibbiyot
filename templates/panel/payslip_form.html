@@ -1,0 +1,12 @@
+{% extends 'panel/base.html' %}
+{% block title %}Oylikni o'zgartirish{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:payroll' %}?oy={{ slip.month|date:'Y-m' }}&filial={{ slip.branch_id }}" style="font-weight:600">Oyliklar</a> <span class="muted">/</span> {{ slip.employee.last_name }} {{ slip.employee.first_name }}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:520px">{% csrf_token %}
+  <p class="muted">{{ slip.month|date:"F Y" }} · hisoblangan: <b>{{ slip.base_amount|floatformat:0 }}</b> so'm{% if slip.calc_note %} ({{ slip.calc_note }}){% endif %}</p>
+  {% include 'panel/_field.html' with f=form.bonus %}
+  {% include 'panel/_field.html' with f=form.deduction %}
+  {% include 'panel/_field.html' with f=form.note %}
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:payroll' %}?oy={{ slip.month|date:'Y-m' }}&filial={{ slip.branch_id }}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}
