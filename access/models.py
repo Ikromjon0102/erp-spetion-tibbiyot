@@ -20,6 +20,8 @@ class Device(models.Model):
     name = models.CharField('Nomi', max_length=60, help_text='Masalan: Kirish-1')
     direction = models.CharField('Yo\'nalish', max_length=3, choices=Direction.choices)
     token = models.CharField('Maxfiy token', max_length=64, unique=True, default=_new_token, editable=False)
+    branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='devices',
+                               verbose_name='Filial')
     is_active = models.BooleanField('Faol', default=True)
     last_seen = models.DateTimeField('Oxirgi signal', null=True, blank=True, editable=False)
 
@@ -39,6 +41,12 @@ class Device(models.Model):
     @property
     def push_path(self):
         return f'/api/access/hikvision/{self.token}/'
+
+    def save(self, *args, **kwargs):
+        if self.branch_id is None:
+            from org.models import default_branch
+            self.branch = default_branch()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.name} ({self.get_direction_display()})'

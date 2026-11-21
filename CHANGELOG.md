@@ -2,6 +2,13 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## 2026-11-21
+
+### Qo'shildi
+- **`org` ilovasi (ko'p tashkilot asosi):** `Organization` (tur: maktab/bog'cha/o'quv markaz, brend rangi, taomnoma va xarajat modullari yoqilgani) va `Branch` (filial). `Group.branch` va `Device.branch`; mavjud guruh va terminallar migratsiyada «Tibbiyot maktabi / Asosiy» filialga bog'landi, yangi yozuvlar filial ko'rsatilmasa shunga tushadi. Migratsiyalar: `org.0001–0002`, `academics.0003–0004`, `access.0005–0006`. Testlar: `org/tests.py`.
+- **`docs/qarorlar.md`** — kengayish bo'yicha qabul qilingan qarorlar va sabablari (bitta baza ko'p tashkilot, brend, ota-ona bitta hisob, xarajat/oylik, taomnoma, exam integratsiyasi, deploy).
+- **`TODO.md`** — «Kengayish» reja bo'limi.
+
 ## 2026-11-20
 
 ### Qo'shildi

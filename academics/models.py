@@ -5,11 +5,19 @@ from django.db import models
 class Group(models.Model):
     name = models.CharField('Guruh nomi', max_length=50, unique=True)
     year = models.PositiveSmallIntegerField('O\'quv yili (boshlanishi)', default=2026)
+    branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='groups',
+                               verbose_name='Filial')
 
     class Meta:
         verbose_name = 'Guruh'
         verbose_name_plural = 'Guruhlar'
         ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        if self.branch_id is None:
+            from org.models import default_branch
+            self.branch = default_branch()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

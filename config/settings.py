@@ -34,6 +34,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,i.tunl.uz')
 # Application definition
 
 INSTALLED_APPS = [
+    'org',
     'accounts',
     'academics',
     'journal',
