@@ -6,6 +6,12 @@
 {% block head %}
 <style>
   .tabpane[hidden] { display:none; }
+  .meal + .meal { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .meal-t { font:700 11px 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.04em; color:var(--accent-deep); margin-bottom:8px; }
+  .dishes { display:flex; flex-wrap:wrap; gap:8px; }
+  .dish { display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:12px; padding:5px 12px 5px 5px; font-size:14px; font-weight:600; }
+  .dish img, .dish .noimg { width:44px; height:44px; border-radius:10px; object-fit:cover; flex-shrink:0; }
+  .dish .noimg { background:var(--tint); }
   .chip-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; vertical-align:middle; }
   /* vazifa belgisi, varaq va tab nuqtasi */
   .tabbar button { position:relative; }
@@ -191,6 +197,26 @@
   </div>
 
   <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
+  {% if meals and meals.today.served or meals.tomorrow.served %}
+  <h2 class="sec">{% if meals.today.served %}Bugungi menyu{% else %}Ertangi menyu{% endif %} <small>{{ today|date:"j F" }}</small></h2>
+  {% if meals.today.served %}
+  <div class="card">
+    {% for x in meals.today.meals %}{% if x.served %}
+    <div class="meal"><div class="meal-t">{{ x.type.name }}</div>
+      <div class="dishes">{% for d in x.dishes %}<div class="dish">{% if d.photo %}<img src="{% url 'dish_photo' d.pk %}" alt="" loading="lazy">{% else %}<span class="noimg"></span>{% endif %}<span>{{ d.name }}</span></div>{% endfor %}</div></div>
+    {% endif %}{% endfor %}
+    <div class="hint" style="margin-top:8px">{% if meals.arrived %}Farzandingiz bugun maktabda bo'ldi.{% else %}Farzandingiz bugun hali maktabga kelmagan.{% endif %}</div>
+  </div>
+  {% else %}
+  <div class="card">
+    {% for x in meals.tomorrow.meals %}{% if x.served %}
+    <div class="meal"><div class="meal-t">{{ x.type.name }}</div>
+      <div class="dishes">{% for d in x.dishes %}<div class="dish">{% if d.photo %}<img src="{% url 'dish_photo' d.pk %}" alt="" loading="lazy">{% else %}<span class="noimg"></span>{% endif %}<span>{{ d.name }}</span></div>{% endfor %}</div></div>
+    {% endif %}{% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
   <h2 class="sec">Bugungi darslar <small>{{ today|date:"j F" }}</small></h2>
   {% if today_lessons %}
   <div class="list" id="todayList">

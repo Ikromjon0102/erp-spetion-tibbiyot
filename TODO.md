@@ -20,6 +20,7 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
   - [ ] 4a. Keyin: kategoriyalarni panelda qo'shish/tahrirlash (hozir faqat admin orqali); xarajatlarni Excel'ga yuklash; takroriy xarajatlar uchun serverda cron
 - [x] 5. Oyliklar: qat'iy oylik (kuchga kirish sanasi bilan) yoki foiz (default 40%); to'langanda avtomatik «Maosh» xarajati (`payroll.*`)
   - [ ] 5a. Keyin: oylik qaydnomasi (PDF/Excel), xodimga oylik xabari (Telegram), ustoz va xodim kartasida oylik qoidasi
-- [ ] 6. Taomnoma: 14 kunlik sikl (tushlik + poldnik, ba'zi kunlar poldnik yo'q), sikl o'quv kunlari bo'yicha (med: Du–Sha; asosiy maktab: dekabrdan Sha ham), oshpaz roli, haqiqiy rasm yuklash, ota-ona sahifasida «bugun nima yedi». Maktab menyusi founderdan olingan (2 ta rasm), bog'chaniki hali yo'q
+- [x] 6. Taomnoma: 14 kunlik sikl, tushlik + poldnik, sikl ovqat beriladigan kunlar bo'yicha, taom rasmi bir marta yuklanadi (oshpaz platformaga kirmaydi), ota-ona sahifasida «Bugungi menyu»
+  - [ ] 6a. Bog'cha menyusi founderdan hali olinmagan (1–3 mahal); serverda `create_orgs` va `seed_menu` ishga tushirish; keyin: menyuni Telegram orqali ota-onaga yuborish, allergiya/alohida ovqat belgisi, taom rasmlarini birinchi marta yuklash (xodim)
 - [ ] 7. Exam bilan integratsiya: SSO (ERP asosiy hisob), sinf/o'quvchi/ustozlarni ERP'dan olish, ota-ona ilovasida o'quvchi portfoliosi: imtihon natijalari dinamikasi
 - [ ] 8. Deploy: 2 GB droplet (~$18), Postgres, med + exam ko'chiriladi, boshqa loyihalar eski VPS'da qoladi; haftalik backup

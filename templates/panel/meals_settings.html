@@ -1,0 +1,33 @@
+{% extends 'panel/base.html' %}
+{% block title %}Taomnoma sozlamalari{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:meals' %}?org={{ org.pk }}" style="font-weight:600">Taomnoma</a> <span class="muted">/</span> Sozlamalar{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:640px">{% csrf_token %}
+  <input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="plan">
+  <b>Sikl va ovqat beriladigan kunlar</b>
+  <div class="field" style="margin-top:8px"><label>Ovqat beriladigan hafta kunlari</label>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">{% for n, label, on in weekdays %}<label style="font-weight:500"><input type="checkbox" name="weekdays" value="{{ n }}"{% if on %} checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+    <div class="hint">Masalan asosiy maktabda dekabrdan shanba qo'shilsa shu yerda belgilang: sikl hisobi buzilmaydi.</div></div>
+  <div class="field"><label for="cl">Sikl uzunligi (kun)</label><input type="number" name="cycle_length" id="cl" value="{{ plan.cycle_length }}" min="1" max="31" style="width:100px"></div>
+  <div class="field"><label for="td">Bugun sikldagi nechanchi kun?</label><input type="number" name="today_day" id="td" value="{{ today_day|default_if_none:'' }}" min="1" max="{{ plan.cycle_length }}" style="width:100px">
+    <div class="hint">Menyu kunlari bilan haqiqiy sana mos kelmasa, shu yerda tuzating. Sikl faqat ovqat beriladigan kunlar bo'yicha ketadi; dam olish va ta'til kunlarida to'xtab turadi.</div></div>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
+</form>
+
+<div class="card" style="max-width:640px">
+  <b>Ovqat turlari</b>
+  {% for t in types %}<form method="post" style="display:flex;gap:10px;align-items:center;margin:6px 0">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_toggle"><input type="hidden" name="id" value="{{ t.pk }}">
+    <span style="flex:1">{{ t.name }}{% if not t.is_active %} <span class="badge gray">o'chirilgan</span>{% endif %}</span><button class="btn">{% if t.is_active %}O'chirish{% else %}Yoqish{% endif %}</button></form>{% endfor %}
+  <form method="post" style="display:flex;gap:8px;margin-top:10px">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_add">
+    <input type="text" name="name" placeholder="Masalan: Nonushta" maxlength="60" style="flex:1"><button class="btn">Qo'shish</button></form>
+</div>
+
+<div class="card" style="max-width:640px">
+  <b>Ovqatsiz kunlar (bayram, ta'til)</b>
+  <p class="muted" style="margin:4px 0 8px">Bu kunlarda ota-onaga menyu ko'rinmaydi va sikl to'xtab turadi.</p>
+  {% for h in holidays %}<form method="post" style="display:flex;gap:10px;align-items:center;margin:6px 0">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="holiday_delete"><input type="hidden" name="id" value="{{ h.pk }}">
+    <span style="flex:1">{{ h.start|date:"d.m.Y" }}{% if h.end != h.start %} — {{ h.end|date:"d.m.Y" }}{% endif %} <span class="muted">{{ h.reason }}</span></span><button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endfor %}
+  <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="holiday_add">
+    <input type="date" name="start" required><input type="date" name="end" title="Tugashi (bir kun bo'lsa bo'sh qoldiring)"><input type="text" name="reason" placeholder="Sabab" maxlength="100" style="flex:1;min-width:120px"><button class="btn">Qo'shish</button></form>
+</div>
+{% endblock %}

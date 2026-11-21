@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'panel',
     'billing',
     'finance',
+    'meals',
     'tgbot',
     'django.contrib.admin',
     'django.contrib.auth',

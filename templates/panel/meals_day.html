@@ -1,0 +1,20 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ day }}-kun menyusi{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:meals' %}?org={{ org.pk }}" style="font-weight:600">Taomnoma</a> <span class="muted">/</span> {{ day }}-kun{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:640px">{% csrf_token %}
+  <input type="hidden" name="org" value="{{ org.pk }}">
+  <p class="muted" style="margin-top:0">Taomlarni vergul bilan ajratib yozing (yoki har qatorga bittadan). Yangi taom avtomatik qo'shiladi; mavjud nom (masalan «Non», «Choy») bir xil rasmni ishlatadi.</p>
+  {% for f in fields %}
+  <div class="field"><label for="m{{ f.type.pk }}">{{ f.type.name }}</label>
+    <textarea name="meal_{{ f.type.pk }}" id="m{{ f.type.pk }}" rows="3" style="width:100%">{{ f.text }}</textarea>
+    <label style="font-weight:500;font-size:13px"><input type="checkbox" name="ns_{{ f.type.pk }}"{% if f.not_served %} checked{% endif %}> Bu kuni «{{ f.type.name }}» ko'zda tutilmagan</label></div>
+  {% endfor %}
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
+    <a class="btn" href="{% url 'panel:meals' %}?org={{ org.pk }}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+    {% if day > 1 %}<a class="btn" href="{% url 'panel:meals_day' day|add:'-1' %}?org={{ org.pk }}">‹ {{ day|add:"-1" }}-kun</a>{% endif %}
+    {% if day < length %}<a class="btn" href="{% url 'panel:meals_day' day|add:'1' %}?org={{ org.pk }}">{{ day|add:"1" }}-kun ›</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

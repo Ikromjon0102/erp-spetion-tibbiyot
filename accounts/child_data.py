@@ -175,8 +175,16 @@ def child_context(student, viewer):
         siblings = list(viewer.children.filter(user__is_active=True).select_related('user', 'branch__organization'))
         siblings = siblings if len(siblings) > 1 else []
 
+    pres = presence(student, now)
+    meals = None
+    org = student.branch.organization if student.branch_id else None
+    if org is not None and org.meals_enabled:
+        from meals.services import menu_for_date
+        meals = {'today': menu_for_date(org, today), 'tomorrow': menu_for_date(org, today + timedelta(days=1)),
+                 'arrived': pres.get('state') in ('in', 'out')}
+
     return {
-        'student': student, 'today': today, 'presence': presence(student, now),
+        'student': student, 'today': today, 'presence': pres, 'meals': meals,
         'avg': f'{overall:.1f}' if overall is not None else None,
         'avg_class': grade_class(overall) if overall is not None else '',
         'n_grades': len(grades), 'subjects': subjects, 'recent_grades': recent_grades,

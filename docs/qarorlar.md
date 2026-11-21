@@ -59,6 +59,8 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Maktab menyusi: **14 kunlik aylanma sikl**, ikki turi: tushlik va ikkinchi tushlik (poldnik); poldnik ba'zi kunlarda yo'q (6- va 14-kun). Sikl **o'quv kunlari** bo'yicha ketadi (tibbiyot: Du–Sha; asosiy maktab: dekabrdan Sha ham).
 - Taom pishganda mas'ul (**oshpaz roli**) **haqiqiy taom rasmini** yuklaydi; ota-ona «bugun farzandim nima yedi» bo'limida rasmni ko'radi (founderning tayyor menyu rasmlari AI surat, ota-onaga ko'rsatilmaydi, faqat taom nomlari olinadi). Rejadan farq qilsa oshpaz haqiqiy nomni o'zgartiradi. Farzand kelmagan bo'lsa «bugun maktabda emas» deb chiqadi.
 - Bog'cha menyusi founderdan hali olinmagan.
+- **Yangilanish (2026-11-22): oshpaz platformaga kirmaydi.** Alohida «Oshpaz» roli va har kungi haqiqiy rasm yuklash rad etildi (oshpazlarning ishi ko'p). Menyuni va taom rasmlarini xodim (zavxoz, direktor, hisobchi... `meals.*`) bir marta kiritadi; **har taomning rasmi bir marta yuklanadi** va har siklda qayta ishlatiladi. Ota-onaga «Bugungi menyu» (reja + taom rasmlari) ko'rsatiladi; «bola nima yedi» emas, «bugun menyuda nima» — chunki har kuni tasdiqlanmaydi.
+- Sikl faqat ovqat beriladigan kunlar bo'yicha ketadi; ovqatsiz kunlar (bayram, ta'til) panelda belgilanadi, sikl shu kunlarda to'xtaydi. Hafta kunlari o'zgarsa hisob bugundan qayta bog'lanadi (sikl uzilmaydi).
 
 ## 6. Exam loyihasi bilan integratsiya
 - Exam (FastAPI + React) alohida tizim bo'lib qoladi; ERP u bilan SSO va server-server API orqali bog'lanadi (ERP asosiy hisob; sinf/o'quvchi/ustozlar ERP'dan olinadi).

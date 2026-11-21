@@ -1,0 +1,29 @@
+{% extends 'panel/base.html' %}
+{% block title %}Taomlar va rasmlar{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:meals' %}?org={{ org.pk }}" style="font-weight:600">Taomnoma</a> <span class="muted">/</span> Taomlar va rasmlar{% endblock %}
+{% block content %}
+{% if can_manage %}
+<form method="post" action="{% url 'panel:dishes_bulk' %}" enctype="multipart/form-data" class="card" style="max-width:760px">{% csrf_token %}
+  <b>Rasmlarni yuklash</b>
+  <p class="muted" style="margin:4px 0 8px">Har bir taomning rasmini <b>bir marta</b> yuklang, keyin har siklda qayta ishlatiladi. Bir nechta rasmni birdan tanlash mumkin: fayl nomi taom nomiga mos bo'lsin (masalan <code>Osh.jpg</code>, <code>Mol go'shtli mastava.png</code>). Telefondan olingan katta rasm o'zi kichraytiriladi.</p>
+  <input type="file" name="photos" accept="image/*" multiple>
+  <button class="btn primary" style="margin-top:8px"><svg class="ic"><use href="#p-check"/></svg>Yuklash</button>
+</form>
+{% endif %}
+<form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px">
+  <input type="hidden" name="org" value="{{ org.pk }}">
+  <input type="search" name="q" value="{{ q }}" placeholder="Taom nomi" style="min-width:200px">
+  <label style="font-weight:500"><input type="checkbox" name="rasm" value="yoq" onchange="this.form.submit()"{% if only == 'yoq' %} checked{% endif %}> Faqat rasmsizlar</label>
+  <button class="btn">Qidirish</button><span class="muted">{{ dishes|length }} / {{ total }} ta taom</span>
+</form>
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th style="width:70px">Rasm</th><th>Taom</th><th></th></tr></thead><tbody>
+  {% for d in dishes %}<tr>
+    <td>{% if d.photo %}<img src="{% url 'dish_photo' d.pk %}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px">{% else %}<span class="badge gray">rasm yo'q</span>{% endif %}</td>
+    <td><b>{{ d.name }}</b></td>
+    <td style="text-align:right">{% if can_manage %}<a class="btn" href="{% url 'panel:dish_edit' d.pk %}"><svg class="ic"><use href="#p-edit"/></svg>Tahrirlash</a>
+      <form method="post" action="{% url 'panel:dish_delete' d.pk %}" style="display:inline" data-confirm="«{{ d.name }}» o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="3"><div class="empty">Taom topilmadi</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}

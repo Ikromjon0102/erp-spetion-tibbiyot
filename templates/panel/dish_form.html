@@ -1,0 +1,12 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ dish.name }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:dishes' %}" style="font-weight:600">Taomlar</a> <span class="muted">/</span> {{ dish.name }}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:520px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.name %}
+  {% if dish.photo %}<div class="field"><img src="{% url 'dish_photo' dish.pk %}" alt="" style="max-width:100%;max-height:260px;border-radius:14px"><br><label style="font-weight:500"><input type="checkbox" name="remove_photo"> Rasmni o'chirish</label></div>{% endif %}
+  <div class="field"><label for="photo">{% if dish.photo %}Rasmni almashtirish{% else %}Rasm{% endif %}</label><input type="file" name="photo" id="photo" accept="image/*"><div class="hint">Bir marta yuklanadi, keyin menyuning hamma kunlarida va har siklda ishlatiladi.</div></div>
+  {{ form.non_field_errors }}
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:dishes' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}

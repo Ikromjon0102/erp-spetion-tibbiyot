@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll
+from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals
 
 app_name = 'panel'
 urlpatterns = [
@@ -87,6 +87,14 @@ urlpatterns = [
     path('xarajatlar/takroriy/yozish/', views_expenses.recurring_generate, name='recurring_generate'),
     path('xarajatlar/takroriy/<int:pk>/', views_expenses.recurring_edit, name='recurring_edit'),
     path('xarajatlar/takroriy/<int:pk>/ochirish/', views_expenses.recurring_delete, name='recurring_delete'),
+
+    path('taomnoma/', views_meals.meals, name='meals'),
+    path('taomnoma/kun/<int:day>/', views_meals.meals_day, name='meals_day'),
+    path('taomnoma/taomlar/', views_meals.dishes, name='dishes'),
+    path('taomnoma/taomlar/rasmlar/', views_meals.dishes_bulk, name='dishes_bulk'),
+    path('taomnoma/taomlar/<int:pk>/', views_meals.dish_edit, name='dish_edit'),
+    path('taomnoma/taomlar/<int:pk>/ochirish/', views_meals.dish_delete, name='dish_delete'),
+    path('taomnoma/sozlamalar/', views_meals.meals_settings, name='meals_settings'),
 
     path('oyliklar/', views_payroll.payroll_page, name='payroll'),
     path('oyliklar/hisoblash/', views_payroll.payroll_calculate, name='payroll_calculate'),

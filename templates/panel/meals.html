@@ -1,0 +1,33 @@
+{% extends 'panel/base.html' %}
+{% block title %}Taomnoma{% endblock %}
+{% block heading %}Taomnoma{% endblock %}
+{% block actions %}
+<a class="btn" href="{% url 'panel:dishes' %}?org={{ org.pk }}"><svg class="ic"><use href="#p-book"/></svg>Taomlar va rasmlar</a>
+{% if can_manage and org.meals_enabled %}<a class="btn" href="{% url 'panel:meals_settings' %}?org={{ org.pk }}"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar</a>{% endif %}
+{% endblock %}
+{% block content %}
+{% if orgs|length > 1 %}
+<form method="get" class="card" style="max-width:620px;margin-bottom:12px">
+  <label class="muted" style="font-size:13px">Tashkilot</label>
+  <select name="org" onchange="this.form.submit()">{% for o in orgs %}<option value="{{ o.pk }}"{% if o.pk == org.pk %} selected{% endif %}>{{ o.name }}</option>{% endfor %}</select>
+</form>
+{% endif %}
+{% if not org.meals_enabled %}
+<div class="empty">«{{ org.name }}» tashkilotida taomnoma moduli yoqilmagan. Uni «Tashkilot va brend» sahifasida faqat maktab egasi yoqadi.</div>
+{% else %}
+<div class="card">
+  {% if today_day %}Bugun sikldagi <b>{{ today_day }}-kun</b> ({{ plan.cycle_length }} kunlik sikl).{% else %}Bugun ovqat berilmaydi (dam olish yoki ta'til kuni).{% endif %}
+  {% if no_photo %}<span class="badge" style="margin-left:8px">{{ no_photo }} ta taomda rasm yo'q</span>{% endif %}
+  <div class="hint" style="margin-top:6px">Taom rasmi bir marta yuklanadi va har siklda qayta ishlatiladi. Oshpaz har kuni rasm yuklashi shart emas.</div>
+</div>
+<div class="card" style="padding:6px 10px">
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Kun</th>{% for t in types %}<th>{{ t.name }}</th>{% endfor %}<th></th></tr></thead><tbody>
+  {% for r in rows %}<tr{% if r.day == today_day %} style="background:var(--tint)"{% endif %}>
+    <td><b>{{ r.day }}-kun</b>{% if r.day == today_day %} <span class="badge">bugun</span>{% endif %}</td>
+    {% for c in r.cells %}<td>{% if c.not_served %}<span class="muted">ko'zda tutilmagan</span>{% elif c.empty %}<span class="badge gray">kiritilmagan</span>{% else %}{% for d in c.dishes %}<span style="display:inline-block;margin:1px 0">{{ d.name }}{% if not d.photo %} <span title="rasm yo'q" style="color:var(--late)">◌</span>{% endif %}{% if not forloop.last %},{% endif %}</span> {% endfor %}{% endif %}</td>{% endfor %}
+    <td style="text-align:right">{% if can_manage %}<a class="btn" href="{% url 'panel:meals_day' r.day %}?org={{ org.pk }}"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
+  </tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endif %}
+{% endblock %}

@@ -64,6 +64,10 @@ CATALOG = [
         ('view', "Oyliklarni ko'rish"),
         ('manage', "Oylik qoidalari, hisoblash va to'lash"),
     ]),
+    ('meals', "Taomnoma", [
+        ('view', "Taomnomani ko'rish"),
+        ('manage', "Menyu, taomlar rasmi va ovqatsiz kunlarni boshqarish"),
+    ]),
     ('org', "Tashkilot", [
         ('settings', "Tashkilot nomi va brend rangini o'zgartirish"),
     ]),
@@ -76,7 +80,7 @@ ALL_PERMS = [f'{module}.{action}' for module, _, actions in CATALOG for action, 
 LABELS = {f'{m}.{a}': label for m, _, actions in CATALOG for a, label in actions}
 
 # Boshqa amal tanlansa, shu modulning "ko'rish" ruxsati ham kerak (ko'rmasdan tahrirlab bo'lmaydi)
-NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments', 'expenses', 'payroll'}
+NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments', 'expenses', 'payroll', 'meals'}
 
 
 def normalize(perms):
@@ -103,5 +107,5 @@ PRESETS = [
                           'monitoring.view', 'announcements.view', 'payments.view', 'payments.accept']),
     ('Hisobchi', False, ['students.view', 'sensitive.phones', 'payments.view', 'payments.reports', 'groups.view',
                          'announcements.view', 'expenses.view', 'expenses.add', 'expenses.change', 'expenses.manage', 'payroll.view', 'payroll.manage']),
-    ('Zavxoz', False, ['schedule.view', 'devices.view', 'groups.view', 'monitoring.view', 'announcements.view']),
+    ('Zavxoz', False, ['schedule.view', 'devices.view', 'groups.view', 'monitoring.view', 'announcements.view', 'meals.view', 'meals.manage']),
 ]
