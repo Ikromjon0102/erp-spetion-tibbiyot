@@ -15,6 +15,8 @@ class Announcement(models.Model):
     group = models.ForeignKey('academics.Group', on_delete=models.CASCADE, null=True, blank=True,
                               verbose_name='Guruh (ixtiyoriy)',
                               help_text='Bo\'sh qoldirilsa, barcha guruhlarga ko\'rinadi')
+    branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='announcements',
+                               verbose_name='Filial')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                related_name='announcements', verbose_name='Muallif')
     created_at = models.DateTimeField('Yaratilgan', auto_now_add=True)
@@ -23,6 +25,14 @@ class Announcement(models.Model):
         verbose_name = 'E\'lon'
         verbose_name_plural = 'E\'lonlar'
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if self.branch_id is None:
+            self.branch_id = self.group.branch_id if self.group_id else None
+            if self.branch_id is None:
+                from org.models import default_branch
+                self.branch = default_branch()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

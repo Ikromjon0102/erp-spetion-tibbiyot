@@ -27,9 +27,14 @@ REPORTS = [
 TITLES = {k: t for k, t, _ in REPORTS}
 
 
-def real_students():
-    """Haqiqiy o'quvchilar (sinov hisobining namunaviy o'quvchilari — `sinov_...` — chiqarib tashlanadi)."""
-    return Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
+def real_students(user=None):
+    """Haqiqiy o'quvchilar (sinov hisobining namunaviy o'quvchilari — `sinov_...` — chiqarib tashlanadi).
+    `user` berilsa, faqat shu xodim ko'ra oladigan filiallar o'quvchilari qaytadi."""
+    qs = Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
+    if user is not None:
+        from org.scope import scope_students
+        qs = scope_students(qs, user)
+    return qs
 
 
 def _natural(name):
@@ -63,10 +68,13 @@ def _sum_cols(rows, indexes, label_idx=0):
     return totals
 
 
-def qarzdorlar(group_id=None, with_phone=False, today=None):
+def qarzdorlar(group_id=None, with_phone=False, today=None, user=None):
     today = today or timezone.localdate()
-    qs = real_students().select_related('user', 'group').prefetch_related('parents')
+    qs = real_students(user).select_related('user', 'group').prefetch_related('parents')
     group = Group.objects.filter(pk=group_id).first() if group_id else None
+    if group and user is not None:
+        from org.scope import scope_groups
+        group = scope_groups(Group.objects.filter(pk=group.pk), user).first()
     if group:
         qs = qs.filter(group=group)
     students = list(qs)
@@ -84,14 +92,17 @@ def qarzdorlar(group_id=None, with_phone=False, today=None):
     return rep
 
 
-def tushum(date_from=None, date_to=None, today=None):
+def tushum(date_from=None, date_to=None, today=None, user=None):
     today = today or timezone.localdate()
     date_to = date_to or today
     date_from = date_from or date_to.replace(day=1)
     if date_from > date_to:
         date_from, date_to = date_to, date_from
-    pays = list(Payment.objects.filter(voided=False, paid_on__range=(date_from, date_to))
-                .exclude(student__user__username__startswith='sinov_')
+    pay_qs = Payment.objects.filter(voided=False, paid_on__range=(date_from, date_to))
+    if user is not None:
+        from org.scope import scope_via_student
+        pay_qs = scope_via_student(pay_qs, user)
+    pays = list(pay_qs.exclude(student__user__username__startswith='sinov_')
                 .select_related('student__user', 'student__group', 'received_by').order_by('paid_on', 'id'))
     period = f'{date_from:%d.%m.%Y}' if date_from == date_to else f'{date_from:%d.%m.%Y} — {date_to:%d.%m.%Y}'
     rep = _base('tushum', period)
@@ -108,10 +119,10 @@ def tushum(date_from=None, date_to=None, today=None):
     return rep
 
 
-def sinflar(today=None):
+def sinflar(today=None, user=None):
     today = today or timezone.localdate()
     by_group = defaultdict(list)
-    for s in real_students().select_related('group'):
+    for s in real_students(user).select_related('group'):
         by_group[s.group].append(s.pk)
     sums = summaries([pk for ids in by_group.values() for pk in ids], today)
     rep = _base('sinflar', f'{today:%d.%m.%Y} holatiga')
@@ -134,7 +145,7 @@ def sinflar(today=None):
     return rep
 
 
-def chegirmalar(today=None):
+def chegirmalar(today=None, user=None):
     today = today or timezone.localdate()
     cfg = BillingSettings.get()
     rep = _base('chegirmalar', f'{today:%d.%m.%Y} holatiga · oylik narx {cfg.monthly_price:,.0f} so\'m'.replace(',', ' '))
@@ -143,6 +154,9 @@ def chegirmalar(today=None):
     rows = []
     qs = (StudentDiscount.objects.select_related('student__user', 'student__group', 'discount')
           .exclude(student__user__username__startswith='sinov_'))
+    if user is not None:
+        from org.scope import scope_via_student
+        qs = scope_via_student(qs, user)
     for sd in qs:
         saving = (cfg.monthly_price * sd.discount.percent / Decimal(100)).quantize(Decimal(1))
         rows.append([_fio(sd.student), sd.student.group.name if sd.student.group else '—', sd.discount.name, sd.discount.percent,
@@ -153,19 +167,19 @@ def chegirmalar(today=None):
     return rep
 
 
-def build(key, params, with_phone=False):
+def build(key, params, with_phone=False, user=None):
     if key == 'qarzdorlar':
         gid = params.get('sinf')
-        return qarzdorlar(int(gid) if gid and str(gid).isdigit() else None, with_phone)
+        return qarzdorlar(int(gid) if gid and str(gid).isdigit() else None, with_phone, user=user)
     if key == 'tushum':
         from datetime import date
         parse = lambda v: date.fromisoformat(v) if v else None
         try:
-            return tushum(parse(params.get('dan')), parse(params.get('gacha')))
+            return tushum(parse(params.get('dan')), parse(params.get('gacha')), user=user)
         except ValueError:
-            return tushum()
+            return tushum(user=user)
     if key == 'sinflar':
-        return sinflar()
+        return sinflar(user=user)
     if key == 'chegirmalar':
-        return chegirmalar()
+        return chegirmalar(user=user)
     raise KeyError(key)

@@ -82,14 +82,14 @@ def _read_rows(path):
 
 
 @transaction.atomic
-def import_students(path, group_name):
-    return import_rows(group_name, _read_rows(path))
+def import_students(path, group_name, branch=None):
+    return import_rows(group_name, _read_rows(path), branch=branch)
 
 
 @transaction.atomic
-def import_rows(group_name, rows):
+def import_rows(group_name, rows, branch=None):
     """rows: (to'liq ism, 'ona'/'ota'/'', ota-ona telefoni) — fayl formatidan qat'i nazar."""
-    group, _ = Group.objects.get_or_create(name=group_name)
+    group, _ = Group.objects.get_or_create(name=group_name, defaults={'branch': branch})
     report = {'group': group_name, 'created': 0, 'existing': 0, 'parents_new': 0, 'parents_linked': 0,
               'no_phone': [], 'bad_phone': []}
 

@@ -14,6 +14,7 @@ from accounts.face_ids import next_staff_id, next_teacher_id as _next_teacher_id
 from accounts.models import Student, User
 from accounts.photos import PhotoError, prepare as prepare_photo, remove_photo, save_photo
 from billing.reports import real_students
+from org.scope import pick_branch, scope_devices, scope_staff, scope_students, scope_teachers
 
 from . import audit
 from .access import can, panel_required, perms_of
@@ -41,10 +42,10 @@ def next_teacher_id():
     return _next_teacher_id()
 
 
-def person_user(student_pk=None, teacher_pk=None):
+def person_user(request, student_pk=None, teacher_pk=None):
     if student_pk:
-        return get_object_or_404(Student.objects.select_related('user'), pk=student_pk).user
-    return get_object_or_404(User, pk=teacher_pk, role=User.Role.TEACHER, is_demo=False)
+        return get_object_or_404(scope_students(Student.objects.select_related('user'), request.user), pk=student_pk).user
+    return get_object_or_404(scope_teachers(User.objects.all(), request.user), pk=teacher_pk, role=User.Role.TEACHER, is_demo=False)
 
 
 def photo_ok(form, upload):
@@ -83,7 +84,7 @@ def apply_photo(request, user, upload, label):
 @require_POST
 @panel_required('students.change')
 def student_photo(request, pk):
-    user = person_user(student_pk=pk)
+    user = person_user(request, student_pk=pk)
     upload = request.FILES.get('photo')
     if not upload:
         messages.error(request, 'Rasm tanlanmadi')
@@ -95,7 +96,7 @@ def student_photo(request, pk):
 @require_POST
 @panel_required('students.change')
 def student_photo_delete(request, pk):
-    user = person_user(student_pk=pk)
+    user = person_user(request, student_pk=pk)
     remove_photo(user)
     audit.log(request, "Yuz rasmini o'chirdi", user, label=user.get_full_name(), target_type='photo')
     sync_in_background()
@@ -106,7 +107,7 @@ def student_photo_delete(request, pk):
 @require_POST
 @panel_required('teachers.change')
 def teacher_photo(request, pk):
-    user = person_user(teacher_pk=pk)
+    user = person_user(request, teacher_pk=pk)
     upload = request.FILES.get('photo')
     if not upload:
         messages.error(request, 'Rasm tanlanmadi')
@@ -118,7 +119,7 @@ def teacher_photo(request, pk):
 @require_POST
 @panel_required('teachers.change')
 def teacher_photo_delete(request, pk):
-    user = person_user(teacher_pk=pk)
+    user = person_user(request, teacher_pk=pk)
     remove_photo(user)
     audit.log(request, "Yuz rasmini o'chirdi", user, label=user.get_full_name(), target_type='photo')
     sync_in_background()
@@ -126,8 +127,8 @@ def teacher_photo_delete(request, pk):
     return redirect('panel:teacher', pk=pk)
 
 
-def _staff_user(pk):
-    profile = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
+def _staff_user(request, pk):
+    profile = get_object_or_404(scope_staff(StaffProfile.objects.select_related('user'), request.user), pk=pk)
     if profile.user.role == User.Role.STUDENT or profile.user.is_demo:
         raise Http404
     return profile.user
@@ -159,17 +160,20 @@ def staff_photo_delete(request, pk):
 @panel_required('devices.view')
 def devices(request):
     granted = perms_of(request.user)
-    people = eligible_users()
-    rows = []
-    for d in Device.objects.all():
+    devices_qs = list(scope_devices(Device.objects.all(), request.user))
+    rows, ready = [], set()
+    for d in devices_qs:
+        people = eligible_users(d)
+        ready |= {u.pk for u in people}
         rows.append({'d': d, 'pending': pending_count(d, people) if d.host else None,
                      'failed': d.face_syncs.filter(ok=False).count()})
-    students = real_students()
+    students = real_students(request.user)
+    teachers = scope_teachers(User.objects.filter(role=User.Role.TEACHER, is_demo=False), request.user)
     stats = {'students': students.count(), 'students_photo': students.exclude(user__photo='').exclude(user__photo__isnull=True).count(),
-             'teachers': User.objects.filter(role=User.Role.TEACHER, is_demo=False).count(),
-             'teachers_photo': User.objects.filter(role=User.Role.TEACHER, is_demo=False).exclude(photo='').exclude(photo__isnull=True).count(),
-             'ready': len(people)}
-    errors = list(FaceSync.objects.filter(ok=False).select_related('user', 'device').order_by('-updated_at')[:15])
+             'teachers': teachers.count(),
+             'teachers_photo': teachers.exclude(photo='').exclude(photo__isnull=True).count(),
+             'ready': len(ready)}
+    errors = list(FaceSync.objects.filter(ok=False, device__in=devices_qs).select_related('user', 'device').order_by('-updated_at')[:15])
     return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted,
                                                   'leave_from': AccessSettings.get().leave_notify_from})
 
@@ -195,10 +199,13 @@ def access_settings(request):
 
 @panel_required('devices.manage')
 def device_edit(request, pk=None):
-    obj = get_object_or_404(Device, pk=pk) if pk else None
+    obj = get_object_or_404(scope_devices(Device.objects.all(), request.user), pk=pk) if pk else None
     form = DeviceForm(request.POST or None, instance=obj)
     if request.method == 'POST' and form.is_valid():
-        d = form.save()
+        d = form.save(commit=False)
+        if not obj:
+            d.branch = pick_branch(request.user)
+        d.save()
         audit.log(request, "Qurilmani sozladi" if obj else "Qurilma qo'shdi", d, label=str(d), details={'manzil': d.host or '—'}, target_type='device')
         messages.success(request, 'Saqlandi')
         return redirect('panel:devices')
@@ -208,7 +215,7 @@ def device_edit(request, pk=None):
 @require_POST
 @panel_required('devices.manage')
 def device_test(request, pk):
-    device = get_object_or_404(Device, pk=pk)
+    device = get_object_or_404(scope_devices(Device.objects.all(), request.user), pk=pk)
     if not device.host:
         messages.error(request, 'Avval qurilma manzilini kiriting')
     else:
@@ -224,7 +231,7 @@ def device_test(request, pk):
 @panel_required('devices.manage')
 def device_sync(request, pk=None):
     if pk:
-        device = get_object_or_404(Device, pk=pk)
+        device = get_object_or_404(scope_devices(Device.objects.all(), request.user), pk=pk)
         result = sync_device(device)
         if result['error']:
             messages.error(request, f"{device.name}: {result['error']}")
@@ -257,8 +264,8 @@ def faces_zip(request):
     done, unknown, bad = 0, [], []
     for name in names:
         face_id = name.rsplit('/', 1)[-1].rsplit('.', 1)[0].strip()
-        student = Student.objects.filter(access_id=face_id).select_related('user').first()
-        user = student.user if student else User.objects.filter(access_id=face_id, role=User.Role.TEACHER).first()
+        student = scope_students(Student.objects.filter(access_id=face_id), request.user).select_related('user').first()
+        user = student.user if student else scope_teachers(User.objects.filter(access_id=face_id, role=User.Role.TEACHER), request.user).first()
         if not user:
             unknown.append(face_id)
             continue

@@ -11,6 +11,8 @@ from accounts.models import User
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username
 
+from org.scope import pick_branch, scope_groups, scope_teachers
+
 from . import audit
 from .access import panel_required, perms_of
 from .forms import PhoneField
@@ -19,9 +21,9 @@ from .views_devices import apply_photo, next_teacher_id, photo_ok
 PAGE_SIZE = 30
 
 
-def teachers_qs():
-    """Haqiqiy ustozlar (sinov hisobi chiqarib tashlanadi)."""
-    return User.objects.filter(role=User.Role.TEACHER, is_demo=False)
+def teachers_qs(user):
+    """Haqiqiy ustozlar (sinov hisobi chiqarib tashlanadi); xodim faqat o'z filiallaridagilarni ko'radi."""
+    return scope_teachers(User.objects.filter(role=User.Role.TEACHER, is_demo=False), user)
 
 
 class TeacherForm(forms.Form):
@@ -63,6 +65,11 @@ class AssignForm(forms.Form):
     subject = forms.ModelChoiceField(label='Fan', queryset=Subject.objects.all(), empty_label='— fan —')
     group = forms.ModelChoiceField(label='Sinf', queryset=Group.objects.all(), empty_label='— sinf —')
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['group'].queryset = scope_groups(Group.objects.all(), user)
+
 
 def _initial_password(user):
     """Boshlang'ich parol — telefonning oxirgi 4 raqami; birinchi kirishda almashtirish shart."""
@@ -77,7 +84,7 @@ def _secret(request, text):
 @panel_required('teachers.view')
 def teachers(request):
     q = request.GET.get('q', '').strip()
-    qs = teachers_qs().prefetch_related('teachings__subject', 'teachings__group').order_by('last_name', 'first_name')
+    qs = teachers_qs(request.user).prefetch_related('teachings__subject', 'teachings__group').order_by('last_name', 'first_name')
     if q:
         digits = ''.join(ch for ch in q if ch.isdigit())      # qisman raqam ham qidiriladi
         cond = Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(teachings__subject__name__icontains=q)
@@ -91,7 +98,7 @@ def teachers(request):
         rows.append({'u': u, 'subjects': sorted({t.subject.name for t in ts}), 'groups': sorted({t.group.name for t in ts})})
     params = request.GET.copy()
     params.pop('page', None)
-    return render(request, 'panel/teachers.html', {'nav': 'teachers', 'page': page, 'rows': rows, 'q': q, 'total': teachers_qs().count(),
+    return render(request, 'panel/teachers.html', {'nav': 'teachers', 'page': page, 'rows': rows, 'q': q, 'total': teachers_qs(request.user).count(),
                                                    'granted': perms_of(request.user), 'qs': params.urlencode()})
 
 
@@ -106,6 +113,7 @@ def teacher_add(request):
             user = User(username=_unique_username(digits), first_name=d['first_name'], last_name=d['last_name'], phone=d['phone'],
                         role=User.Role.TEACHER)
             user.save()      # bir xil raqamli ota-ona hisobi bo'lsa, o'zi birlashtiriladi
+            user.branches.set([pick_branch(request.user)])
             password = _initial_password(user)
         audit.log(request, "Ustoz qo'shdi", user, label=user.get_full_name(), details={'telefon': d['phone']}, target_type='teacher')
         if not user.access_id:
@@ -121,19 +129,19 @@ def teacher_add(request):
 
 @panel_required('teachers.view')
 def teacher_detail(request, pk):
-    user = get_object_or_404(teachers_qs(), pk=pk)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
     granted = perms_of(request.user)
     teachings = list(user.teachings.select_related('subject', 'group').order_by('group__name', 'subject__name'))
     lessons = Lesson.objects.filter(teaching__teacher=user, active=True).count()
     ctx = {'nav': 'teachers', 'u': user, 'teachings': teachings, 'lessons': lessons, 'granted': granted,
            'children': list(user.children.select_related('user', 'group')) if user.has_children else [],
-           'assign': AssignForm()}
+           'assign': AssignForm(user=request.user)}
     return render(request, 'panel/teacher_detail.html', ctx)
 
 
 @panel_required('teachers.change')
 def teacher_edit(request, pk):
-    user = get_object_or_404(teachers_qs(), pk=pk)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
     before = {'Familiya': user.last_name, 'Ism': user.first_name, 'Telefon': user.phone}
     form = TeacherForm(request.POST or None, instance=user)
     if request.method == 'POST' and form.is_valid():
@@ -151,8 +159,8 @@ def teacher_edit(request, pk):
 @require_POST
 @panel_required('teachers.change')
 def teacher_assign(request, pk):
-    user = get_object_or_404(teachers_qs(), pk=pk)
-    form = AssignForm(request.POST)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
+    form = AssignForm(request.POST, user=request.user)
     if form.is_valid():
         t, created = Teaching.objects.get_or_create(teacher=user, subject=form.cleaned_data['subject'], group=form.cleaned_data['group'])
         if created:
@@ -168,7 +176,7 @@ def teacher_assign(request, pk):
 @require_POST
 @panel_required('teachers.change')
 def teacher_unassign(request, pk, teaching_id):
-    user = get_object_or_404(teachers_qs(), pk=pk)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
     t = get_object_or_404(Teaching, pk=teaching_id, teacher=user)
     label = f'{user.get_full_name()} — {t.subject} / {t.group}'
     t.delete()
@@ -180,7 +188,7 @@ def teacher_unassign(request, pk, teaching_id):
 @require_POST
 @panel_required('teachers.change')
 def teacher_password(request, pk):
-    user = get_object_or_404(teachers_qs(), pk=pk)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
     if not user.phone_digits:
         messages.error(request, "Telefon raqam yo'q — avval raqamni kiriting")
     else:
@@ -193,7 +201,7 @@ def teacher_password(request, pk):
 @require_POST
 @panel_required('teachers.change')
 def teacher_toggle(request, pk):
-    user = get_object_or_404(teachers_qs(), pk=pk)
+    user = get_object_or_404(teachers_qs(request.user), pk=pk)
     if user.pk == request.user.pk:
         messages.error(request, "O'zingizni nofaol qilib bo'lmaydi")
     else:

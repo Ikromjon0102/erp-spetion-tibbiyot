@@ -29,6 +29,8 @@ from . import audit
 from .models import StaffProfile
 from .access import panel_required, perms_of
 from .forms import ImportForm, ParentForm, StudentForm
+from org.scope import pick_branch, scope_groups, scope_students
+
 from .views_core import real_students
 from .views_devices import apply_photo, photo_ok as _photo_ok
 
@@ -42,10 +44,10 @@ def _back(student):
 def _filtered(request, granted):
     holat = request.GET.get('holat', '')
     if holat == 'chiqqan' and 'students.change' in granted:      # maktabdan chiqqanlar (arxiv)
-        qs = (Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=False, left_at__isnull=False)
-              .select_related('user', 'group'))
+        qs = (scope_students(Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=False, left_at__isnull=False),
+                             request.user).select_related('user', 'group'))
     else:
-        qs = real_students().select_related('user', 'group')
+        qs = real_students(request.user).select_related('user', 'group')
     qs = qs.prefetch_related('parents').order_by('user__last_name', 'user__first_name')
     q = request.GET.get('q', '').strip()
     if q:
@@ -66,7 +68,7 @@ def _filtered(request, granted):
         qs = qs.exclude(pk__in=arrived)
     elif holat == 'qarz' and 'payments.view' in granted:
         from .views_finance import debtor_ids
-        qs = qs.filter(pk__in=debtor_ids())
+        qs = qs.filter(pk__in=debtor_ids(request.user))
     return qs
 
 
@@ -116,7 +118,7 @@ def students(request):
     params = request.GET.copy()
     params.pop('page', None)
     return render(request, 'panel/students.html', {
-        'nav': 'students', 'page': page, 'rows': rows, 'groups': Group.objects.all(), 'q': request.GET.get('q', ''),
+        'nav': 'students', 'page': page, 'rows': rows, 'groups': scope_groups(Group.objects.all(), request.user), 'q': request.GET.get('q', ''),
         'sinf': request.GET.get('sinf', ''), 'holat': request.GET.get('holat', ''), 'qs': params.urlencode(),
         'show_phone': 'sensitive.phones' in granted, 'can_change': 'students.change' in granted, 'show_state': presence is not None, 'show_debt': debts is not None,
     })
@@ -144,7 +146,7 @@ def students_csv(request):
 @panel_required('students.view')
 def student_detail(request, pk):
     granted = perms_of(request.user)
-    student = get_object_or_404(Student.objects.select_related('user', 'group').prefetch_related('parents'), pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user', 'group').prefetch_related('parents'), request.user), pk=pk)
     today = timezone.localdate()
     ctx = {'nav': 'students', 's': student, 'granted': granted, 'parents': list(student.parents.all()),
            'show_phone': 'sensitive.phones' in granted, 'can_change': 'students.change' in granted}
@@ -202,7 +204,7 @@ def _attach_parent(request, student, name, phone):
 
 @panel_required('students.add')
 def student_add(request):
-    form = StudentForm(request.POST or None)
+    form = StudentForm(request.POST or None, user=request.user)
     upload = request.FILES.get('photo')
     if request.method == 'POST' and form.is_valid() and _photo_ok(form, upload):
         d = form.cleaned_data
@@ -211,7 +213,8 @@ def student_add(request):
                         last_name=d['last_name'], role=User.Role.STUDENT)
             user.set_unusable_password()
             user.save()
-            student = Student.objects.create(user=user, group=d['group'], birth_date=d['birth_date'], access_id=d['access_id'])
+            student = Student.objects.create(user=user, group=d['group'], birth_date=d['birth_date'], access_id=d['access_id'],
+                                             branch=pick_branch(request.user, d['group']))
         audit.log(request, "O'quvchi qo'shdi", student, label=user.get_full_name(), target_type='student')
         if d.get('parent_phone'):
             parent, created = _attach_parent(request, student, d['parent_name'].strip(), d['parent_phone'])
@@ -228,8 +231,8 @@ def student_add(request):
 
 @panel_required('students.change')
 def student_edit(request, pk):
-    student = get_object_or_404(Student.objects.select_related('user', 'group'), pk=pk)
-    form = StudentForm(request.POST or None, instance=student)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user', 'group'), request.user), pk=pk)
+    form = StudentForm(request.POST or None, instance=student, user=request.user)
     if request.method == 'POST' and form.is_valid():
         before = _student_state(student)
         d = form.cleaned_data
@@ -250,7 +253,7 @@ def student_edit(request, pk):
 @panel_required('students.change')
 @require_POST
 def parent_add(request, pk):
-    student = get_object_or_404(Student, pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.all(), request.user), pk=pk)
     form = ParentForm(request.POST)
     if not form.is_valid():
         messages.error(request, ' '.join(e for errs in form.errors.values() for e in errs))
@@ -263,7 +266,7 @@ def parent_add(request, pk):
 @panel_required('students.change')
 @require_POST
 def parent_remove(request, pk, parent_id):
-    student = get_object_or_404(Student, pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.all(), request.user), pk=pk)
     parent = get_object_or_404(student.parents, pk=parent_id)
     student.parents.remove(parent)
     audit.log(request, "Ota-onani ajratdi", student, label=f"{student.user.get_full_name()} ← {parent.get_full_name() or parent.username}", target_type='student')
@@ -275,7 +278,7 @@ def parent_remove(request, pk, parent_id):
 @require_POST
 def parent_password(request, pk, parent_id):
     """Ota-ona parolini boshlang'ich holatga (telefonning oxirgi 4 raqami) qaytaradi; login — telefon raqami."""
-    student = get_object_or_404(Student, pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.all(), request.user), pk=pk)
     parent = get_object_or_404(student.parents, pk=parent_id)
     if parent.role != User.Role.PARENT or StaffProfile.objects.filter(user=parent).exists():
         messages.error(request, "Bu hisob ustoz yoki xodimga tegishli, uning parolini bu yerdan o'zgartirib bo'lmaydi.")
@@ -297,13 +300,15 @@ def students_import(request):
         group = form.cleaned_data['group'].strip() or group_name_from_filename(upload.name)
         if not group:
             form.add_error('group', "Sinf nomini yozing (fayl nomidan aniqlab bo'lmadi)")
+        elif Group.objects.filter(name=group).exists() and not scope_groups(Group.objects.filter(name=group), request.user).exists():
+            form.add_error('group', "Bu nomdagi sinf boshqa filialga tegishli")
         else:
             fd, path = tempfile.mkstemp(suffix='.xlsx')
             try:
                 with os.fdopen(fd, 'wb') as out:
                     for chunk in upload.chunks():
                         out.write(chunk)
-                report = import_students(path, group)
+                report = import_students(path, group, branch=pick_branch(request.user))
             except (ValueError, OSError, KeyError) as e:
                 form.add_error('file', f"Faylni o'qib bo'lmadi: {e}")
             finally:
@@ -319,7 +324,7 @@ def students_import(request):
 @require_POST
 @panel_required('students.change')
 def student_leave(request, pk):
-    student = get_object_or_404(Student.objects.select_related('user', 'group'), pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user', 'group'), request.user), pk=pk)
     if student.has_left:
         return redirect('panel:student', pk=pk)
     label, group = student.user.get_full_name(), student.group.name if student.group_id else ''
@@ -333,7 +338,7 @@ def student_leave(request, pk):
 @require_POST
 @panel_required('students.change')
 def student_restore(request, pk):
-    student = get_object_or_404(Student.objects.select_related('user'), pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user'), request.user), pk=pk)
     if student.has_left:
         label = student.user.get_full_name()
         student.restore()
@@ -347,7 +352,7 @@ def student_restore(request, pk):
 @panel_required('students.change')
 def student_delete(request, pk):
     """Butunlay o'chirish: faqat avval maktabdan chiqarilgan o'quvchi. Baho, davomat va to'lov tarixi ham o'chadi."""
-    student = get_object_or_404(Student.objects.select_related('user'), pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user'), request.user), pk=pk)
     if not student.has_left:
         messages.error(request, "Avval o'quvchini maktabdan chiqaring, so'ng butunlay o'chirish mumkin.")
         return redirect('panel:student', pk=pk)

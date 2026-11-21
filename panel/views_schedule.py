@@ -9,6 +9,8 @@ from django.views.decorators.http import require_POST
 from academics.models import Group, Lesson, Subject, Teaching
 from accounts.models import User
 
+from org.scope import scope_groups, scope_teachers, scope_via_group
+
 from . import audit
 from .access import panel_required
 
@@ -21,8 +23,8 @@ def _natural(name):
     return (int(m.group(1)) if m else 999, name or '')
 
 
-def teachers_active():
-    return User.objects.filter(role=User.Role.TEACHER, is_active=True, is_demo=False).order_by('last_name', 'first_name')
+def teachers_active(user):
+    return scope_teachers(User.objects.filter(role=User.Role.TEACHER, is_active=True, is_demo=False), user).order_by('last_name', 'first_name')
 
 
 class LessonForm(forms.Form):
@@ -36,10 +38,11 @@ class LessonForm(forms.Form):
     end = forms.TimeField(label='Tugashi', widget=TIME)
     room = forms.CharField(label='Xona', max_length=30, required=False)
 
-    def __init__(self, *args, lesson=None, **kwargs):
+    def __init__(self, *args, lesson=None, user=None, **kwargs):
         self.lesson = lesson
         super().__init__(*args, **kwargs)
-        self.fields['teacher'].queryset = teachers_active()
+        self.fields['group'].queryset = scope_groups(Group.objects.all(), user)
+        self.fields['teacher'].queryset = teachers_active(user)
         self.fields['teacher'].label_from_instance = lambda u: f'{u.last_name} {u.first_name}'.strip() or u.username
 
     def clean(self):
@@ -76,8 +79,8 @@ def _period_times():
 
 @panel_required('schedule.view')
 def schedule(request):
-    groups = sorted(Group.objects.all(), key=lambda g: _natural(g.name))
-    teachers = list(teachers_active())
+    groups = sorted(scope_groups(Group.objects.all(), request.user), key=lambda g: _natural(g.name))
+    teachers = list(teachers_active(request.user))
     sinf, ustoz = request.GET.get('sinf', ''), request.GET.get('ustoz', '')
     group = next((g for g in groups if str(g.pk) == sinf), None)
     teacher = next((t for t in teachers if str(t.pk) == ustoz), None) if not group else None
@@ -103,7 +106,7 @@ def _teaching_for(d):
 
 @panel_required('schedule.change')
 def lesson_edit(request, pk=None):
-    lesson = get_object_or_404(Lesson.objects.select_related('teaching__subject', 'teaching__group', 'teaching__teacher'), pk=pk, active=True) if pk else None
+    lesson = get_object_or_404(scope_via_group(Lesson.objects.select_related('teaching__subject', 'teaching__group', 'teaching__teacher'), request.user, 'teaching__group'), pk=pk, active=True) if pk else None
     initial = {}
     if lesson:
         t = lesson.teaching
@@ -116,7 +119,7 @@ def lesson_edit(request, pk=None):
         times = _period_times().get(int(initial['period'])) if str(initial.get('period', '')).isdigit() else None
         if times:
             initial['start'], initial['end'] = times
-    form = LessonForm(request.POST or None, initial=initial, lesson=lesson)
+    form = LessonForm(request.POST or None, initial=initial, lesson=lesson, user=request.user)
     if request.method == 'POST' and form.is_valid():
         d = form.cleaned_data
         teaching = _teaching_for(d)
@@ -139,7 +142,7 @@ def lesson_edit(request, pk=None):
 @require_POST
 @panel_required('schedule.change')
 def lesson_delete(request, pk):
-    lesson = get_object_or_404(Lesson.objects.select_related('teaching__subject', 'teaching__group'), pk=pk, active=True)
+    lesson = get_object_or_404(scope_via_group(Lesson.objects.select_related('teaching__subject', 'teaching__group'), request.user, 'teaching__group'), pk=pk, active=True)
     group_id = lesson.teaching.group_id
     lesson.active = False            # davomat va baholar tarixi saqlanishi uchun o'chirilmaydi, faqat jadvaldan chiqariladi
     lesson.save(update_fields=['active'])

@@ -19,7 +19,8 @@ def role_required(*roles):
 
 def can_view_student(user, student):
     if user.is_school_admin:
-        return True
+        from org.scope import can_access_branch
+        return can_access_branch(user, student.branch_id)
     if student.parents.filter(pk=user.pk).exists():  # ota-ona (ustoz bo'lsa ham o'z farzandini ko'ra oladi)
         return True
     if user.is_student:

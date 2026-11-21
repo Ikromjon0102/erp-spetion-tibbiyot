@@ -19,6 +19,16 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Mavjud ma'lumot migratsiyada «Tibbiyot maktabi / Asosiy» ga bog'langan; yangi guruh/terminal filial ko'rsatilmasa shunga tushadi (`org.models.default_branch`).
 - Guruh nomi hozircha butun tizimda noyob (ko'p kod shunga tayanadi); tashkilot ichida noyob qilish TODO 2 da.
 
+## 1a. Ma'lumotlarni ajratish qoidalari (2026-11-21)
+- **Kim nimani ko'radi:** «Maktab egasi» (founder) va superuser — hamma filial. Boshqa xodim va ustoz — faqat `User.branches` dagi filiallar. Filiali yo'q xodim hech narsa ko'rmaydi (xavfsiz tomon). Ota-ona va o'quvchi panelga kirmaydi: ota-ona faqat o'z farzandlarini (turli tashkilotdan bo'lishi mumkin), o'quvchi o'zini ko'radi.
+- **O'quvchi** o'z `branch` iga ega (sinfsiz o'quvchi ham tashkilotga bog'langan qoladi); guruh tanlansa guruh filialiga tenglashadi.
+- **Boshqa filial yozuvi** havola orqali ham ochilmaydi (404; chek 403). Barcha `get_object_or_404` shu qoidadan o'tadi; testlar buni tekshiradi.
+- **E'lon:** guruhsiz e'lon = shu filialning hammasi. Ota-ona farzandlari filiallari e'lonlarini ko'radi.
+- **Terminal:** qurilmaga faqat shu qurilma filialining odamlari yuboriladi.
+- **Ota-onalar ro'yxati:** xodim faqat o'z filialida farzandi bor (yoki hali farzandi biriktirilmagan) ota-onani ko'radi; ota-ona kartasida boshqa tashkilotdagi farzandlar yashiriladi.
+- **Yangi yozuvlar** yaratuvchining filialiga tushadi. Yangi ustoz/xodim hisobi asosiy filialga biriktiriladi (signal), keyin aniqlashtiriladi.
+- **Hali global:** oylik narx va to'lov sozlamalari, chegirmalar, chiqish xabari vaqti, guruh nomi noyobligi (TODO 2a).
+
 ## 2. Brend
 - Logo hamma tashkilotda bir xil; **ilova fon rangi** tashkilotga qarab: tibbiyot to'q yashil `#166534`, asosiy maktab to'q ko'k, o'quv markaz qizil, bog'cha to'q sariq. Rang `Organization.brand_color` da.
 - Ota-ona farzandni almashtirsa, ilova rangi o'sha farzand tashkilotiga o'tadi.

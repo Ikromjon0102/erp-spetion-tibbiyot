@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
+from org.scope import scope_announcements
+
 from .models import Announcement, AnnouncementRead
 from .services import read_ids
 
@@ -12,18 +14,24 @@ def announcements_for(user):
     """Foydalanuvchiga tegishli e'lonlar. Ustoz bir vaqtda ota-ona ham bo'lsa, ikkala tomonning e'lonlarini ko'radi."""
     qs = Announcement.objects.select_related('author', 'group')
     if user.is_school_admin:
-        return qs
-    audiences, groups = {'all'}, set()
+        return scope_announcements(qs, user)
+    audiences, groups, branches = {'all'}, set(), set()
     if user.is_teacher:
         audiences.add('teachers')
         groups |= set(user.teachings.values_list('group_id', flat=True))
+        branches |= set(user.branches.values_list('pk', flat=True))
     if hasattr(user, 'student'):
         audiences.add('students')
         groups.add(user.student.group_id)
+        branches.add(user.student.branch_id)
     if user.is_parent or user.has_children:
         audiences.add('parents')
-        groups |= set(user.children.filter(user__is_active=True).values_list('group_id', flat=True))
-    return qs.filter(audience__in=audiences).filter(Q(group__isnull=True) | Q(group_id__in=groups))
+        kids = list(user.children.filter(user__is_active=True).values_list('group_id', 'branch_id'))
+        groups |= {g for g, _ in kids}
+        branches |= {b for _, b in kids}
+    # e'lon faqat o'z filialiga: guruhsiz e'lon — shu filialning hammasiga
+    return (qs.filter(audience__in=audiences, branch_id__in=branches)
+            .filter(Q(group__isnull=True) | Q(group_id__in=groups)))
 
 
 def with_read_flags(user, announcements):

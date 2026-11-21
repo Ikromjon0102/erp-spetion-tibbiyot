@@ -16,10 +16,14 @@ def recipients_of(announcement):
         teachers = base.filter(role=User.Role.TEACHER)
         if a.group_id:
             teachers = teachers.filter(teachings__group_id=a.group_id)
+        elif a.branch_id:
+            teachers = teachers.filter(branches=a.branch_id)
         ids |= set(teachers.values_list('pk', flat=True))
     if a.audience in ('all', 'parents'):
         if a.group_id:
             parents = base.filter(children__group_id=a.group_id)
+        elif a.branch_id:
+            parents = base.filter(children__branch_id=a.branch_id, children__user__is_active=True)
         else:
             parents = base.filter(Q(role=User.Role.PARENT) | Q(children__isnull=False))
         ids |= set(parents.values_list('pk', flat=True))
@@ -27,6 +31,8 @@ def recipients_of(announcement):
         students = base.filter(student__isnull=False)
         if a.group_id:
             students = students.filter(student__group_id=a.group_id)
+        elif a.branch_id:
+            students = students.filter(student__branch_id=a.branch_id)
         ids |= set(students.values_list('pk', flat=True))
     return list(User.objects.filter(pk__in=ids).order_by('role', 'last_name', 'first_name', 'username'))
 

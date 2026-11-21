@@ -22,6 +22,8 @@ class User(AbstractUser):
         'Parolni almashtirishi shart', default=False,
         help_text='Bir martalik parol berilganda yoqiladi; foydalanuvchi yangi parol qo\'ygach o\'chadi')
 
+    branches = models.ManyToManyField('org.Branch', blank=True, related_name='users', verbose_name='Ish filiallari',
+                                      help_text="Ustoz va xodimlar uchun: qaysi filiallarda ishlaydi (panelda faqat shu filiallar ko'rinadi)")
     photo = models.ImageField('Yuz rasmi (Hikvision uchun)', upload_to='faces/', blank=True, null=True)
     access_id = models.CharField('Face ID (ustozlar uchun)', max_length=32, unique=True, null=True, blank=True,
                                  help_text="Qurilmadagi Employee ID. O'quvchilarda bu ID o'quvchi kartasida turadi")
@@ -80,6 +82,8 @@ class Student(models.Model):
                                 limit_choices_to={'role': 'student'}, verbose_name='Foydalanuvchi')
     group = models.ForeignKey('academics.Group', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='students', verbose_name='Guruh')
+    branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='students',
+                               verbose_name='Filial', help_text="Guruh tanlansa, guruhning filialiga o'zi tenglashadi")
     parents = models.ManyToManyField(User, blank=True, related_name='children',
                                      limit_choices_to={'role__in': ['parent', 'teacher']},  # ustoz ham ota-ona bo'lishi mumkin
                                      verbose_name='Ota-onalari')
@@ -96,6 +100,16 @@ class Student(models.Model):
         verbose_name_plural = 'O\'quvchilar'
 
     def save(self, *args, **kwargs):
+        group_branch = self.group.branch_id if self.group_id else None
+        if group_branch and self.branch_id != group_branch:
+            self.branch_id = group_branch
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = list(kwargs['update_fields']) + ['branch']
+        elif self.branch_id is None:
+            from org.models import default_branch
+            self.branch = default_branch()
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = list(kwargs['update_fields']) + ['branch']
         if not self.access_id:
             # Face ID bo'sh bo'lsa o'zi beriladi (9001 dan); sinov hisoblariga berilmaydi
             self.access_id = None

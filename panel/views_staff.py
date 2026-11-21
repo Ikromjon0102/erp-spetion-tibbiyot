@@ -9,6 +9,8 @@ from accounts.passwords import issue_temp_password
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username
 
+from org.scope import branch_ids, branches_for, pick_branch, scope_staff
+
 from . import audit
 from .access import is_owner, panel_required, perms_of
 from .forms import PositionForm, StaffCreateForm
@@ -45,7 +47,7 @@ def _perm_diff(old, new):
 
 @panel_required('staff.view')
 def staff_list(request):
-    profiles = list(StaffProfile.objects.select_related('user', 'position').order_by('position__order', 'user__last_name'))
+    profiles = list(scope_staff(StaffProfile.objects.select_related('user', 'position'), request.user).order_by('position__order', 'user__last_name'))
     profile_user_ids = {p.user_id for p in profiles}
     technical = [u for u in User.objects.filter(is_superuser=True, is_active=True) if u.pk not in profile_user_ids]
     return render(request, 'panel/staff.html', {'nav': 'staff', 'profiles': profiles, 'technical': technical,
@@ -78,6 +80,7 @@ def staff_add(request):
                 else:
                     user = existing
                 profile = StaffProfile.objects.create(user=user, position=position, perms=perms)
+                user.branches.add(*(branches_for(me) if branch_ids(me) is not None else [pick_branch(me)]))
             audit.log(request, "Xodim qo'shdi", profile, label=f"{user.get_full_name() or user.username} — {position.name}",
                       details={'lavozim': position.name, 'ruxsatlar': [LABELS[p] for p in perms]}, target_type='staff')
             if created:
@@ -94,7 +97,7 @@ def staff_add(request):
 @panel_required('staff.view')
 def staff_detail(request, pk):
     me, granted = request.user, perms_of(request.user)
-    profile = get_object_or_404(StaffProfile.objects.select_related('user', 'position'), pk=pk)
+    profile = get_object_or_404(scope_staff(StaffProfile.objects.select_related('user', 'position'), me), pk=pk)
     is_self = profile.user_id == me.id
     editable = 'staff.manage' in granted and not is_self and (is_owner(me) or not profile.is_owner)
     positions = Position.objects.all() if is_owner(me) else Position.objects.filter(is_owner=False)

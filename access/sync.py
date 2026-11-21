@@ -5,6 +5,7 @@ import threading
 
 from django.conf import settings
 from django.db import close_old_connections
+from django.db.models import Q
 from django.utils import timezone
 
 from accounts.models import User
@@ -17,11 +18,14 @@ log = logging.getLogger(__name__)
 _lock = threading.Lock()
 
 
-def eligible_users():
-    """Qurilmada bo'lishi kerak odamlar: rasmi va Face ID si bor, faol o'quvchi/ustoz/xodimlar (sinov hisoblari emas)."""
+def eligible_users(device=None):
+    """Qurilmada bo'lishi kerak odamlar: rasmi va Face ID si bor, faol o'quvchi/ustoz/xodimlar (sinov hisoblari emas).
+    `device` berilsa, faqat shu qurilma filialining odamlari: o'quvchilar shu filialdan, ustoz/xodimlar shu filialda ishlaydiganlar."""
     users = (User.objects.filter(is_active=True, role__in=[User.Role.STUDENT, User.Role.TEACHER, User.Role.STAFF], is_demo=False)
              .exclude(photo='').exclude(photo__isnull=True).exclude(username__startswith='sinov_')
              .select_related('student'))
+    if device is not None and device.branch_id:
+        users = users.filter(Q(student__branch_id=device.branch_id) | Q(role__in=[User.Role.TEACHER, User.Role.STAFF], branches=device.branch_id)).distinct()
     return [u for u in users if u.device_id]
 
 
@@ -34,7 +38,7 @@ def _digest(user, jpeg):
 
 
 def pending_count(device, people=None):
-    people = eligible_users() if people is None else people
+    people = eligible_users(device) if people is None else people
     done = {fs.user_id: fs.digest for fs in device.face_syncs.filter(ok=True)}
     n = 0
     for u in people:
@@ -53,7 +57,7 @@ def sync_device(device, only_user_id=None):
         result['error'] = 'Qurilma manzili kiritilmagan'
         return result
     client = Client(device)
-    people = eligible_users()
+    people = eligible_users(device)
     wanted = {u.pk for u in people}
     states = {fs.user_id: fs for fs in device.face_syncs.all()}
     try:

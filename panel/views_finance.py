@@ -16,22 +16,24 @@ from billing import exports, reports
 from billing.models import BillingSettings, Discount, Payment, StudentDiscount
 from billing.services import account, first_of_month, recalc_charges, recalc_current_month, summaries
 
+from org.scope import scope_groups, scope_via_student
+
 from . import audit
 from .access import panel_required, perms_of
 
 
-def real_students():
-    return reports.real_students().select_related('user', 'group')
+def real_students(user):
+    return reports.real_students(user).select_related('user', 'group')
 
 
-def debtor_ids():
-    ids = list(reports.real_students().values_list('pk', flat=True))
+def debtor_ids(user):
+    ids = list(reports.real_students(user).values_list('pk', flat=True))
     return [pk for pk, x in summaries(ids).items() if x['debt'] > 0]
 
 
-def totals():
+def totals(user):
     """Bosh sahifa va to'lovlar bo'limi uchun umumiy raqamlar."""
-    ids = list(reports.real_students().values_list('pk', flat=True))
+    ids = list(reports.real_students(user).values_list('pk', flat=True))
     sums = summaries(ids)
     debt = [x for x in sums.values() if x['debt'] > 0]
     return {'debtors': len(debt), 'debt_total': sum((x['debt'] for x in debt), Decimal(0)),
@@ -93,13 +95,14 @@ def finance(request):
     q = request.GET.get('q', '').strip()
     found = []
     if q:
-        qs = real_students().filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q) | Q(group__name__icontains=q))
+        qs = real_students(request.user).filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q) | Q(group__name__icontains=q))
         found = list(qs.order_by('user__last_name', 'user__first_name')[:15])
-    recent = Payment.objects.exclude(student__user__username__startswith='sinov_').select_related('student__user', 'student__group', 'received_by')[:15]
+    recent = scope_via_student(Payment.objects.exclude(student__user__username__startswith='sinov_'), request.user).select_related('student__user', 'student__group', 'received_by')[:15]
     month_start = first_of_month(today)
     ctx = {'nav': 'finance', 'cfg': BillingSettings.get(), 'q': q, 'found': found, 'recent': recent, 'granted': perms_of(request.user),
-           'today_sum': _paid_sum(Payment.objects.filter(paid_on=today)), 'month_sum': _paid_sum(Payment.objects.filter(paid_on__gte=month_start))}
-    ctx.update(totals())
+           'today_sum': _paid_sum(scope_via_student(Payment.objects.filter(paid_on=today), request.user)),
+           'month_sum': _paid_sum(scope_via_student(Payment.objects.filter(paid_on__gte=month_start), request.user))}
+    ctx.update(totals(request.user))
     return render(request, 'panel/finance.html', ctx)
 
 
@@ -108,9 +111,9 @@ def debtors(request):
     """Qarzdorlar ro'yxati: avval muddati o'tgan qarzi kattalar. Har qatordan to'lov qabul qilishga o'tiladi."""
     granted = perms_of(request.user)
     q, sinf, holat = request.GET.get('q', '').strip(), request.GET.get('sinf', ''), request.GET.get('holat', '')
-    sums = summaries(list(reports.real_students().values_list('pk', flat=True)))
+    sums = summaries(list(reports.real_students(request.user).values_list('pk', flat=True)))
     owing = {pk: x for pk, x in sums.items() if x['debt'] > 0 and (holat != 'muddati' or x['overdue'] > 0)}
-    qs = real_students().filter(pk__in=owing).prefetch_related('parents')
+    qs = real_students(request.user).filter(pk__in=owing).prefetch_related('parents')
     if q:
         qs = qs.filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q))
     if sinf.isdigit():
@@ -121,7 +124,7 @@ def debtors(request):
     params = request.GET.copy()
     params.pop('page', None)
     return render(request, 'panel/debtors.html', {
-        'nav': 'finance', 'page': page, 'groups': Group.objects.all(), 'q': q, 'sinf': sinf, 'holat': holat, 'qs': params.urlencode(),
+        'nav': 'finance', 'page': page, 'groups': scope_groups(Group.objects.all(), request.user), 'q': q, 'sinf': sinf, 'holat': holat, 'qs': params.urlencode(),
         'count': len(rows), 'debt_total': sum((r['debt'] for r in rows), Decimal(0)),
         'overdue_total': sum((r['overdue'] for r in rows), Decimal(0)),
         'show_phone': 'sensitive.phones' in granted, 'can_accept': 'payments.accept' in granted, 'can_reports': 'payments.reports' in granted})
@@ -129,7 +132,7 @@ def debtors(request):
 
 @panel_required('payments.accept')
 def pay(request, pk):
-    student = get_object_or_404(real_students(), pk=pk)
+    student = get_object_or_404(real_students(request.user), pk=pk)
     bill = account(student)
     form = PaymentForm(request.POST or None, initial={'amount': int(bill['debt']) or None, 'method': 'cash', 'paid_on': timezone.localdate()})
     if request.method == 'POST' and form.is_valid():
@@ -155,7 +158,7 @@ def pay(request, pk):
 @require_POST
 @panel_required('payments.void')
 def payment_void(request, pk):
-    p = get_object_or_404(Payment, pk=pk)
+    p = get_object_or_404(scope_via_student(Payment.objects.all(), request.user), pk=pk)
     reason = request.POST.get('reason', '').strip()[:200]
     if not reason:
         messages.error(request, "To'lovni bekor qilish uchun sababini yozing.")
@@ -212,7 +215,7 @@ def discount_delete(request, pk):
 @require_POST
 @panel_required('payments.discounts')
 def student_discount_add(request, pk):
-    student = get_object_or_404(real_students(), pk=pk)
+    student = get_object_or_404(real_students(request.user), pk=pk)
     d = Discount.objects.filter(pk=request.POST.get('discount'), is_active=True).first()
     if not d:
         messages.error(request, 'Chegirmani tanlang')
@@ -235,7 +238,7 @@ def student_discount_add(request, pk):
 @require_POST
 @panel_required('payments.discounts')
 def student_discount_remove(request, pk, sd_id):
-    sd = get_object_or_404(StudentDiscount, pk=sd_id, student_id=pk)
+    sd = get_object_or_404(scope_via_student(StudentDiscount.objects.all(), request.user), pk=sd_id, student_id=pk)
     student, label, vf = sd.student, str(sd.discount), sd.valid_from
     sd.delete()
     recalc_charges(student, vf)
@@ -269,14 +272,14 @@ def reports_page(request):
     key = request.GET.get('r')
     report = None
     if key in reports.TITLES:
-        report = reports.build(key, request.GET, with_phone='sensitive.phones' in perms_of(request.user))
+        report = reports.build(key, request.GET, with_phone='sensitive.phones' in perms_of(request.user), user=request.user)
         report['display'] = [[exports.display(v, k) for v, k in zip(r, report['kinds'])] for r in report['rows']]
         if report['totals']:
             report['totals_display'] = [exports.display(v, k) for v, k in zip(report['totals'], report['kinds'])]
         report['summary_display'] = [(a, exports.money(b)) for a, b in report['summary']]
     from academics.models import Group
     return render(request, 'panel/reports.html', {'nav': 'finance', 'catalog': reports.REPORTS, 'key': key, 'report': report,
-                                                  'groups': Group.objects.all(), 'p': request.GET,
+                                                  'groups': scope_groups(Group.objects.all(), request.user), 'p': request.GET,
                                                   'today': timezone.localdate(), 'query': request.GET.urlencode()})
 
 
@@ -284,7 +287,7 @@ def reports_page(request):
 def report_download(request, key, fmt):
     if key not in reports.TITLES or fmt not in ('xlsx', 'pdf'):
         return redirect('panel:reports')
-    report = reports.build(key, request.GET, with_phone='sensitive.phones' in perms_of(request.user))
+    report = reports.build(key, request.GET, with_phone='sensitive.phones' in perms_of(request.user), user=request.user)
     audit.log(request, 'Hisobot yukladi', label=report['title'], details={'format': fmt.upper(), 'davr': report['subtitle']}, target_type='report')
     name = f"{key}-{timezone.localdate():%Y-%m-%d}.{fmt}"
     if fmt == 'xlsx':

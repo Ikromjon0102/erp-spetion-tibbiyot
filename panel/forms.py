@@ -5,6 +5,7 @@ from accounts.models import Student, User
 from accounts.phone import to_digits
 from accounts.student_import import normalize_phone
 from notices.models import Announcement
+from org.scope import scope_groups
 
 from .models import Position
 
@@ -35,12 +36,14 @@ class StudentForm(forms.Form):
                               widget=forms.TextInput(attrs={'type': 'tel', 'placeholder': '+998 90 123-45-67', 'autocomplete': 'off'}))
     parent_name = forms.CharField(label='Ota-ona ism-familiyasi', max_length=150, required=False)
 
-    def __init__(self, *args, instance=None, **kwargs):
+    def __init__(self, *args, instance=None, user=None, **kwargs):
         self.instance = instance
         if instance is not None and 'initial' not in kwargs:
             kwargs['initial'] = {'last_name': instance.user.last_name, 'first_name': instance.user.first_name,
                                  'group': instance.group, 'birth_date': instance.birth_date, 'access_id': instance.access_id}
         super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['group'].queryset = scope_groups(Group.objects.all(), user)
         if instance is not None:                 # tahrirda ota-onalar kartaning "Ota-onalar" yorlig'ida boshqariladi
             del self.fields['parent_phone'], self.fields['parent_name']
 
@@ -94,9 +97,11 @@ class AnnouncementForm(forms.ModelForm):
         labels = {'title': 'Sarlavha', 'body': 'Matn', 'audience': 'Kimlar uchun', 'group': 'Sinf (ixtiyoriy)'}
         help_texts = {'group': "Bo'sh qoldirilsa, barcha sinflarga ko'rinadi"}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['group'].empty_label = '— hamma sinflar —'
+        if user is not None:
+            self.fields['group'].queryset = scope_groups(Group.objects.all(), user)
 
 
 class PositionForm(forms.Form):

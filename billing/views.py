@@ -15,7 +15,9 @@ def receipt(request, pk, pay):
         return redirect_to_login(request.get_full_path())
     student = get_object_or_404(Student.objects.select_related('user', 'group'), pk=pk)
     user = request.user
-    allowed = (student.parents.filter(pk=user.pk).exists() or user.is_school_admin or can(user, 'payments.view'))
+    from org.scope import can_access_branch
+    staff_ok = (user.is_school_admin or can(user, 'payments.view')) and can_access_branch(user, student.branch_id)
+    allowed = student.parents.filter(pk=user.pk).exists() or staff_ok
     if not allowed:
         raise PermissionDenied
     p = get_object_or_404(Payment.objects.select_related('received_by'), pk=pay, student=student)

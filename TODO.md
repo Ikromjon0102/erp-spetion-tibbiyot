@@ -10,7 +10,10 @@
 Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). Sabab: bitta ota-ona (bitta telefon) farzandlarini turli tashkilotdan (med maktab, asosiy maktab, bog'cha, markaz) bitta ilovada ko'radi. Tashkilot > Filial > Guruh. Brend: logo bir xil, fon rangi tashkilotga qarab (med: to'q yashil #166534, asosiy maktab: to'q ko'k, markaz: qizil, bog'cha: to'q sariq).
 
 - [x] 1. `org` ilovasi: `Organization` (tur, brend rangi, modullar), `Branch`; `Group.branch`, `Device.branch`; mavjud yozuvlar «Tibbiyot maktabi / Asosiy»ga bog'landi
-- [ ] 2. Ma'lumotlarni tashkilot bo'yicha ajratish: xodim/ustoz/ma'muriyat faqat o'z tashkiloti (filiali) ni ko'radi; ota-ona o'z farzandlarini; paneldagi filtrlar; guruh nomi tashkilot ichida noyob
+- [x] 2. Ma'lumotlarni filial bo'yicha ajratish (panel, e'lonlar, terminallar, hisobotlar) — `org/scope.py`, `org/test_isolation.py`
+  - [ ] 2a. Hali global qolganlar: oylik narx/to'lov muddati/rekvizitlar (`BillingSettings`), chegirmalar, chiqish xabari vaqti (`AccessSettings`) — tashkilot bo'yicha bo'lishi kerak; guruh nomi hozircha tizimda noyob (filial ichida noyob qilish kerak)
+  - [ ] 2b. Panelda ustoz va xodimning filiallarini tanlash/o'zgartirish oynasi (hozir yaratuvchining filialiga tushadi, boshqasini admin orqali)
+  - [ ] 2c. `tools/push_faces.py` qurilma filialiga qarab yuborsin
 - [ ] 3. Ota-ona ilovasi: farzandlar turli tashkilotdan bitta ro'yxatda, farzand almashganda ilova fon rangi o'zgaradi (tashkilot brendi), bitta telefon = bitta hisob (sinov: 3 farzand 3 tashkilotda)
 - [ ] 4. Xarajatlar: kategoriya, takrorlanuvchi shablon, chek rasmi, kirim-chiqim-foyda hisoboti (ma'muriyat/buxgalter, tashkilot bo'yicha)
 - [ ] 5. Oyliklar: qat'iy oylik (kuchga kirish sanasi bilan) yoki foiz (default 40%, ustozning o'quvchilari qilgan to'lovdan); to'langanda avtomatik xarajat

@@ -10,6 +10,7 @@ from academics.models import Lesson
 from accounts.models import Student
 from journal.models import Attendance
 from notices.models import Announcement
+from org.scope import scope_announcements, scope_audit, scope_devices, scope_students, scope_via_group, scope_via_student
 from notices.services import read_summary
 
 from . import audit as audit_helpers
@@ -19,12 +20,14 @@ from .models import AuditLog
 DEVICE_ALIVE = timedelta(minutes=10)
 
 
-def real_students():
-    """Panelda ko'rinadigan o'quvchilar: sinov hisobining namunaviy o'quvchilari (sinov_...) chiqarib tashlanadi."""
-    return Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
+def real_students(user=None):
+    """Panelda ko'rinadigan o'quvchilar: sinov hisobining namunaviy o'quvchilari (sinov_...) chiqarib tashlanadi.
+    `user` berilsa, faqat uning filiallari o'quvchilari."""
+    qs = Student.objects.exclude(user__username__startswith='sinov_').filter(user__is_active=True)
+    return scope_students(qs, user) if user is not None else qs
 
 
-def missing_attendance(today, now):
+def missing_attendance(today, now, user=None):
     """Boshlangan, lekin davomat olinmagan darslar (sinov ustozlarining darslari hisobga olinmaydi)."""
     if today.weekday() > 5:
         return []
@@ -32,6 +35,8 @@ def missing_attendance(today, now):
                                      teaching__group__students__isnull=False)
                .exclude(teaching__teacher__is_demo=True)
                .select_related('teaching__group', 'teaching__subject', 'teaching__teacher').distinct().order_by('start', 'period'))
+    if user is not None:
+        lessons = scope_via_group(lessons, user, 'teaching__group')
     taken = set(Attendance.objects.filter(date=today).values_list('lesson_id', flat=True))
     return [l for l in lessons if l.id not in taken]
 
@@ -41,23 +46,23 @@ def dashboard(request):
     granted = perms_of(request.user)
     today, now = timezone.localdate(), timezone.localtime()
     ctx = {'nav': 'dashboard', 'today': today, 'day_off': today.weekday() > 5}
-    total = real_students().count()
+    total = real_students(request.user).count()
     if 'students.view' in granted:
         ctx['students_total'] = total
     if 'monitoring.view' in granted:
-        arrived = set(AccessEvent.objects.filter(direction='in', occurred_at__date=today, student__isnull=False)
-                      .exclude(student__user__username__startswith='sinov_').values_list('student_id', flat=True))
+        events = scope_via_student(AccessEvent.objects.filter(direction='in', occurred_at__date=today, student__isnull=False), request.user)
+        arrived = set(events.exclude(student__user__username__startswith='sinov_').values_list('student_id', flat=True))
         ctx['arrived'], ctx['not_arrived'] = len(arrived), max(total - len(arrived), 0)
-        missing = missing_attendance(today, now)
+        missing = missing_attendance(today, now, request.user)
         ctx['missing_count'], ctx['missing'] = len(missing), missing[:8]
         ctx['devices'] = [{'device': d, 'ok': bool(d.is_active and d.last_seen and now - d.last_seen < DEVICE_ALIVE)}
-                          for d in Device.objects.all()]
+                          for d in scope_devices(Device.objects.all(), request.user)]
         ctx['devices_down'] = sum(1 for d in ctx['devices'] if d['device'].is_active and not d['ok'])
     if 'payments.view' in granted:
         from .views_finance import totals
-        ctx.update(totals())
+        ctx.update(totals(request.user))
     if 'announcements.view' in granted:
-        latest = Announcement.objects.exclude(title__startswith='[Sinov]').order_by('-created_at').first()
+        latest = scope_announcements(Announcement.objects.exclude(title__startswith='[Sinov]'), request.user).order_by('-created_at').first()
         if latest:
             total_r, read = read_summary(latest)
             ctx['latest_news'] = {'a': latest, 'total': total_r, 'read': read}
@@ -66,7 +71,7 @@ def dashboard(request):
 
 @panel_required('audit.view')
 def audit_list(request):
-    qs = AuditLog.objects.all()
+    qs = scope_audit(AuditLog.objects.all(), request.user)
     who, verb = request.GET.get('kim', '').strip(), request.GET.get('amal', '').strip()
     if who:
         qs = qs.filter(actor_name__icontains=who)
