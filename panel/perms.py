@@ -54,6 +54,9 @@ CATALOG = [
         ('view', "Xodimlar ro'yxatini ko'rish"),
         ('manage', "Xodim qo'shish va ruxsatlarni boshqarish"),
     ]),
+    ('org', "Tashkilot", [
+        ('settings', "Tashkilot nomi va brend rangini o'zgartirish"),
+    ]),
     ('audit', "Faoliyat jurnali", [
         ('view', "Ko'rish"),
     ]),

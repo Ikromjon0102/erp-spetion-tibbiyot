@@ -95,7 +95,7 @@ def home(request):
     u = request.user
     if request.GET.get('rejim') == 'ota-ona':  # menyudagi "Farzandlarim"
         request.session['mode'] = 'parent'
-    children = list(u.children.filter(user__is_active=True).select_related('user', 'group'))
+    children = list(u.children.filter(user__is_active=True).select_related('user', 'group', 'branch__organization'))
     panel = has_panel(u)
     mode = request.session.get('mode')
     if panel and (mode == 'panel' or not (u.is_teacher or children)):
@@ -108,6 +108,7 @@ def home(request):
         request.session['mode'] = 'parent'
         if len(children) == 1:  # bitta farzand: to'g'ridan-to'g'ri uning sahifasi
             return redirect('student_detail', pk=children[0].pk)
+        request.theme_org = children[0].branch.organization if children[0].branch_id else None
         for c in children:
             c.info = overview(c)
         return render(request, 'app/parent_home.html', {'children': children, 'news': with_read_flags(u, announcements_for(u)[:3])})
@@ -128,6 +129,7 @@ def student_detail(request, pk):
         raise PermissionDenied
     if request.user.is_teacher and student.parents.filter(pk=request.user.pk).exists():
         request.session['mode'] = 'parent'  # ustoz o'z farzandini ochdi: keyingi safar ham shu rejimda
+    request.theme_org = student.branch.organization if student.branch_id else None   # ilova rangi bolaning tashkiloti rangida
     return render(request, 'app/child.html', child_context(student, request.user))
 
 

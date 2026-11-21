@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -14,6 +15,7 @@ class Organization(models.Model):
     short_name = models.CharField('Qisqa nomi', max_length=40, blank=True)
     kind = models.CharField('Turi', max_length=12, choices=Kind.choices, default=Kind.SCHOOL)
     brand_color = models.CharField('Brend rangi (HEX)', max_length=7, default='#166534',
+                                   validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$', 'Rang #RRGGBB ko\'rinishida bo\'lsin, masalan #166534')],
                                    help_text="Ilova fon rangi: tibbiyot #166534 (to'q yashil), asosiy maktab to'q ko'k, "
                                              "o'quv markaz qizil, bog'cha to'q sariq. Logo hammasida bir xil")
     meals_enabled = models.BooleanField('Taomnoma moduli', default=False,

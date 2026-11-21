@@ -6,6 +6,7 @@
 {% block head %}
 <style>
   .tabpane[hidden] { display:none; }
+  .chip-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; vertical-align:middle; }
   /* vazifa belgisi, varaq va tab nuqtasi */
   .tabbar button { position:relative; }
   .tabbar .badge { position:absolute; top:10px; left:calc(50% + 8px); width:9px; height:9px; border-radius:50%; background:var(--bad); border:2px solid var(--card); }
@@ -155,7 +156,7 @@
 <section class="tabpane" id="tab-home">
   {% if siblings %}
   <div class="chips">
-    {% for s in siblings %}<a class="chip {% if s.pk == student.pk %}on{% endif %}" href="{% url 'student_detail' s.pk %}">{{ s.user.first_name }}</a>{% endfor %}
+    {% for s in siblings %}<a class="chip {% if s.pk == student.pk %}on{% endif %}" href="{% url 'student_detail' s.pk %}">{% if s.branch %}<i class="chip-dot" style="background:{{ s.branch.organization.brand_color }}"></i>{% endif %}{{ s.user.first_name }}</a>{% endfor %}
   </div>
   {% endif %}
 

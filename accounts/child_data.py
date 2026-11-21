@@ -172,7 +172,7 @@ def child_context(student, viewer):
                 for a in with_read_flags(viewer, announcements_for(viewer)[:3])]
     siblings = []
     if is_guardian:
-        siblings = list(viewer.children.filter(user__is_active=True).select_related('user'))
+        siblings = list(viewer.children.filter(user__is_active=True).select_related('user', 'branch__organization'))
         siblings = siblings if len(siblings) > 1 else []
 
     return {

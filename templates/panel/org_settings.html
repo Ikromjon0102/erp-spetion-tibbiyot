@@ -1,0 +1,26 @@
+{% extends 'panel/base.html' %}
+{% block title %}Tashkilot va brend{% endblock %}
+{% block heading %}Tashkilot va brend{% endblock %}
+{% block content %}
+{% if orgs|length > 1 %}
+<form method="get" class="card" style="max-width:620px;margin-bottom:12px">
+  <label class="muted" style="font-size:13px">Tashkilot</label>
+  <select name="org" onchange="this.form.submit()">{% for o in orgs %}<option value="{{ o.pk }}"{% if o.pk == org.pk %} selected{% endif %}>{{ o.name }}</option>{% endfor %}</select>
+</form>
+{% endif %}
+<form method="post" class="card" style="max-width:620px">{% csrf_token %}
+  <input type="hidden" name="org" value="{{ org.pk }}">
+  {% include 'panel/_field.html' with f=form.name %}
+  {% include 'panel/_field.html' with f=form.short_name %}
+  {% include 'panel/_field.html' with f=form.brand_color %}
+  <div class="hint" style="margin-bottom:12px">Logo hamma tashkilotda bir xil; rang ota-ona ilovasi va panelning fon/urg'u rangini belgilaydi. Qolgan ranglar (yorug' va qorong'i rejim) shu rangdan o'zi hisoblanadi.</div>
+  {% if form.meals_enabled %}
+    {% include 'panel/_field.html' with f=form.meals_enabled %}
+    {% include 'panel/_field.html' with f=form.expenses_enabled %}
+  {% endif %}
+  <div style="display:flex;gap:8px;margin:4px 0 14px">
+    <span title="Urg'u" style="flex:1;height:34px;border-radius:10px;background:{{ org.brand_color }}"></span>
+  </div>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
+</form>
+{% endblock %}

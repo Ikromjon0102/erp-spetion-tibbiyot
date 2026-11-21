@@ -26,10 +26,10 @@
 
 {% block content %}
 {% for c in children %}
-<a class="kid" href="{% url 'student_detail' c.pk %}">
+<a class="kid" href="{% url 'student_detail' c.pk %}" style="border-left:5px solid {{ c.branch.organization.brand_color|default:'#166534' }}">
   <div class="kid-top">
     {% photo_url c.user as ph %}<div class="kid-av">{% if ph %}<img src="{{ ph }}" alt="">{% else %}{{ c.user|initials }}{% endif %}</div>
-    <div class="kid-name"><b>{{ c.user.last_name }} {{ c.user.first_name }}</b><small>{{ c.group|default:"Guruh biriktirilmagan" }}</small></div>
+    <div class="kid-name"><b>{{ c.user.last_name }} {{ c.user.first_name }}</b><small>{{ c.group|default:"Guruh biriktirilmagan" }}{% if c.branch %} · {{ c.branch.organization.label }}{% endif %}</small></div>
     <svg class="ic go"><use href="#i-next"/></svg>
   </div>
   <div class="pres {{ c.info.presence.state }}"><span class="dot"></span>{{ c.info.presence.text }}</div>
