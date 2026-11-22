@@ -1,0 +1,42 @@
+{% extends 'panel/base.html' %}
+{% block title %}Exam bilan bog'lash{% endblock %}
+{% block heading %}Exam bilan bog'lash{% endblock %}
+{% block content %}
+{% if not enabled %}
+<div class="card" style="max-width:640px"><b>Integratsiya sozlanmagan.</b>
+  <p class="muted">Serverda <code>EXAM_API_URL</code> va <code>EXAM_API_KEY</code> (exam'dagi <code>ERP_API_KEY</code> bilan bir xil) berilsa, o'quvchilar sinf va ism bo'yicha juftlanadi.</p></div>
+{% else %}
+{% if error %}<div class="card" style="max-width:640px;border-color:#dc2626"><b>Exam bilan aloqa yo'q.</b> <span class="muted">{{ error }}</span></div>{% endif %}
+<p class="muted" style="max-width:760px">Tizim sinf va ism-familiya o'xshashligi bo'yicha juftlarni taklif qiladi. To'g'ri juftlarni belgilab tasdiqlang. Bog'langach, ota-ona ilovasida o'quvchining imtihon natijalari dinamikasi chiqadi.</p>
+
+{% if proposals %}
+<form method="post" action="{% url 'panel:examlink_confirm' %}" class="card" style="max-width:900px">{% csrf_token %}
+  <h3 style="margin-top:0">Taklif qilingan juftlar ({{ proposals|length }})</h3>
+  <table class="tbl"><thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pr').forEach(c=>c.checked=this.checked)" checked></th><th>ERP o'quvchi</th><th>Exam o'quvchi</th><th>O'xshashlik</th></tr></thead><tbody>
+  {% for p in proposals %}
+  <tr><td><input type="checkbox" class="pr" name="pair" value="{{ p.erp }}:{{ p.exam.id }}"{% if p.score >= 0.95 and p.same_grade %} checked{% endif %}></td>
+    <td>{{ p.student.user.get_full_name }} <span class="muted">· {{ p.student.group|default:"—" }}</span></td>
+    <td>{{ p.exam.full_name }} <span class="muted">· {{ p.exam.class_name }}</span></td>
+    <td>{{ p.score }}{% if not p.same_grade %} <span class="muted">· sinf boshqa</span>{% endif %}</td></tr>
+  {% endfor %}</tbody></table>
+  <p class="muted" style="font-size:13px">Faqat 95%+ va sinfi mos juftlar oldindan belgilangan; qolganini ko'zingiz bilan tekshirib belgilang.</p>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Belgilanganlarni tasdiqlash</button>
+</form>
+{% elif not error %}<div class="card" style="max-width:640px">Yangi taklif yo'q.</div>{% endif %}
+
+<div class="card" style="max-width:900px;margin-top:12px">
+  <h3 style="margin-top:0">Bog'langan ({{ linked|length }})</h3>
+  {% for s in linked %}
+  <form method="post" action="{% url 'panel:examlink_unlink' s.exam_link.pk %}" style="display:flex;gap:8px;align-items:center;padding:4px 0">{% csrf_token %}
+    <span style="flex:1">{{ s.user.get_full_name }} <span class="muted">· {{ s.group|default:"—" }} ↔ {{ s.exam_link.exam_name }} ({{ s.exam_link.exam_class }})</span></span>
+    <button class="btn" style="padding:2px 10px">Uzish</button></form>
+  {% empty %}<span class="muted">Hali yo'q</span>{% endfor %}
+</div>
+
+<div class="card" style="max-width:900px;margin-top:12px">
+  <h3 style="margin-top:0">Juft topilmagan ({{ unmatched|length }})</h3>
+  <p class="muted" style="font-size:13px">Exam'da hisobi yo'q yoki ism juda farq qiladi (yangi o'quvchilar). Ismni tuzatib sahifani yangilang.</p>
+  <div style="columns:2;font-size:14px">{% for s in unmatched %}<div>{{ s.user.get_full_name }} <span class="muted">· {{ s.group|default:"—" }}</span></div>{% endfor %}</div>
+</div>
+{% endif %}
+{% endblock %}

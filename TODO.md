@@ -23,4 +23,6 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] 6. Taomnoma: 14 kunlik sikl, tushlik + poldnik, sikl ovqat beriladigan kunlar bo'yicha, taom rasmi bir marta yuklanadi (oshpaz platformaga kirmaydi), ota-ona sahifasida «Bugungi menyu»
   - [ ] 6a. Bog'cha menyusi founderdan hali olinmagan (1–3 mahal); serverda `create_orgs` va `seed_menu` ishga tushirish; keyin: menyuni Telegram orqali ota-onaga yuborish, allergiya/alohida ovqat belgisi, taom rasmlarini birinchi marta yuklash (xodim)
 - [ ] 7. Exam bilan integratsiya: SSO (ERP asosiy hisob), sinf/o'quvchi/ustozlarni ERP'dan olish, ota-ona ilovasida o'quvchi portfoliosi: imtihon natijalari dinamikasi
-- [ ] 8. Deploy: 2 GB droplet (~$18), Postgres, med + exam ko'chiriladi, boshqa loyihalar eski VPS'da qoladi; haftalik backup
+- [x] 7. Exam integratsiyasi (o'qish API + bog'lash ekrani + ota-ona dinamikasi) — bajarildi 2026-11-22. Qolgan: qo'lda juftlash (taklif topmaganlar uchun), exam'ni ko'p tashkilotli qilish (7a), serverda `ERP_API_KEY`/`EXAM_API_*` sozlash
+- [ ] 7a. Exam: ko'p tashkilotli (maktab/markaz), ERP o'quvchisi bilan bog'lash (sinf+ism, tasdiqlash ekrani), o'zlashtirish dinamikasi; chiqib ketganlarni founder o'zi o'chiradi
+- [ ] 8. Deploy: hozir yangi DO droplet (vaqtincha), ota-ona/ustozlarga berishdan oldin founderning yakuniy serveriga ko'chish (pg_dump + media); boshqa loyihalar eski VPS'da qoladi; haftalik backup

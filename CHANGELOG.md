@@ -2,6 +2,13 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## 2026-11-22 (exam integratsiyasi)
+- **Exam (`exam-spetion`)**: `/api/v1/integration/students` va `/students/{id}/dynamics` (faqat o'qish, `X-Integration-Key` = `ERP_API_KEY`; kalit bo'sh bo'lsa 404; dinamikada sinf reytingi yo'q). Testlar: `test_integration.py`.
+- **ERP `examlink` ilovasi**: `ExamLink` (ERP o'quvchi ↔ exam o'quvchi), `client.py` (5 s timeout, dinamika 10 daqiqa keshlanadi, exam ishlamasa sahifa buzilmaydi), `matching.py` (imlo variantlarini tenglaydi: o'/g', dj→j, x→h, q→k, so'zlar tartibi; ≥0.85, avval sinfi mos juftlar).
+- **Panel «Sozlamalar → Exam bilan bog'lash»** (`org.settings` ruxsati): taklif qilingan juftlar, tasdiqlash, bog'lanishni uzish, juft topilmaganlar ro'yxati.
+- **Ota-ona ilovasi**: «Baholar» sahifasida «Imtihonlar dinamikasi» (hozirgi %, yil boshidan o'zgarish, fanlar, choraklar).
+- Sozlama: `EXAM_API_URL`, `EXAM_API_KEY`.
+
 ## 2026-11-21
 
 ### Qo'shildi

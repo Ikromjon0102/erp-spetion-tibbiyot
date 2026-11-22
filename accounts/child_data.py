@@ -183,8 +183,16 @@ def child_context(student, viewer):
         meals = {'today': menu_for_date(org, today), 'tomorrow': menu_for_date(org, today + timedelta(days=1)),
                  'arrived': pres.get('state') in ('in', 'out')}
 
+    exam = None
+    link = getattr(student, 'exam_link', None)
+    if link is not None:
+        from examlink.client import fetch_dynamics
+        exam = fetch_dynamics(link.exam_student_id)
+        if exam and not exam.get('points'):
+            exam = None          # hali natija yo'q
+
     return {
-        'student': student, 'today': today, 'presence': pres, 'meals': meals,
+        'student': student, 'today': today, 'presence': pres, 'meals': meals, 'exam': exam,
         'avg': f'{overall:.1f}' if overall is not None else None,
         'avg_class': grade_class(overall) if overall is not None else '',
         'n_grades': len(grades), 'subjects': subjects, 'recent_grades': recent_grades,

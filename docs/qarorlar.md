@@ -69,3 +69,8 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 ## 7. Deploy
 - DigitalOcean droplet 2 GB / 2 CPU (~$18/oy), imtihon kunlari vaqtincha 4 GB ga ko'tariladi; diskni oshirmaymiz. Haftalik backup yoqiladi. Faqat med va exam eski VPS'dan ko'chiriladi, qolgan loyihalar joyida qoladi. **Deploy hozircha to'xtatilgan** (boshqa masalalar bor).
 - 2 GB ga sig'dirish: swap 2 GB, Postgres kichik sozlama, 2+2 gunicorn worker, Docker'siz (systemd), MinIO o'rniga disk/DO Spaces, Celery 1 jarayon.
+
+## 8. Yangilanish (2026-11-22): o'quvchilar, exam va server
+- **O'quvchilar:** exam ro'yxati = eski yagona maktab. 1-noyabrdan tibbiyot yo'nalishi ajralgan (examdagi ~43 ta mos o'quvchi tibbiyotga), qolganlari **Asosiy maktab**ga biriktiriladi. Ikkala maktabda ham yo'q (chiqib ketgan) o'quvchilarni founder/admin o'zi o'chiradi. Imtihon natijalari bog'langan o'quvchini o'chirishdan oldin nofaol qilish tavsiya etiladi.
+- **Exam hamma tashkilot uchun:** maktablar va o'quv markazlarda ham imtihon bo'ladi; natijalardan o'quvchi o'zlashtirishi dinamikasi shakllantiriladi (ma'lumot yig'iladi). Exam ko'p tashkilotli bo'ladi (maktab/tashkilot bo'yicha ajratish).
+- **Server:** hozircha DigitalOcean'da yangi droplet olib ishga tushiriladi. Ota-ona va ustozlarga berishdan oldin (to'liq taqdimotdan keyin) founderning yakuniy serveriga (o'z serveri/boshqa hosting) ko'chiriladi. Shuning uchun deploy skripti ko'chiriladigan (bitta buyruq, `pg_dump` + media) bo'lishi kerak. Biometrik (yuz) ma'lumot lokalizatsiyasi bo'yicha huquqshunos xulosasi kerak.

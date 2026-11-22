@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals
+from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
 
 app_name = 'panel'
 urlpatterns = [
@@ -76,6 +76,9 @@ urlpatterns = [
     path('tolovlar/chegirmalar/<int:pk>/ochirish/', views_finance.discount_delete, name='discount_delete'),
     path('tolovlar/sozlamalar/', views_finance.finance_settings, name='finance_settings'),
     path('tashkilot/', views_org.org_settings, name='org_settings'),
+    path('exam/', views_examlink.examlink, name='examlink'),
+    path('exam/tasdiqlash/', views_examlink.examlink_confirm, name='examlink_confirm'),
+    path('exam/<int:pk>/uzish/', views_examlink.examlink_unlink, name='examlink_unlink'),
 
     path('xarajatlar/', views_expenses.expenses, name='expenses'),
     path('xarajatlar/yangi/', views_expenses.expense_add, name='expense_add'),

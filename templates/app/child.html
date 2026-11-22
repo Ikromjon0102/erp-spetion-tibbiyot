@@ -258,6 +258,23 @@
 <!-- ====================== BAHOLAR ====================== -->
 <section class="tabpane" id="tab-grades" hidden>
   <h1 class="page">Baholar</h1>
+  {% if exam %}
+  <h2 class="sec">Imtihonlar dinamikasi <small>{{ exam.school_year_start }}/{{ exam.school_year_start|add:1 }} o'quv yili</small></h2>
+  <div class="card">
+    {% if exam.overall.current_percent is not None %}
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <span style="font-size:30px;font-weight:800">{{ exam.overall.current_percent|floatformat:0 }}%</span>
+      <span class="cap">hozir{% if exam.overall.delta is not None %} · yil boshidan {% if exam.overall.delta > 0 %}+{% endif %}{{ exam.overall.delta|floatformat:0 }}%{% endif %} · {{ exam.overall.exams_count }} ta imtihon</span>
+    </div>
+    {% if exam.overall.class_percent is not None %}<div class="cap">Sinf o'rtachasi: {{ exam.overall.class_percent|floatformat:0 }}%</div>{% endif %}
+    {% endif %}
+    {% for sub in exam.subjects %}
+    <div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-weight:700"><span>{{ sub.subject_name }}</span><span>{{ sub.current_percent|floatformat:0 }}%{% if sub.delta is not None %} <small class="cap">({% if sub.delta > 0 %}+{% endif %}{{ sub.delta|floatformat:0 }})</small>{% endif %}</span></div>
+      <div style="height:8px;border-radius:6px;background:rgba(128,128,128,.2);overflow:hidden;margin-top:4px"><div style="height:100%;width:{{ sub.current_percent|floatformat:0 }}%;background:var(--accent-deep)"></div></div></div>
+    {% endfor %}
+    {% if exam.quarters %}<div class="cap" style="margin-top:12px">{% for q in exam.quarters %}{% if q.percent is not None %}{{ q.number }}-chorak: {{ q.percent|floatformat:0 }}%{% if not forloop.last %} · {% endif %}{% endif %}{% endfor %}</div>{% endif %}
+  </div>
+  {% endif %}
   {% if subjects %}
   <div class="card big-avg">
     <div class="score avg {{ avg_class }}" style="width:70px;height:70px;border-radius:20px;font-size:30px">{{ avg }}</div>

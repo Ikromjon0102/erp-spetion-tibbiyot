@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'panel',
     'billing',
     'finance',
+    'examlink',
     'meals',
     'tgbot',
     'django.contrib.admin',
@@ -182,3 +183,7 @@ SESSION_COOKIE_AGE = 30 * 24 * 3600
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
 TELEGRAM_SYNC = 'test' in sys.argv
 SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili
+
+# Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)
+EXAM_API_URL = os.environ.get('EXAM_API_URL', '')
+EXAM_API_KEY = os.environ.get('EXAM_API_KEY', '')
