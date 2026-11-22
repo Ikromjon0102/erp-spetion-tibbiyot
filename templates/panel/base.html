@@ -233,6 +233,15 @@
     .sch-row .pr { color:var(--dim); font:700 11px 'Space Mono',monospace; flex-shrink:0; }
   }
   .mny .s { display:none; } @media (max-width:700px){ .mny .f { display:none; } .mny .s { display:inline; } .hm { display:none !important; } }
+  /* ish maydoni: telefonda sarlavha ostidagi chip */
+  .wsp-m { display:none; }
+  @media (max-width:960px){
+    .wsp-m { display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:7px 12px 7px 10px; border-radius:99px; border:1px solid var(--line-strong);
+      background:var(--card); font:700 13.5px 'Inter',sans-serif; color:var(--ink); }
+    .wsp-m span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .wsp-m .ic { width:16px; height:16px; transform:rotate(90deg); color:var(--dim); }
+    .wsp-links a { font-weight:700; } .wsp-links a.sub { padding-left:40px; font-weight:600; color:var(--dim); }
+    .wsp-links a.on { background:var(--tint); color:var(--accent-deep); }
+  }
   /* ish maydoni tanlagichi */
   .wsp { margin:4px 0 12px; position:relative; }
   .wsp summary { list-style:none; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07); cursor:pointer; color:#fff; }
@@ -308,11 +317,7 @@
   <details class="wsp" id="wsp">
     <summary><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i><span><small>Ish maydoni</small><b>{{ scope.label }}</b></span><svg class="ic chev"><use href="#p-more"/></svg></summary>
     <div class="wmenu">
-      <a class="{% if scope.is_all %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=all&next={{ request.path }}"><i class="wdot" style="background:var(--faint)"></i>Hammasi</a>
-      {% for o in scope.tree %}
-        <a class="{% if scope.kind == 'org' and scope.org.pk == o.org.pk %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=org-{{ o.org.pk }}&next={{ request.path }}"><i class="wdot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }}</a>
-        {% if o.branches|length > 1 %}{% for b in o.branches %}<a class="sub {% if scope.kind == 'branch' and scope.branch.pk == b.pk %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=branch-{{ b.pk }}&next={{ request.path }}">{{ b.name }}</a>{% endfor %}{% endif %}
-      {% endfor %}
+      {% include 'panel/_scope_links.html' %}
     </div>
   </details>
   {% endif %}
@@ -352,6 +357,7 @@
   <header class="bar">
     <button class="burger" id="burger" aria-label="Menyu"><svg class="ic"><use href="#p-menu"/></svg></button>
     <h1>{% block heading %}{% endblock %}</h1>
+    {% if scope and scope.selectable %}<button type="button" class="wsp-m" id="wspBtn" aria-haspopup="dialog"><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i><span>{{ scope.label }}</span><svg class="ic"><use href="#p-chev"/></svg></button>{% endif %}
     <div class="acts">{% block actions %}{% endblock %}</div>
     <div class="tools">
       <button type="button" class="iconbtn" data-theme-toggle aria-label="Kun / tun rejimi" title="Kun / tun rejimi"><svg class="ic moon"><use href="#p-moon"/></svg><svg class="ic sun"><use href="#p-sun"/></svg></button>
@@ -380,10 +386,18 @@
   {% if 'announcements.view' in panel_can %}<a class="{% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><span class="pill"><svg class="ic"><use href="#p-news"/></svg></span>E'lonlar</a>{% endif %}
   <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' or nav == 'expenses' or nav == 'payroll' or nav == 'meals' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
 </nav>
+{% if scope and scope.selectable %}
+<div class="msheet-ov" id="wspOv"><div class="msheet" role="dialog" aria-modal="true" aria-label="Ish maydonini tanlash">
+  <div class="grab"></div>
+  <div class="mhead"><div><b>Ish maydoni</b><small>Qaysi tashkilot yoki filial bilan ishlaysiz — butun panel shunga moslashadi</small></div></div>
+  <div class="mlinks wsp-links">{% include 'panel/_scope_links.html' %}</div>
+</div></div>
+{% endif %}
 <div class="msheet-ov" id="moreOv"><div class="msheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
   <div class="mhead"><span class="av">{{ user|initials }}</span><div><b>{{ user.get_full_name|default:user.username }}</b><small>{{ panel_position|default:"Xodim" }}</small></div></div>
   <div class="mlinks">
+    {% if scope and scope.selectable %}<button type="button" data-open-wsp><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i>Ish maydoni: {{ scope.label }}</button><div class="sep"></div>{% endif %}
     {% if 'meals.view' in panel_can %}<a href="{% url 'panel:meals' %}"><svg class="ic"><use href="#p-book"/></svg>Taomnoma</a>{% endif %}
     {% if 'expenses.view' in panel_can %}<a href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
     {% if 'payroll.view' in panel_can %}<a href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
@@ -409,6 +423,13 @@
     var more = document.getElementById('moreBtn'), ov = document.getElementById('moreOv');
     function setMore(on){ ov.classList.toggle('show', on); document.body.style.overflow = on ? 'hidden' : ''; }
     if (more){ more.onclick = function(){ setMore(true); }; ov.addEventListener('click', function(e){ if (e.target === ov) setMore(false); }); }
+    var wov = document.getElementById('wspOv');
+    function setWsp(on){ if (!wov) return; if (on) setMore(false); wov.classList.toggle('show', on); document.body.style.overflow = on ? 'hidden' : ''; }
+    if (wov){
+      document.querySelectorAll('#wspBtn, [data-open-wsp]').forEach(function(b){ b.onclick = function(){ setWsp(true); }; });
+      wov.addEventListener('click', function(e){ if (e.target === wov) setWsp(false); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') setWsp(false); });
+    }
   })();
   (function(){
     var root = document.documentElement, t = document.getElementById('sideToggle');

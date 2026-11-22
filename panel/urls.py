@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
+from . import branch_assign, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
 
 app_name = 'panel'
 urlpatterns = [
@@ -26,6 +26,7 @@ urlpatterns = [
     path('ustozlar/<int:pk>/dars/<int:teaching_id>/olib-tashlash/', views_teachers.teacher_unassign, name='teacher_unassign'),
     path('ustozlar/<int:pk>/parol/', views_teachers.teacher_password, name='teacher_password'),
     path('ustozlar/<int:pk>/holat/', views_teachers.teacher_toggle, name='teacher_toggle'),
+    path('ustozlar/<int:pk>/filiallar/', branch_assign.teacher_branches, name='teacher_branches'),
 
     path('jadval/', views_schedule.schedule, name='schedule'),
     path('jadval/yangi/', views_schedule.lesson_edit, name='lesson_add'),
@@ -119,6 +120,7 @@ urlpatterns = [
     path('xodimlar/<int:pk>/rasm/', views_devices.staff_photo, name='staff_photo'),
     path('xodimlar/<int:pk>/rasm/ochirish/', views_devices.staff_photo_delete, name='staff_photo_delete'),
     path('xodimlar/<int:pk>/parol/', views_staff.staff_password, name='staff_password'),
+    path('xodimlar/<int:pk>/filiallar/', branch_assign.staff_branches, name='staff_branches'),
     path('xodimlar/<int:pk>/olib-tashlash/', views_staff.staff_remove, name='staff_remove'),
     path('lavozimlar/', views_staff.positions, name='positions'),
     path('lavozimlar/yangi/', views_staff.position_edit, name='position_add'),

@@ -1,0 +1,6 @@
+{# Ish maydoni variantlari (yon menyu va telefondagi pastki varaq uchun umumiy) #}
+<a class="{% if scope.is_all %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=all&next={{ request.path|urlencode }}"><i class="wdot" style="background:var(--faint)"></i>Hammasi</a>
+{% for o in scope.tree %}
+  <a class="{% if scope.kind == 'org' and scope.org.pk == o.org.pk %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=org-{{ o.org.pk }}&next={{ request.path|urlencode }}"><i class="wdot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }}</a>
+  {% if o.branches|length > 1 %}{% for b in o.branches %}<a class="sub {% if scope.kind == 'branch' and scope.branch.pk == b.pk %}on{% endif %}" href="{% url 'panel:set_scope' %}?s=branch-{{ b.pk }}&next={{ request.path|urlencode }}">{{ b.name }}</a>{% endfor %}{% endif %}
+{% endfor %}

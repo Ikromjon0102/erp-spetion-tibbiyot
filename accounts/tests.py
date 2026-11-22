@@ -26,8 +26,15 @@ class ParentViewTests(TestCase):
             AccessEvent.objects.create(device=dev, student=self.child, employee_no='1001', direction=direction, occurred_at=dt)
 
     def test_parent_home_shows_today_arrival_and_departure(self):
+        # vaqt qat'iy 18:00 (aks holda test 15:40 dan oldin yiqilardi: chiqish hali «kelajakda» bo'ladi)
+        from types import SimpleNamespace
+        from unittest import mock
+        real = timezone.localtime
+        evening = real().replace(hour=18, minute=0, second=0, microsecond=0)
+        fake = SimpleNamespace(localtime=lambda *a, **k: real(*a, **k) if a else evening, localdate=lambda: evening.date())
         self.client.login(username='p1', password='x')
-        r = self.client.get('/', follow=True)  # bitta farzand: to'g'ridan-to'g'ri uning sahifasi
+        with mock.patch('accounts.child_data.timezone', fake):
+            r = self.client.get('/', follow=True)  # bitta farzand: to'g'ridan-to'g'ri uning sahifasi
         self.assertRedirects(r, f'/oquvchi/{self.child.pk}/')
         self.assertContains(r, 'Uyga ketdi · 15:40')
         self.assertContains(r, 'Kelgan: 08:12')

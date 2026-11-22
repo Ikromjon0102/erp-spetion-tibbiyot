@@ -2,6 +2,14 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Audit 1-bosqichi (2026-11-23)
+Loyiha auditidan keyingi tez tuzatishlar (hisobot: claude.ai artifact «Spetion ERP auditi»).
+- **Telefonda ish maydoni** (Kritik): telefonda yon menyu yashirin bo'lgani uchun tashkilotni almashtirib bo'lmas edi. Endi sarlavha ostida rangli chip («● Hammasi ⌄») va «Ko'proq» ichida «Ish maydoni» bandi; bosilsa pastdan tashkilot/filiallar varag'i ochiladi.
+- **Xavfsiz standartlar:** `DEBUG` faqat `manage.py runserver` da (yoki `DEBUG=1` aniq berilsa) yoqiladi; serverda (gunicorn) `SECRET_KEY` bo'lmasa ilova ishga tushmaydi.
+- **Guruh nomi filial ichida noyob:** turli tashkilotda bir xil «7-A» bo'lishi mumkin (`uniq_group_name_per_branch`). Excel import, jadval importi, o'quvchini qayta tiklash va panel formasi filial bo'yicha ishlaydi.
+- **Ustoz va xodim filiallari panelda:** ustoz va xodim kartasida «Ish filiallari» — belgilash/olib tashlash. Tahrirlovchi faqat o'z ruxsatidagi filiallarni o'zgartiradi, qolganlari tegilmaydi; kamida bitta filial; o'zini o'zi o'zgartira olmaydi; jurnalga yoziladi.
+- Vaqtga bog'liq test (15:40 dan oldin yiqilardi) qat'iy vaqt bilan tuzatildi; exam reposidagi seed tuzatishi commit qilindi.
+
 ## 2026-11-22 (exam integratsiyasi)
 
 ## Ish maydoni (workspace) va tushunarli founder sahifasi (2026-11-22)

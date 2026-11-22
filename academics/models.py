@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Group(models.Model):
-    name = models.CharField('Guruh nomi', max_length=50, unique=True)
+    name = models.CharField('Guruh nomi', max_length=50)
     year = models.PositiveSmallIntegerField('O\'quv yili (boshlanishi)', default=2026)
     branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, null=True, blank=True, related_name='groups',
                                verbose_name='Filial')
@@ -14,6 +14,8 @@ class Group(models.Model):
         verbose_name = 'Guruh'
         verbose_name_plural = 'Guruhlar'
         ordering = ['name']
+        # nom filial ichida noyob: turli tashkilotda bir xil «7-A» bo'lishi mumkin
+        constraints = [models.UniqueConstraint(fields=['branch', 'name'], name='uniq_group_name_per_branch')]
 
     def save(self, *args, **kwargs):
         if self.branch_id is None:

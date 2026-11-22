@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -13,6 +14,7 @@ from org.scope import branch_ids, branches_for, pick_branch, scope_staff
 
 from . import audit
 from .hubs import org_hub
+from .branch_assign import branch_choices
 from .access import is_owner, panel_required, perms_of
 from .forms import PositionForm, StaffCreateForm
 from .models import AuditLog, Position, StaffProfile
@@ -141,6 +143,8 @@ def staff_detail(request, pk):
     return render(request, 'panel/staff_detail.html', {
         'nav': 'staff', 'p': profile, 'editable': editable, 'is_self': is_self, 'positions': positions, 'matrix': matrix,
         'recent': AuditLog.objects.filter(target_type='staff', target_id=profile.pk)[:10],
+        'branch_target': profile.user, 'branch_action': reverse('panel:staff_branches', args=[profile.pk]),
+        'branch_groups': branch_choices(me, profile.user) if editable else None,
     })
 
 

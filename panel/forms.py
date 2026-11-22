@@ -90,6 +90,17 @@ class GroupForm(forms.ModelForm):
         labels = {'name': 'Sinf nomi', 'year': "O'quv yili (boshlanishi)", 'monthly_price': "Oylik narx (so'm), ixtiyoriy"}
         help_texts = {'monthly_price': "Bo'sh qoldirilsa, tashkilotning umumiy oylik narxi olinadi. O'quv markazda kursga qarab alohida narx qo'yish mumkin"}
 
+    def __init__(self, *args, branch=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.branch = branch or (self.instance.branch if self.instance.pk else None)
+
+    def clean_name(self):
+        name = ' '.join(self.cleaned_data['name'].split())
+        clash = Group.objects.filter(branch=self.branch, name__iexact=name).exclude(pk=self.instance.pk)
+        if self.branch is not None and clash.exists():
+            raise forms.ValidationError(f"«{name}» nomli sinf shu filialda allaqachon bor")
+        return name
+
     def clean_monthly_price(self):
         value = self.cleaned_data.get('monthly_price')
         if value is not None and value < 0:

@@ -139,7 +139,7 @@ class Student(models.Model):
     def restore(self):
         from academics.models import Group
         with transaction.atomic():
-            self.group = Group.objects.filter(name=self.left_group_name).first() if self.left_group_name else None
+            self.group = (Group.objects.filter(name=self.left_group_name, branch_id=self.branch_id).first() if self.left_group_name else None)
             self.left_at, self.left_group_name = None, ''
             self.save(update_fields=['left_at', 'left_group_name', 'group'])
             self.user.is_active = True

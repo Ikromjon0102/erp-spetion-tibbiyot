@@ -59,7 +59,7 @@ def _time(hhmm):
 
 
 @transaction.atomic
-def import_workbook(path):
+def import_workbook(path, branch=None):
     ws = openpyxl.load_workbook(path, data_only=True).active
 
     header_row = next((r for r in range(1, 15) if str(ws.cell(r, 1).value or '').strip().lower() == 'hafta kuni'), None)
@@ -72,7 +72,10 @@ def import_workbook(path):
     report = {'created': 0, 'updated': 0, 'deactivated': 0, 'teachers_new': [], 'warnings': []}
     credentials = []
     teacher_cache = {}
-    groups = {c: Group.objects.get_or_create(name=name)[0] for c, name in classes.items()}
+    if branch is None:
+        from org.models import default_branch
+        branch = default_branch()
+    groups = {c: Group.objects.get_or_create(name=name, branch=branch)[0] for c, name in classes.items()}
     seen = set()
     busy = defaultdict(list)  # (ustoz, kun, soat) -> [sinflar]  — to'qnashuvlarni topish uchun
 

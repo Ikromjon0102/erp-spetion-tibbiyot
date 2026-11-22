@@ -12,8 +12,8 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] 1. `org` ilovasi: `Organization` (tur, brend rangi, modullar), `Branch`; `Group.branch`, `Device.branch`; mavjud yozuvlar «Tibbiyot maktabi / Asosiy»ga bog'landi
 - [x] 2. Ma'lumotlarni filial bo'yicha ajratish (panel, e'lonlar, terminallar, hisobotlar) — `org/scope.py`, `org/test_isolation.py`
   - [x] 2a-1. Narx, to'lov muddati, rekvizitlar va chegirmalar tashkilot bo'yicha; guruhda ixtiyoriy narx
-  - [ ] 2a-2. Hali global: chiqish xabari vaqti (`AccessSettings`); guruh nomi tizimda noyob (filial ichida noyob qilish kerak); Telegram bot xabarlarida tashkilot nomi
-  - [ ] 2b. Panelda ustoz va xodimning filiallarini tanlash/o'zgartirish oynasi (hozir yaratuvchining filialiga tushadi, boshqasini admin orqali)
+  - [ ] 2a-2. Hali global: chiqish xabari vaqti (`AccessSettings`); Telegram bot xabarlarida tashkilot nomi. (Guruh nomi filial ichida noyob — bajarildi 2026-11-23)
+  - [x] 2b. (bajarildi 2026-11-23) Panelda ustoz va xodimning filiallarini tanlash/o'zgartirish oynasi (hozir yaratuvchining filialiga tushadi, boshqasini admin orqali)
   - [ ] 2c. `tools/push_faces.py` qurilma filialiga qarab yuborsin
 - [x] 3. Ota-ona ilovasi: farzandlar turli tashkilotdan bitta ro'yxatda, farzand almashganda ilova rangi o'zgaradi; panelda «Tashkilot va brend» sozlamasi. Qolgan: telefon ilovasi (PWA) ikonka/manifest rangi hali bitta (yashil); `create_orgs` ni serverda ishga tushirish (deploy bilan)
 - [x] 4. Xarajatlar: kategoriya, takroriy xarajat, chek rasmi, kirim-chiqim-foyda (faqat hisobchi va founder; `expenses.*`)

@@ -302,8 +302,6 @@ def students_import(request):
         group = form.cleaned_data['group'].strip() or group_name_from_filename(upload.name)
         if not group:
             form.add_error('group', "Sinf nomini yozing (fayl nomidan aniqlab bo'lmadi)")
-        elif Group.objects.filter(name=group).exists() and not scope_groups(Group.objects.filter(name=group), request.user).exists():
-            form.add_error('group', "Bu nomdagi sinf boshqa filialga tegishli")
         else:
             fd, path = tempfile.mkstemp(suffix='.xlsx')
             try:

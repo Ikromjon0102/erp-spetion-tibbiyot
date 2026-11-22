@@ -30,7 +30,7 @@ def group_edit(request, pk=None):
     group = get_object_or_404(scope_groups(Group.objects.all(), request.user), pk=pk) if pk else None
     before = group.name if group else ''
     before_price = group.monthly_price if group else None     # forma tekshirilganda obyekt o'zgaradi, shuning uchun eski nom oldindan olinadi
-    form = GroupForm(request.POST or None, instance=group)
+    form = GroupForm(request.POST or None, instance=group, branch=group.branch if group else pick_branch(request.user))
     if request.method == 'POST' and form.is_valid():
         saved = form.save(commit=False)
         if not group:

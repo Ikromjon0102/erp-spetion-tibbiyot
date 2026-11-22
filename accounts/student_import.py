@@ -89,7 +89,10 @@ def import_students(path, group_name, branch=None):
 @transaction.atomic
 def import_rows(group_name, rows, branch=None):
     """rows: (to'liq ism, 'ona'/'ota'/'', ota-ona telefoni) — fayl formatidan qat'i nazar."""
-    group, _ = Group.objects.get_or_create(name=group_name, defaults={'branch': branch})
+    if branch is None:
+        from org.models import default_branch
+        branch = default_branch()
+    group, _ = Group.objects.get_or_create(name=group_name, branch=branch)     # nom filial ichida noyob
     report = {'group': group_name, 'created': 0, 'existing': 0, 'parents_new': 0, 'parents_linked': 0,
               'no_phone': [], 'bad_phone': []}
 

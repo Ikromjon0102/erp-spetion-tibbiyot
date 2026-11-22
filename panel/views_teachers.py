@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -138,6 +139,9 @@ def teacher_detail(request, pk):
     ctx = {'nav': 'teachers', 'u': user, 'teachings': teachings, 'lessons': lessons, 'granted': granted,
            'children': list(user.children.select_related('user', 'group')) if user.has_children else [],
            'assign': AssignForm(user=request.user)}
+    from .branch_assign import branch_choices
+    ctx.update({'branch_target': user, 'branch_action': reverse('panel:teacher_branches', args=[user.pk]),
+                'branch_groups': branch_choices(request.user, user) if 'teachers.change' in granted else None})
     return render(request, 'panel/teacher_detail.html', ctx)
 
 

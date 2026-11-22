@@ -1,0 +1,23 @@
+{# Ish filiallari kartasi (ustoz va xodim sahifalari). branch_groups — tanlash mumkin bo'lganlar; bo'lmasa faqat ro'yxat. #}
+<div class="card brs-card">
+  <h2>Ish filiallari <small class="muted">qaysi tashkilot va filialda ishlaydi</small></h2>
+  {% if branch_groups %}
+  <form method="post" action="{{ branch_action }}">{% csrf_token %}
+    {% for g in branch_groups %}
+    <fieldset class="brs"><legend><i class="wdot" style="background:{{ g.org.brand_color }}"></i>{{ g.org.label }}</legend>
+      {% for it in g.items %}<label class="brs-item"><input type="checkbox" name="branch" value="{{ it.branch.pk }}" id="br-{{ it.branch.pk }}" {% if it.on %}checked{% endif %}> {{ it.branch.name }}</label>{% endfor %}
+    </fieldset>
+    {% endfor %}
+    <p class="hint">Belgilangan filiallar ro'yxatlarida ko'rinadi. Sizga ruxsat berilmagan filiallar o'zgarmaydi.</p>
+    <button class="btn primary">Filiallarni saqlash</button>
+  </form>
+  {% else %}
+  <p>{% for b in branch_target.branches.all %}{{ b.organization.label }} · {{ b.name }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">Filial biriktirilmagan</span>{% endfor %}</p>
+  {% endif %}
+</div>
+<style>
+  .brs { border:1px solid var(--line); border-radius:12px; padding:8px 12px 10px; margin:0 0 10px; display:flex; flex-wrap:wrap; gap:6px 18px; }
+  .brs legend { font-weight:800; padding:0 6px; display:flex; align-items:center; gap:7px; }
+  .brs-item { display:inline-flex; align-items:center; gap:7px; font-weight:600; min-height:36px; }
+  .brs-item input { width:18px; height:18px; }
+</style>

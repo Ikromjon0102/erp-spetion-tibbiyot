@@ -22,11 +22,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-insecure-key-change-me')
+# Xavfsiz standartlar: DEBUG faqat `manage.py runserver` da (yoki DEBUG=1 aniq berilsa) yoqiladi. Serverda (gunicorn) DEBUG o'chiq,
+# SECRET_KEY berilmasa ilova umuman ishga tushmaydi — `.env` yo'qolsa ham xato sahifalari ichki ma'lumotni ochib qo'ymaydi.
+_MANAGE = Path(sys.argv[0]).name == 'manage.py'
+_RUNSERVER = _MANAGE and sys.argv[1:2] == ['runserver']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', '1') == '1'
+DEBUG = os.environ.get('DEBUG', '1' if _RUNSERVER else '0') == '1'
+
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+if not SECRET_KEY:
+    if not _MANAGE:     # gunicorn / wsgi
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("SECRET_KEY berilmagan (.env). Serverda maxfiy kalitsiz ishga tushirilmaydi.")
+    SECRET_KEY = 'dev-only-insecure-key-change-me'      # faqat lokal buyruqlar (runserver, test, migrate...) uchun
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,i.tunl.uz').split(',')
 

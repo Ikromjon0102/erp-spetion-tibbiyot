@@ -28,6 +28,7 @@
     <div class="hint">Parol tiklansa, boshlang'ich parol — telefonning oxirgi 4 raqami; ustoz kirgach yangisini qo'yadi.</div>
     {% endif %}
   </div>
+  {% include 'panel/_branches_card.html' %}
   <div class="card"><h2>O'qitadigan fan va sinflar</h2>
     {% for t in teachings %}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
       <div><b>{{ t.subject }}</b> <span class="muted">— {{ t.group }}</span></div>
