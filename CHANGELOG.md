@@ -5,6 +5,9 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 ## 2026-11-22 (exam integratsiyasi)
 
 ## Ota-ona ilovasi: fikrlar asosida tuzatishlar (2026-11-22)
+
+- **Rang tuzatildi (2026-11-22, keyingi):** `_glass.html` (liquid glass) tashkilot rangini qayta yashilga bo'yab yuborayotgan edi. Endi `org/theme.py` glass o'zgaruvchilarining hammasini (fon gradienti, shisha yuzalar, chiziqlar, soyalar, `--rgb`/`--glow`) bitta rangdan hisoblaydi, `org-theme` glassdan KEYIN ulanadi; yon menyu, hero, tugmalar, soyalar o'zgaruvchilarga o'tdi. Holat ranglari (Joyida, davomat %, qarz, baho) tashkilot rangiga bog'liq emas (`--ok`, `--bad`, `--late`). Sahifalar orasi `@view-transition` bilan 0.4 s yumshoq o'tadi; `<html data-org>` va `theme-color` har farzandda yangilanadi.
+- **Imtihon bloki bo'shligi:** `.bar` sinfi glass'ning panel `.bar` qoidasi bilan to'qnashib, blok ustini yopib qo'ygan edi (`.xbar` ga o'zgartirildi); SVG atributlarida `var()` ishlamagani uchun chiziqlar ko'rinmasdi (`style=` ga o'tkazildi). Kun rejimida menyu matni ham tuzatildi.
 - **Butun sahifa tashkilot rangida:** yuqori panel, pastki menyu faol tugmasi, hero va fon tashkilot rangidan hisoblanadi (oldin hero qattiq yashil edi). Qizil `#E53935` (ochroq), to'q sariq `#F97316` — endi bir-biriga yaqin emas.
 - **Menyu jadvalga ko'chdi:** bosh sahifadagi menyu kartasi olib tashlandi; tushlik/poldnik dars jadvalida o'z soatida chiqadi, bosilsa taomlar rasmi bilan modal oyna. Ovqat soati panelda (Taomnoma sozlamalari) o'zgartiriladi (`MealType.at`, standart 12:30 / 15:30).
 - **Bog'cha:** baho, imtihon, vazifa yo'q; «Dars jadvali» → «Mashg'ulotlar».

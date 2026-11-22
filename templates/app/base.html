@@ -1,5 +1,5 @@
 {% load app_extras %}<!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-org="{{ org_theme.org.pk|default:'' }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -37,11 +37,7 @@
 
   /* ---------- yuqori panel ---------- */
   .topbar { position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:6px; height:54px; padding:0 12px calc(0px) 14px;
-    padding-top:env(safe-area-inset-top,0); background:var(--accent); color:var(--on-accent); }
-  .topbar .icon-btn { color:var(--on-accent); } .topbar .icon-btn:active { background:rgba(255,255,255,.22); }
-  .topbar .avatar { background:rgba(255,255,255,.24); color:var(--on-accent); }
-  .topbar .belldot { border-color:var(--accent); }
-  .topbar svg.brand-logo path { fill:var(--on-accent); }
+    padding-top:env(safe-area-inset-top,0); background:var(--card); border-bottom:1px solid var(--line); }
   .topbar .logo svg { height:22px; width:auto; display:block; }
   svg.brand-logo path { fill:var(--accent-deep); }  /* logotip mavzuga mos: yorug'da to'q yashil, qorong'ida och yashil */
   .tb-title { flex:1; font-weight:800; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-left:6px; }
@@ -104,10 +100,10 @@
   .tabbar button.on { color:var(--accent-deep); }
   .tabbar button.on .ic { stroke-width:2.4; }
   .tabbar .pill { padding:3px 16px; border-radius:99px; display:grid; place-items:center; }
-  .tabbar button.on .pill { background:var(--accent); color:var(--on-accent); }
+  .tabbar button.on .pill { background:var(--tint); }
 </style>
-<style id="org-theme">{{ org_theme.css }}</style>
 {% include 'ui/_glass.html' %}
+<style id="org-theme">{{ org_theme.css }}</style>
 {% include 'pwa/_head.html' %}
 {% block head %}{% endblock %}
 </head>

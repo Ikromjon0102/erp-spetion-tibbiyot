@@ -1,5 +1,5 @@
 {% load app_extras %}<!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-org="{{ org_theme.org.pk|default:'' }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -233,8 +233,8 @@
     .sch-row .pr { color:var(--dim); font:700 11px 'Space Mono',monospace; flex-shrink:0; }
   }
 </style>
-<style id="org-theme">{{ org_theme.css }}</style>
 {% include 'ui/_glass.html' %}
+<style id="org-theme">{{ org_theme.css }}</style>
 {% block head %}{% endblock %}
 </head>
 <body class="shell-panel">
