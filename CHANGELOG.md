@@ -8,6 +8,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **Panel «Sozlamalar → Exam bilan bog'lash»** (`org.settings` ruxsati): taklif qilingan juftlar, tasdiqlash, bog'lanishni uzish, juft topilmaganlar ro'yxati.
 - **Ota-ona ilovasi**: «Baholar» sahifasida «Imtihonlar dinamikasi» (hozirgi %, yil boshidan o'zgarish, fanlar, choraklar).
 - Sozlama: `EXAM_API_URL`, `EXAM_API_KEY`.
+- Exam ko'p tashkilotli qilindi (maktab/markaz alohida sinflar bilan) — tafsilot exam `CHANGELOG.md`.
 
 ## 2026-11-21
 
