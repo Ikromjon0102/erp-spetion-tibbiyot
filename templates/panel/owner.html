@@ -58,24 +58,24 @@
 
 <div class="grid g4" style="margin-bottom:16px">
   <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-students"/></svg></span><div class="k">O'quvchilar</div><div class="v">{{ r.grand.students|money }}</div>
-    <div class="s">hozir o'qiyotgan o'quvchilar soni{% if r.grand.no_price %} · {{ r.grand.no_price|money }} tasiga narx belgilanmagan{% endif %}</div></div>
-  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Tushum</div><div class="v">{{ kpi.income|money }} <small>so'm</small></div>
+    <div class="s">hozir o'qiyotgan o'quvchilar soni{% if r.grand.no_price %} · {{ r.grand.no_price|mny }} tasiga narx belgilanmagan{% endif %}</div></div>
+  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Tushum</div><div class="v">{{ kpi.income|mny }} <small>so'm</small></div>
     <div class="s">kassaga kirgan pul — {{ period_label }}</div></div>
-  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-receipt"/></svg></span><div class="k">Xarajat</div><div class="v">{{ kpi.expense|money }} <small>so'm</small></div>
+  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-receipt"/></svg></span><div class="k">Xarajat</div><div class="v">{{ kpi.expense|mny }} <small>so'm</small></div>
     <div class="s">chiqqan pul: ijara, kommunal, oyliklar... — {{ period_label }}</div></div>
-  <div class="stat ow-kpi {% if kpi.profit < 0 %}ow-neg{% else %}good{% endif %}"><span class="ico"><svg class="ic"><use href="#p-dash"/></svg></span><div class="k">Foyda</div><div class="v">{{ kpi.profit|money }} <small>so'm</small></div>
+  <div class="stat ow-kpi {% if kpi.profit < 0 %}ow-neg{% else %}good{% endif %}"><span class="ico"><svg class="ic"><use href="#p-dash"/></svg></span><div class="k">Foyda</div><div class="v">{{ kpi.profit|mny }} <small>so'm</small></div>
     <div class="s">tushum − xarajat — {{ period_label }}</div></div>
 </div>
 
 <div class="card">
   <h2>{{ month_label }}: to'lovlar holati</h2>
   <div class="ow-3">
-    <div><small>Kutilgan (shu oy uchun hisoblangan)</small><b>{{ r.grand.expected|money }}</b></div>
-    <div><small>To'langan (shu oyda kassaga kirgan)</small><b class="pos">{{ r.grand.income_m|money }}</b></div>
-    <div><small>To'lanmagan (hali to'lanishi kerak)</small><b class="{% if r.grand.left %}neg{% endif %}">{{ r.grand.left|money }}</b></div>
+    <div><small>Kutilgan (shu oy uchun hisoblangan)</small><b>{{ r.grand.expected|mny }}</b></div>
+    <div><small>To'langan (shu oyda kassaga kirgan)</small><b class="pos">{{ r.grand.income_m|mny }}</b></div>
+    <div><small>To'lanmagan (hali to'lanishi kerak)</small><b class="{% if r.grand.left %}neg{% endif %}">{{ r.grand.left|mny }}</b></div>
   </div>
   <div class="ow-prog"><i style="width:{% if r.grand.pct %}{% if r.grand.pct > 100 %}100{% else %}{{ r.grand.pct }}{% endif %}{% else %}0{% endif %}%"></i></div>
-  <div class="hint">{% if r.grand.pct is not None %}{{ r.grand.pct }}% yig'ildi.{% else %}Oylik narx belgilanmagan.{% endif %} Kutilgan = narx − chegirma (grant — 0 so'm). Jami qarz (barcha oylar bo'yicha to'lanmagan, eski oylar bilan): <b class="{% if r.grand.debt %}neg{% endif %}">{{ r.grand.debt|money }} so'm</b>{% if r.grand.unpaid_payroll %} · to'lanmagan oyliklar: <b>{{ r.grand.unpaid_payroll|money }}</b>{% endif %}.</div>
+  <div class="hint">{% if r.grand.pct is not None %}{{ r.grand.pct }}% yig'ildi.{% else %}Oylik narx belgilanmagan.{% endif %} Kutilgan = narx − chegirma (grant — 0 so'm). Jami qarz (barcha oylar bo'yicha to'lanmagan, eski oylar bilan): <b class="{% if r.grand.debt %}neg{% endif %}">{{ r.grand.debt|mny }} so'm</b>{% if r.grand.unpaid_payroll %} · to'lanmagan oyliklar: <b>{{ r.grand.unpaid_payroll|mny }}</b>{% endif %}.</div>
 </div>
 
 {% if scope.is_all and r.orgs|length > 1 %}
@@ -86,11 +86,11 @@
     <a href="{% url 'panel:set_scope' %}?s=org-{{ o.org.pk }}&next=/panel/%3Foy%3D{{ r.month|date:'Y-m' }}%26davr%3D{{ period }}" style="position:absolute;inset:0" aria-label="{{ o.org.label }}"></a>
     <h3>{{ o.org.label }}<small>{{ o.total.students|money }} o'quvchi</small></h3>
     <dl>
-      <dt>Kutilgan</dt><dd>{{ o.total.expected|money }}</dd>
-      <dt>To'langan</dt><dd class="pos">{{ o.total.income_m|money }}</dd>
-      <dt>Xarajat</dt><dd>{{ o.total.expense_m|money }}</dd>
-      <dt>Foyda</dt><dd class="{% if o.total.profit_m < 0 %}neg{% endif %}">{{ o.total.profit_m|money }}</dd>
-      <dt>Qarz</dt><dd class="{% if o.total.debt %}neg{% endif %}">{{ o.total.debt|money }}</dd>
+      <dt>Kutilgan</dt><dd>{{ o.total.expected|mny }}</dd>
+      <dt>To'langan</dt><dd class="pos">{{ o.total.income_m|mny }}</dd>
+      <dt>Xarajat</dt><dd>{{ o.total.expense_m|mny }}</dd>
+      <dt>Foyda</dt><dd class="{% if o.total.profit_m < 0 %}neg{% endif %}">{{ o.total.profit_m|mny }}</dd>
+      <dt>Qarz</dt><dd class="{% if o.total.debt %}neg{% endif %}">{{ o.total.debt|mny }}</dd>
     </dl>
     <div class="ow-prog"><i style="width:{% if o.total.pct %}{% if o.total.pct > 100 %}100{% else %}{{ o.total.pct }}{% endif %}{% else %}0{% endif %}%"></i></div>
     <div class="go">Batafsil →</div>
@@ -101,16 +101,16 @@
 <div class="card">
   <h2>{% if scope.kind == 'branch' %}{{ scope.label }}{% elif r.orgs|length == 1 %}{{ r.orgs.0.org.label }}{% else %}Filiallar{% endif %} <small>{{ month_label }}</small></h2>
   <div class="tbl-wrap"><table class="tbl ow-tbl">
-    <thead><tr><th>Filial</th><th class="n">O'quvchi</th><th class="n">Kutilgan</th><th class="n">To'langan</th><th class="n">%</th><th class="n">Xarajat</th><th class="n">Foyda</th><th class="n">Qarz</th></tr></thead>
+    <thead><tr><th>Filial</th><th class="n">O'quvchi</th><th class="n hm">Kutilgan</th><th class="n">To'langan</th><th class="n hm">%</th><th class="n hm">Xarajat</th><th class="n">Foyda</th><th class="n">Qarz</th></tr></thead>
     <tbody>
     {% for o in r.orgs %}{% for b in o.rows %}
-      <tr><td>{{ b.branch.name }}</td><td class="n">{{ b.students|money }}</td><td class="n">{{ b.expected|money }}</td><td class="n">{{ b.income_m|money }}</td>
-        <td class="n">{% if b.pct is not None %}{{ b.pct }}%{% else %}—{% endif %}</td><td class="n">{{ b.expense_m|money }}</td>
-        <td class="n {% if b.profit_m < 0 %}neg{% endif %}">{{ b.profit_m|money }}</td><td class="n">{{ b.debt|money }}</td></tr>
+      <tr><td>{{ b.branch.name }}</td><td class="n">{{ b.students|money }}</td><td class="n hm">{{ b.expected|mny }}</td><td class="n">{{ b.income_m|mny }}</td>
+        <td class="n hm">{% if b.pct is not None %}{{ b.pct }}%{% else %}—{% endif %}</td><td class="n hm">{{ b.expense_m|mny }}</td>
+        <td class="n {% if b.profit_m < 0 %}neg{% endif %}">{{ b.profit_m|mny }}</td><td class="n">{{ b.debt|mny }}</td></tr>
     {% endfor %}{% endfor %}
-    <tr class="tot"><td>Jami</td><td class="n">{{ r.grand.students|money }}</td><td class="n">{{ r.grand.expected|money }}</td><td class="n">{{ r.grand.income_m|money }}</td>
-      <td class="n">{% if r.grand.pct is not None %}{{ r.grand.pct }}%{% else %}—{% endif %}</td><td class="n">{{ r.grand.expense_m|money }}</td>
-      <td class="n {% if r.grand.profit_m < 0 %}neg{% endif %}">{{ r.grand.profit_m|money }}</td><td class="n">{{ r.grand.debt|money }}</td></tr>
+    <tr class="tot"><td>Jami</td><td class="n">{{ r.grand.students|money }}</td><td class="n hm">{{ r.grand.expected|mny }}</td><td class="n">{{ r.grand.income_m|mny }}</td>
+      <td class="n hm">{% if r.grand.pct is not None %}{{ r.grand.pct }}%{% else %}—{% endif %}</td><td class="n hm">{{ r.grand.expense_m|mny }}</td>
+      <td class="n {% if r.grand.profit_m < 0 %}neg{% endif %}">{{ r.grand.profit_m|mny }}</td><td class="n">{{ r.grand.debt|mny }}</td></tr>
     </tbody>
   </table></div>
 </div>
@@ -130,8 +130,8 @@
         <b><i class="ow-dot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }}</b>
         {% if o.tier_rows %}
         <div class="tbl-wrap"><table class="tbl ow-tbl"><thead><tr><th>Toifa</th><th class="n">O'quvchi</th><th class="n">Oylik to'lov</th><th class="n">Jami</th></tr></thead><tbody>
-          {% for t in o.tier_rows %}<tr><td>{{ t.label }}</td><td class="n">{{ t.n|money }}</td><td class="n">{{ t.price|money }}</td><td class="n">{{ t.sum|money }}</td></tr>{% endfor %}
-          <tr class="tot"><td>Jami kutilmoqda</td><td class="n">{{ o.total.students|money }}</td><td class="n"></td><td class="n">{{ o.total.expected|money }}</td></tr>
+          {% for t in o.tier_rows %}<tr><td>{{ t.label }}</td><td class="n">{{ t.n|money }}</td><td class="n">{{ t.price|mny }}</td><td class="n">{{ t.sum|mny }}</td></tr>{% endfor %}
+          <tr class="tot"><td>Jami kutilmoqda</td><td class="n">{{ o.total.students|money }}</td><td class="n"></td><td class="n">{{ o.total.expected|mny }}</td></tr>
         </tbody></table></div>
         {% else %}<div class="empty">Bu oy uchun hisob yo'q</div>{% endif %}
       </div>

@@ -10,6 +10,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **Founder sahifasi soddalashtirildi:** 4 raqam (o'quvchi, tushum, xarajat, foyda) har birining tagida «nima ekani» yozilgan; davr bitta tanlanadi (shu oy / o'quv yili); «to'lovlar holati» (kutilgan / kelgan / kelmagan); «Hammasi»da tashkilot kartalari, tashkilot tanlansa — filiallar jadvali; chegirma/grant tarkibi yig'ma blokda.
 - **Hamma bo'lim «Hammasi»da tashkilot kartalari:** sinflar, dars jadvali, to'lovlar (shu oy tushumi), xarajatlar (shu oy), oyliklar (to'lanmagani), e'lonlar, qurilmalar ham.
 - To'lovlar holati yorliqlari: kutilgan / to'langan / to'lanmagan. Telefonda «kutilgan tushum tarkibi» ochilganda sahifa kengayib ketishi tuzatildi.
+- **Telefonda qisqa summalar:** katta raqamlar telefonda qisqa ko'rinadi (20 900 000 → 20.9 mln, 750 000 → 750 ming), kompyuterda to'liq; to'liq raqam bosib/ushlab turilganda ko'rinadi (`mny` filtri). Telefonda jadvaldan ikkinchi darajali ustunlar yashiriladi — gorizontal surilish yo'q.
 - **Yuk sinovi (4000 o'quvchi):** `seed_scale` buyrug'i (~4000 o'quvchi, 3200 ota-ona, 220 ustoz, 12 000 hisob, 9000 to'lov) — faqat sinov bazasida. Ro'yxatlar 60–100 ms, founder sahifasi 80–270 ms, to'lovlar 270 ms, qarzdorlar 230 ms (SQLite, lokal). Tuzatildi: katta to'plam uchun `ensure_charges` natijasi 10 daqiqa eslab qolinadi, `summaries` o'quvchi obyektlarini yuklamaydi, qarzdorlar sahifasi faqat joriy sahifani yuklaydi (1000 ms → 230 ms), founder hisobotida ichki so'rovlar.
 - Testlar: `panel/test_workspace.py`, `panel/test_owner.py`.
 

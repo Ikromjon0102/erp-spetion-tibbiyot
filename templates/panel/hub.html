@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
-{% load app_extras %}
+{% load app_extras panel_extras %}
 {% block title %}{{ title }}{% endblock %}
-{% block heading %}{{ title }}{% if total %} <small class="muted">· jami {{ total|money }} {{ unit }}</small>{% endif %}{% endblock %}
+{% block heading %}{{ title }}{% if total %} <small class="muted">· jami {% if unit == "so'm" %}{{ total|mny }}{% else %}{{ total|money }}{% endif %} {{ unit }}</small>{% endif %}{% endblock %}
 {% block content %}
 <style>
   .hub-grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); }
@@ -25,7 +25,7 @@
   <div class="hub-card" style="--c:{{ c.org.brand_color }}">
     <a href="{% url 'panel:set_scope' %}?s=org-{{ c.org.pk }}&next={{ path }}" style="position:absolute;inset:0" aria-label="{{ c.org.label }}"></a>
     <h3>{{ c.org.label }}</h3>
-    <div class="n">{{ c.n|money }}<small>{{ unit }}</small></div>{% if caption %}<div class="muted" style="font-size:13px">{{ caption }}</div>{% endif %}
+    <div class="n">{% if unit == "so'm" %}{{ c.n|mny }}{% else %}{{ c.n|money }}{% endif %}<small>{{ unit }}</small></div>{% if caption %}<div class="muted" style="font-size:13px">{{ caption }}</div>{% endif %}
     {% if c.branches %}<div class="hub-br" style="position:relative">{% for b in c.branches %}<a href="{% url 'panel:set_scope' %}?s=branch-{{ b.branch.pk }}&next={{ path }}">{{ b.branch.name }} · {{ b.n|money }}</a>{% endfor %}</div>{% endif %}
     <div class="hub-go">Ochish →</div>
   </div>

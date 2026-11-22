@@ -42,3 +42,26 @@ def mln(value):
     if a >= 1_000_000:
         return f"{sign}{a / 1_000_000:.1f} mln"
     return f"{v:,}".replace(',', ' ')
+
+
+def _short(v):
+    a = abs(v)
+    sign = '−' if v < 0 else ''
+    for div, unit in ((1_000_000_000, 'mlrd'), (1_000_000, 'mln'), (1_000, 'ming')):
+        if a >= div:
+            x = f'{a / div:.2f}'.rstrip('0').rstrip('.')
+            return f'{sign}{x} {unit}'
+    return f'{v}'
+
+
+@register.filter
+def mny(value):
+    """Pul summasi ikki ko'rinishda: kompyuterda to'liq (20 900 000), telefonda qisqa (20.9 mln) — telefonda gorizontal surilish bo'lmasin.
+    CSS: `.mny .f` / `.mny .s` (qarang templates/panel/base.html)."""
+    from django.utils.html import format_html
+    try:
+        v = int(value)
+    except (TypeError, ValueError):
+        return value
+    return format_html('<span class="mny" title="{}"><span class="f">{}</span><span class="s">{}</span></span>',
+                       f'{v:,}'.replace(',', ' '), f'{v:,}'.replace(',', ' '), _short(v))
