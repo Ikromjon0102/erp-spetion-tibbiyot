@@ -1,0 +1,156 @@
+{% extends 'panel/base.html' %}
+{% load panel_extras app_extras %}
+{% block title %}Raqamlar{% endblock %}
+{% block heading %}Raqamlar{% endblock %}
+{% block actions %}
+  <a class="btn" href="{% url 'panel:dashboard' %}?kunlik=1"><svg class="ic"><use href="#p-dash"/></svg>Kundalik ish paneli</a>
+{% endblock %}
+
+{% block content %}
+<style>
+  .ow-bar { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:16px; }
+  .ow-month { display:flex; align-items:center; gap:6px; font-weight:800; font-size:17px; }
+  .ow-month a, .ow-month span.off { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; border:1px solid var(--line); background:var(--card); font-size:18px; }
+  .ow-month span.off { opacity:.35; }
+  .ow-month b { min-width:112px; text-align:center; }
+  .ow-orgs { display:flex; gap:8px; flex-wrap:wrap; }
+  .ow-orgs a { padding:7px 13px; border-radius:99px; border:1px solid var(--line); background:var(--card); font-weight:700; font-size:13.5px; color:var(--dim); }
+  .ow-orgs a.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .ow-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; }
+  .ow-kpi .v { font-size:32px; }
+  .ow-kpi .s b { color:var(--ink); }
+  .ow-neg .v { color:var(--bad); }
+  .ow-plan { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-top:12px; }
+  .ow-plan div small { display:block; color:var(--dim); font-size:12.5px; font-weight:600; }
+  .ow-plan div b { font-size:20px; font-weight:800; }
+  .ow-prog { height:12px; border-radius:99px; background:var(--tint); overflow:hidden; margin-top:6px; }
+  .ow-prog i { display:block; height:100%; background:var(--accent-grad); border-radius:99px; }
+  .ow-tbl td.n, .ow-tbl th.n { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .ow-tbl tr.org td { font-weight:800; background:var(--tint); }
+  .ow-tbl tr.br td:first-child { padding-left:28px; color:var(--dim); }
+  .ow-tbl tr.tot td { font-weight:800; border-top:2px solid var(--line-strong); }
+  .pos { color:var(--ok); } .neg { color:var(--bad); }
+  .ow-chart { width:100%; height:auto; display:block; }
+  .ow-chart text { font:600 11px 'Inter',sans-serif; fill:var(--dim); }
+  .ow-leg { display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--dim); margin-top:6px; }
+  .ow-leg i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  details.ow-d summary { cursor:pointer; font-weight:800; padding:2px 0; }
+  @media (max-width:960px){ .ow-plan { grid-template-columns:repeat(2,minmax(0,1fr)); } .ow-kpi .v { font-size:26px; } }
+</style>
+
+<div class="ow-bar">
+  <div class="ow-month">
+    <a href="?oy={{ r.prev|date:'Y-m' }}{% if org_id %}&tashkilot={{ org_id }}{% endif %}" aria-label="Oldingi oy">‹</a>
+    <b>{{ month_label }}</b>
+    {% if r.next %}<a href="?oy={{ r.next|date:'Y-m' }}{% if org_id %}&tashkilot={{ org_id }}{% endif %}" aria-label="Keyingi oy">›</a>{% else %}<span class="off">›</span>{% endif %}
+  </div>
+  <div class="ow-orgs">
+    <a href="?oy={{ r.month|date:'Y-m' }}" class="{% if not org_id %}on{% endif %}">Hammasi</a>
+    {% for o in all_orgs %}<a href="?oy={{ r.month|date:'Y-m' }}&tashkilot={{ o.pk }}" class="{% if org_id == o.pk %}on{% endif %}"><i class="ow-dot" style="background:{{ o.brand_color }}"></i>{{ o.label }}</a>{% endfor %}
+  </div>
+</div>
+
+<div class="grid g4" style="margin-bottom:16px">
+  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-students"/></svg></span><div class="k">Jami o'quvchi</div><div class="v">{{ r.grand.students|money }}</div>
+    <div class="s">{% if r.grand.no_price %}narx belgilanmagan: <b>{{ r.grand.no_price|money }}</b>{% else %}faol o'quvchilar{% endif %}</div></div>
+  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-money"/></svg></span><div class="k">Tushum · o'quv yili</div><div class="v">{{ r.grand.income_y|mln }}</div>
+    <div class="s">shu oy: <b>{{ r.grand.income_m|money }}</b></div></div>
+  <div class="stat ow-kpi"><span class="ico"><svg class="ic"><use href="#p-receipt"/></svg></span><div class="k">Xarajat · o'quv yili</div><div class="v">{{ r.grand.expense_y|mln }}</div>
+    <div class="s">shu oy: <b>{{ r.grand.expense_m|money }}</b>{% if r.grand.salary_m %} · oylik: <b>{{ r.grand.salary_m|money }}</b>{% endif %}</div></div>
+  <div class="stat ow-kpi {% if r.grand.profit_y < 0 %}ow-neg{% else %}good{% endif %}"><span class="ico"><svg class="ic"><use href="#p-dash"/></svg></span><div class="k">Foyda · o'quv yili</div><div class="v">{{ r.grand.profit_y|mln }}</div>
+    <div class="s">shu oy: <b class="{% if r.grand.profit_m < 0 %}neg{% endif %}">{{ r.grand.profit_m|money }}</b></div></div>
+</div>
+
+<div class="card">
+  <h2>{{ month_label }} rejasi <small>kutilayotgan va kelgan pul</small></h2>
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <div><small class="muted">Kutilayotgan tushum (chegirmalar hisobga olingan)</small><div style="font-size:26px;font-weight:800">{{ r.grand.expected|money }} <small class="muted" style="font-size:14px">so'm</small></div></div>
+    <div style="text-align:right"><small class="muted">Kelgan</small><div style="font-size:26px;font-weight:800" class="pos">{{ r.grand.income_m|money }}</div></div>
+  </div>
+  <div class="ow-prog"><i style="width:{% if r.grand.pct %}{% if r.grand.pct > 100 %}100{% else %}{{ r.grand.pct }}{% endif %}{% else %}0{% endif %}%"></i></div>
+  <div class="muted" style="font-size:12.5px;margin-top:4px">{% if r.grand.pct is not None %}{{ r.grand.pct }}% yig'ildi{% else %}reja yo'q (narx belgilanmagan){% endif %}</div>
+  <div class="ow-plan">
+    <div><small>Hali kelmagan</small><b>{{ r.grand.left|money }}</b></div>
+    <div><small>Jami qarz (barcha oylar)</small><b class="{% if r.grand.debt %}neg{% endif %}">{{ r.grand.debt|money }}</b></div>
+    <div><small>To'lanmagan oyliklar</small><b>{{ r.grand.unpaid_payroll|money }}</b></div>
+    <div><small>Prognoz foyda (reja − xarajat − oylik)</small><b class="{% if r.grand.forecast < 0 %}neg{% else %}pos{% endif %}">{{ r.grand.forecast|money }}</b></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Oylar bo'yicha <small>{{ r.ytd_from|date:"d.m.Y" }} dan beri</small></h2>
+  <svg class="ow-chart" id="owChart" viewBox="0 0 720 260" role="img" aria-label="Oylar bo'yicha tushum va xarajat"></svg>
+  <div class="ow-leg"><span><i style="background:var(--accent)"></i>Tushum</span><span><i style="background:var(--bad)"></i>Xarajat</span><span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Foyda</span><span><i style="border:2px dashed var(--faint);background:none"></i>Kutilgan tushum</span></div>
+</div>
+
+<div class="card">
+  <h2>Tashkilotlar va filiallar <small>{{ month_label }}</small></h2>
+  <div class="tbl-wrap"><table class="tbl ow-tbl">
+    <thead><tr><th>Tashkilot / filial</th><th class="n">O'quvchi</th><th class="n">Kutilayotgan</th><th class="n">Tushgan</th><th class="n">%</th><th class="n">Xarajat</th><th class="n">Foyda</th><th class="n">Qarz</th><th class="n">Foyda (yil)</th></tr></thead>
+    <tbody>
+    {% for o in r.orgs %}
+      <tr class="org"><td><i class="ow-dot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }}</td>
+        <td class="n">{{ o.total.students|money }}</td><td class="n">{{ o.total.expected|money }}</td><td class="n">{{ o.total.income_m|money }}</td>
+        <td class="n">{% if o.total.pct is not None %}{{ o.total.pct }}%{% else %}—{% endif %}</td><td class="n">{{ o.total.expense_m|money }}</td>
+        <td class="n {% if o.total.profit_m < 0 %}neg{% else %}pos{% endif %}">{{ o.total.profit_m|money }}</td><td class="n">{{ o.total.debt|money }}</td>
+        <td class="n {% if o.total.profit_y < 0 %}neg{% endif %}">{{ o.total.profit_y|money }}</td></tr>
+      {% if o.multi %}{% for b in o.rows %}
+      <tr class="br"><td>{{ b.branch.name }}</td>
+        <td class="n">{{ b.students|money }}</td><td class="n">{{ b.expected|money }}</td><td class="n">{{ b.income_m|money }}</td>
+        <td class="n">{% if b.pct is not None %}{{ b.pct }}%{% else %}—{% endif %}</td><td class="n">{{ b.expense_m|money }}</td>
+        <td class="n {% if b.profit_m < 0 %}neg{% endif %}">{{ b.profit_m|money }}</td><td class="n">{{ b.debt|money }}</td>
+        <td class="n {% if b.profit_y < 0 %}neg{% endif %}">{{ b.profit_y|money }}</td></tr>
+      {% endfor %}{% endif %}
+    {% endfor %}
+    <tr class="tot"><td>Jami</td><td class="n">{{ r.grand.students|money }}</td><td class="n">{{ r.grand.expected|money }}</td><td class="n">{{ r.grand.income_m|money }}</td>
+      <td class="n">{% if r.grand.pct is not None %}{{ r.grand.pct }}%{% else %}—{% endif %}</td><td class="n">{{ r.grand.expense_m|money }}</td>
+      <td class="n {% if r.grand.profit_m < 0 %}neg{% else %}pos{% endif %}">{{ r.grand.profit_m|money }}</td><td class="n">{{ r.grand.debt|money }}</td><td class="n">{{ r.grand.profit_y|money }}</td></tr>
+    </tbody>
+  </table></div>
+  <div class="hint">Foyda = kassaga tushgan tushum − xarajatlar (ustoz va xodimlar oyligi ham xarajatga kiradi). Qarz — hisoblangan va to'langan summa farqi (barcha oylar).</div>
+</div>
+
+<div class="grid g2">
+{% for o in r.orgs %}
+  <div class="card">
+    <h2><i class="ow-dot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }} <small>kutilayotgan tushum tarkibi</small></h2>
+    {% if o.tier_rows %}
+    <div class="tbl-wrap"><table class="tbl ow-tbl"><thead><tr><th>Toifa</th><th class="n">O'quvchi</th><th class="n">Oylik to'lov</th><th class="n">Jami</th></tr></thead><tbody>
+      {% for t in o.tier_rows %}<tr><td>{{ t.label }}</td><td class="n">{{ t.n|money }}</td><td class="n">{{ t.price|money }}</td><td class="n">{{ t.sum|money }}</td></tr>{% endfor %}
+      <tr class="tot"><td>Jami kutilmoqda</td><td class="n">{{ o.total.students|money }}</td><td class="n"></td><td class="n">{{ o.total.expected|money }}</td></tr>
+    </tbody></table></div>
+    {% if o.total.no_price %}<div class="hint">{{ o.total.no_price|money }} ta o'quvchiga oylik narx belgilanmagan — rejaga kirmagan.</div>{% endif %}
+    {% else %}<div class="empty">Bu oy uchun hisob yo'q (narx belgilanmagan yoki hisob boshlanmagan)</div>{% endif %}
+  </div>
+{% endfor %}
+</div>
+
+{{ r.series|json_script:"ow-series" }}
+<script>
+(function(){
+  var S = JSON.parse(document.getElementById('ow-series').textContent), svg = document.getElementById('owChart');
+  if (!S.length) { svg.outerHTML = '<div class="empty">Ma’lumot yo‘q</div>'; return; }
+  var W = 720, H = 260, L = 54, R = 10, T = 12, B = 28;
+  var max = Math.max.apply(null, S.map(function(m){ return Math.max(m.income, m.expense, m.expected, m.profit, 0); })) || 1;
+  var min = Math.min.apply(null, S.map(function(m){ return Math.min(m.profit, 0); }));
+  var span = max - min, step = Math.pow(10, Math.floor(Math.log10(span)));
+  max = Math.ceil(max / step) * step; if (min < 0) min = Math.floor(min / step) * step;
+  function y(v){ return T + (H - T - B) * (1 - (v - min) / (max - min)); }
+  function fmt(v){ var a = Math.abs(v); return (v < 0 ? '−' : '') + (a >= 1e9 ? (a / 1e9).toFixed(1) + ' mlrd' : a >= 1e6 ? Math.round(a / 1e6) + ' mln' : a >= 1e3 ? Math.round(a / 1e3) + ' ming' : a); }
+  var out = '', i;
+  for (i = 0; i <= 4; i++) { var v = min + (max - min) * i / 4; out += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" style="stroke:var(--line)"/><text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + fmt(v) + '</text>'; }
+  var gw = (W - L - R) / S.length, bw = Math.min(26, gw / 3);
+  S.forEach(function(m, k){
+    var cx = L + gw * k + gw / 2, z = y(0);
+    out += '<rect x="' + (cx - bw - 1) + '" y="' + Math.min(y(m.income), z) + '" width="' + bw + '" height="' + Math.abs(z - y(m.income)) + '" rx="4" style="fill:var(--accent)" opacity="' + (m.current ? 1 : .72) + '"><title>' + m.label + ' tushum: ' + m.income.toLocaleString('ru') + '</title></rect>'
+         + '<rect x="' + (cx + 1) + '" y="' + Math.min(y(m.expense), z) + '" width="' + bw + '" height="' + Math.abs(z - y(m.expense)) + '" rx="4" style="fill:var(--bad)" opacity="' + (m.current ? 1 : .72) + '"><title>' + m.label + ' xarajat: ' + m.expense.toLocaleString('ru') + '</title></rect>'
+         + (m.expected ? '<line x1="' + (cx - bw - 4) + '" x2="' + (cx + bw + 4) + '" y1="' + y(m.expected) + '" y2="' + y(m.expected) + '" style="stroke:var(--faint)" stroke-width="2.5" stroke-dasharray="4 3"/>' : '')
+         + '<text x="' + cx + '" y="' + (H - 9) + '" text-anchor="middle" style="' + (m.current ? 'fill:var(--ink);font-weight:800' : '') + '">' + m.label + '</text>';
+  });
+  var pts = S.map(function(m, k){ return (L + gw * k + gw / 2).toFixed(1) + ',' + y(m.profit).toFixed(1); });
+  if (pts.length > 1) out += '<polyline points="' + pts.join(' ') + '" fill="none" style="stroke:var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>';
+  S.forEach(function(m, k){ out += '<circle cx="' + (L + gw * k + gw / 2) + '" cy="' + y(m.profit) + '" r="3.5" style="fill:var(--card-solid);stroke:var(--ink)" stroke-width="2"><title>' + m.label + ' foyda: ' + m.profit.toLocaleString('ru') + '</title></circle>'; });
+  svg.innerHTML = out;
+})();
+</script>
+{% endblock %}

@@ -43,6 +43,10 @@ def missing_attendance(today, now, user=None):
 
 @panel_required()
 def dashboard(request):
+    from .access import is_owner
+    if is_owner(request.user) and not request.GET.get('kunlik'):
+        from .views_owner import owner_home
+        return owner_home(request)
     granted = perms_of(request.user)
     today, now = timezone.localdate(), timezone.localtime()
     ctx = {'nav': 'dashboard', 'today': today, 'day_off': today.weekday() > 5}

@@ -4,6 +4,12 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 
 ## 2026-11-22 (exam integratsiyasi)
 
+## Maktab egasi uchun «Raqamlar» sahifasi (2026-11-22)
+- Founder (`is_owner`) `/panel/` ga kirganda yangi raqamli sahifa ochiladi (`panel/owner_stats.py`, `views_owner.py`, `templates/panel/owner.html`); eski kundalik panel `?kunlik=1` da qoladi, boshqa xodimlar uchun o'zgarmagan.
+- **Foyda = kassaga tushgan tushum − xarajatlar** (oyliklar ham xarajat). Tepada 4 ta raqam: jami o'quvchi, tushum, xarajat, foyda (o'quv yili boshidan + shu oy).
+- **Oylik reja:** kutilayotgan tushum (narx − chegirma; grant = 100% chegirma), kelgan pul, % yig'ilish, hali kelmagani, jami qarz, to'lanmagan oyliklar, prognoz foyda.
+- Tashkilot va **filial** (markaz filiallari alohida) bo'yicha jadval; har tashkilot uchun kutilayotgan tushum tarkibi (masalan 300 × 2 000 000, 20 × 1 800 000 (−10%), 30 × 1 500 000 (−25%), grant); oylar bo'yicha tushum/xarajat/foyda/kutilgan grafigi; oy tanlash va tashkilot filtri.
+
 ## Ota-ona ilovasi: fikrlar asosida tuzatishlar (2026-11-22)
 
 - **Rang tuzatildi (2026-11-22, keyingi):** `_glass.html` (liquid glass) tashkilot rangini qayta yashilga bo'yab yuborayotgan edi. Endi `org/theme.py` glass o'zgaruvchilarining hammasini (fon gradienti, shisha yuzalar, chiziqlar, soyalar, `--rgb`/`--glow`) bitta rangdan hisoblaydi, `org-theme` glassdan KEYIN ulanadi; yon menyu, hero, tugmalar, soyalar o'zgaruvchilarga o'tdi. Holat ranglari (Joyida, davomat %, qarz, baho) tashkilot rangiga bog'liq emas (`--ok`, `--bad`, `--late`). Sahifalar orasi `@view-transition` bilan 0.4 s yumshoq o'tadi; `<html data-org>` va `theme-color` har farzandda yangilanadi.

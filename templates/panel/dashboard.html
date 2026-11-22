@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+{% if request.GET.kunlik %}<p class="muted" style="margin:0 0 10px"><a href="{% url 'panel:dashboard' %}">← Raqamlar sahifasiga qaytish</a></p>{% endif %}
 <form method="get" action="{% url 'panel:students' %}" class="filters" style="max-width:560px">
   {% if 'students.view' in panel_can %}<input type="search" name="q" placeholder="O'quvchini qidirish: ism, familiya{% if 'sensitive.phones' in panel_can %}, ota-ona telefoni{% endif %}…" style="flex:1;min-width:0">{% endif %}
 </form>
