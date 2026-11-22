@@ -4,7 +4,8 @@
 # --first: also runs the one-time ERP bootstrap (create_orgs, seed_menu) - do NOT use on later updates.
 set -euo pipefail
 HOST="${1:?usage: push.sh <droplet-ip> [--first]}"; FIRST="${2:-}"
-SSH="ssh root@$HOST"
+KEY="${SSH_KEY:-$HOME/.ssh/spetion_deploy_ed25519}"
+SSH="ssh -i $KEY -o StrictHostKeyChecking=accept-new root@$HOST"
 ERP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 EXAM_DIR="${EXAM_DIR:-$ERP_DIR/../exam-spetion}"
 
