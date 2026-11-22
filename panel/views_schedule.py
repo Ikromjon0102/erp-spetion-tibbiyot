@@ -12,6 +12,7 @@ from accounts.models import User
 from org.scope import scope_groups, scope_teachers, scope_via_group
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required
 
 DAYS = list(Lesson.Weekday.choices)
@@ -78,6 +79,7 @@ def _period_times():
 
 
 @panel_required('schedule.view')
+@org_hub('schedule')
 def schedule(request):
     groups = sorted(scope_groups(Group.objects.all(), request.user), key=lambda g: _natural(g.name))
     teachers = list(teachers_active(request.user))

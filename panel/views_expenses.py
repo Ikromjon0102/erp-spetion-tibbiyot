@@ -17,6 +17,7 @@ from finance.models import Expense, ExpenseCategory, RecurringExpense
 from org.scope import branches_for, pick_branch, scope_by_branch, scope_via_student
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .views_finance import MoneyField
 
@@ -52,6 +53,7 @@ def _income(request, month, branch):
 
 
 @panel_required('expenses.view')
+@org_hub('expenses')
 def expenses(request):
     granted = perms_of(request.user)
     month = parse_month(request.GET.get('oy'))

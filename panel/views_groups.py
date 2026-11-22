@@ -8,6 +8,7 @@ from academics.models import Group
 from org.scope import pick_branch, scope_groups
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required
 from .forms import GroupForm
 
@@ -18,6 +19,7 @@ def _natural(group):
 
 
 @panel_required('groups.view')
+@org_hub('groups')
 def groups(request):
     qs = scope_groups(Group.objects.exclude(name__startswith='Sinov-'), request.user).annotate(n=Count('students'))
     return render(request, 'panel/groups.html', {'nav': 'groups', 'groups': sorted(qs, key=_natural)})

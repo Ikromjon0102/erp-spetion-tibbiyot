@@ -137,7 +137,7 @@ class ExpenseTests(TestCase):
         self.assertEqual(self.client.post(reverse('panel:expense_delete', args=[e_med.pk])).status_code, 404)
         self.assertTrue(Expense.objects.filter(pk=e_med.pk).exists())
         self.client.force_login(self.owner)
-        self.assertIn('MedIjara', self.client.get(reverse('panel:expenses')).content.decode())
+        self.assertIn('MedIjara', self.client.get(reverse('panel:expenses'), {'oy': TODAY.strftime('%Y-%m')}).content.decode())   # «Hammasi»da oy tanlanmasa — tashkilot kartalari
 
     def test_profit_report_uses_income_minus_expenses_of_own_branch(self):
         g_med = Group.objects.create(name='5-A', branch=self.med)
@@ -151,7 +151,7 @@ class ExpenseTests(TestCase):
         r = self.client.get(reverse('panel:expenses'))
         self.assertEqual((r.context['income'], r.context['total'], r.context['profit']), (1_000_000, 300_000, 700_000))
         self.client.force_login(self.owner)
-        r = self.client.get(reverse('panel:expenses'))
+        r = self.client.get(reverse('panel:expenses'), {'oy': TODAY.strftime('%Y-%m')})
         self.assertEqual((r.context['income'], r.context['total'], r.context['profit']), (3_000_000, 800_000, 2_200_000))
         r = self.client.get(reverse('panel:expenses') + f'?filial={self.center.pk}')
         self.assertEqual((r.context['income'], r.context['total']), (2_000_000, 500_000))

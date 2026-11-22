@@ -8,6 +8,8 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **Ish maydoni tanlagichi** (panel chap menyusi): Hammasi / tashkilot / filial. Tanlov sessiyada saqlanadi va panelning HAMMA ro'yxati va hisobotiga o'zi qo'llanadi (`org/workspace.py`, `org/middleware.py`; `org.scope.branch_ids` tanlovni hisobga oladi). Panel tanlangan tashkilot rangiga bo'yaladi. Bitta filialga ruxsati bor xodimda tanlagich yo'q; ruxsatsiz tanlov 'Hammasi'ga qaytadi.
 - **«Hammasi» rejimida ro'yxat o'rniga tashkilot kartalari** (`panel/hubs.py`): o'quvchilar, ustozlar, xodimlar, ota-onalar — har tashkilotda soni (markaz filiallari alohida); kartani bossangiz o'sha tashkilot ro'yxati ochiladi. Qidiruv (`?q=`) hamma tashkilot bo'yicha ishlaydi. Minglab yozuv bir sahifaga to'kilmaydi.
 - **Founder sahifasi soddalashtirildi:** 4 raqam (o'quvchi, tushum, xarajat, foyda) har birining tagida «nima ekani» yozilgan; davr bitta tanlanadi (shu oy / o'quv yili); «to'lovlar holati» (kutilgan / kelgan / kelmagan); «Hammasi»da tashkilot kartalari, tashkilot tanlansa — filiallar jadvali; chegirma/grant tarkibi yig'ma blokda.
+- **Hamma bo'lim «Hammasi»da tashkilot kartalari:** sinflar, dars jadvali, to'lovlar (shu oy tushumi), xarajatlar (shu oy), oyliklar (to'lanmagani), e'lonlar, qurilmalar ham.
+- To'lovlar holati yorliqlari: kutilgan / to'langan / to'lanmagan. Telefonda «kutilgan tushum tarkibi» ochilganda sahifa kengayib ketishi tuzatildi.
 - Testlar: `panel/test_workspace.py`, `panel/test_owner.py`.
 
 ## Maktab egasi uchun «Raqamlar» sahifasi (2026-11-22)

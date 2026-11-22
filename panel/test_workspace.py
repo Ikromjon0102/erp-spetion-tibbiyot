@@ -8,7 +8,7 @@ from org.models import Branch, Organization
 from panel.models import Position, StaffProfile
 
 
-class WorkspaceScopeTests(TestCase):
+class WorkspaceFixture:
     def setUp(self):
         call_command('create_orgs', verbosity=0)
         self.school = Organization.objects.get(name='Asosiy maktab')
@@ -30,6 +30,8 @@ class WorkspaceScopeTests(TestCase):
     def students_page(self):
         return self.client.get(reverse('panel:students')).content.decode()
 
+
+class WorkspaceScopeTests(WorkspaceFixture, TestCase):
     def test_all_scope_shows_org_cards_not_raw_list(self):
         body = self.students_page()
         self.assertIn('hub-card', body)
@@ -116,3 +118,18 @@ class WorkspaceScopeTests(TestCase):
         self.assertIn('Birinchi', self.client.get(reverse('panel:teachers')).content.decode())
         self.pick(f'org-{self.school.pk}', '/panel/ustozlar/')
         self.assertNotIn('Birinchi', self.client.get(reverse('panel:teachers')).content.decode())
+
+
+class SectionHubTests(WorkspaceFixture, TestCase):
+    """Hamma bo'lim «Hammasi»da tashkilot kartalari, tashkilot tanlansa — odatiy sahifa."""
+
+    def test_every_section_has_hub_and_drills_down(self):
+        for name in ('groups', 'schedule', 'finance', 'expenses', 'payroll', 'news', 'devices', 'teachers', 'staff', 'parents', 'students'):
+            self.pick('all')
+            r = self.client.get(reverse(f'panel:{name}'))
+            self.assertEqual(r.status_code, 200, name)
+            self.assertIn('hub-card', r.content.decode(), name)
+            self.pick(f'org-{self.kg.pk}', reverse(f'panel:{name}'))
+            r = self.client.get(reverse(f'panel:{name}'))
+            self.assertEqual(r.status_code, 200, name)
+            self.assertNotIn('hub-card', r.content.decode(), name)

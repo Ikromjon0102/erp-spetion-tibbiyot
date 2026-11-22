@@ -1,7 +1,7 @@
 {% extends 'panel/base.html' %}
 {% load app_extras %}
 {% block title %}{{ title }}{% endblock %}
-{% block heading %}{{ title }} <small class="muted">· jami {{ total|money }}</small>{% endblock %}
+{% block heading %}{{ title }}{% if total %} <small class="muted">· jami {{ total|money }} {{ unit }}</small>{% endif %}{% endblock %}
 {% block content %}
 <style>
   .hub-grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); }
@@ -15,17 +15,17 @@
   .hub-br a { padding:5px 10px; border-radius:99px; border:1px solid var(--line-strong); font-size:12.5px; font-weight:700; background:var(--tint); }
   .hub-go { margin-top:10px; font-weight:700; font-size:13px; color:var(--accent-deep); }
 </style>
-<p class="muted" style="margin:0 0 14px;max-width:640px">Tashkilotni tanlang — shu tashkilotning {{ noun }}lari ro'yxati ochiladi. Hamma tashkilot bo'yicha qidirish uchun ism yoki telefon yozing.</p>
-<form method="get" class="filters" style="max-width:520px;margin-bottom:18px">
+<p class="muted" style="margin:0 0 14px;max-width:640px">Tashkilotni tanlang — shu tashkilot bo'yicha ro'yxat ochiladi.{% if searchable %} Hamma tashkilot bo'yicha qidirish uchun ism yoki telefon yozing.{% endif %}</p>
+{% if searchable %}<form method="get" class="filters" style="max-width:520px;margin-bottom:18px">
   <input type="search" name="q" placeholder="Hamma tashkilot bo'yicha qidirish: ism, familiya, telefon" autocomplete="off">
   <button class="btn primary">Qidirish</button>
-</form>
+</form>{% endif %}
 <div class="hub-grid">
   {% for c in cards %}
   <div class="hub-card" style="--c:{{ c.org.brand_color }}">
     <a href="{% url 'panel:set_scope' %}?s=org-{{ c.org.pk }}&next={{ path }}" style="position:absolute;inset:0" aria-label="{{ c.org.label }}"></a>
     <h3>{{ c.org.label }}</h3>
-    <div class="n">{{ c.n|money }}<small>{{ noun }}</small></div>
+    <div class="n">{{ c.n|money }}<small>{{ unit }}</small></div>{% if caption %}<div class="muted" style="font-size:13px">{{ caption }}</div>{% endif %}
     {% if c.branches %}<div class="hub-br" style="position:relative">{% for b in c.branches %}<a href="{% url 'panel:set_scope' %}?s=branch-{{ b.branch.pk }}&next={{ path }}">{{ b.branch.name }} · {{ b.n|money }}</a>{% endfor %}</div>{% endif %}
     <div class="hub-go">Ochish →</div>
   </div>

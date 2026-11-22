@@ -15,6 +15,7 @@ from finance.models import Method, Payslip, SalaryPayment, SalaryRule
 from org.scope import branch_ids, branches_for, pick_branch, scope_by_branch
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .views_expenses import parse_month, shift_month
 from .views_finance import MoneyField
@@ -37,6 +38,7 @@ def _slip_or_404(request, pk):
 
 
 @panel_required('payroll.view')
+@org_hub('payroll')
 def payroll_page(request):
     granted = perms_of(request.user)
     month = parse_month(request.GET.get('oy'))

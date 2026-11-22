@@ -8,6 +8,8 @@
 
 {% block content %}
 <style>
+  .grid > *, .card, .ocard, details.ow-d, details.ow-d > div { min-width:0; }
+  .tbl-wrap { max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .ow-bar { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:16px; }
   .ow-month { display:flex; align-items:center; gap:6px; font-weight:800; font-size:17px; }
   .ow-month a, .ow-month span.off { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; border:1px solid var(--line); background:var(--card); font-size:18px; }
@@ -41,6 +43,7 @@
   .ow-leg { display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--dim); margin-top:6px; }
   .ow-leg i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
   details.ow-d > summary { cursor:pointer; font-weight:800; font-size:16px; }
+  @media (max-width:600px){ .ow-tbl td, .ow-tbl th { padding:9px 8px; font-size:13px; } .ow-tbl td:first-child { white-space:normal; } details.ow-d .grid { grid-template-columns:minmax(0,1fr); } }
   @media (max-width:960px){ .ow-3 { grid-template-columns:1fr; } .ow-kpi .v { font-size:25px; } }
 </style>
 
@@ -68,11 +71,11 @@
   <h2>{{ month_label }}: to'lovlar holati</h2>
   <div class="ow-3">
     <div><small>Kutilgan (shu oy uchun hisoblangan)</small><b>{{ r.grand.expected|money }}</b></div>
-    <div><small>Kelgan (shu oyda kassaga kirgan)</small><b class="pos">{{ r.grand.income_m|money }}</b></div>
-    <div><small>Hali kelmagan</small><b class="{% if r.grand.left %}neg{% endif %}">{{ r.grand.left|money }}</b></div>
+    <div><small>To'langan (shu oyda kassaga kirgan)</small><b class="pos">{{ r.grand.income_m|money }}</b></div>
+    <div><small>To'lanmagan (hali to'lanishi kerak)</small><b class="{% if r.grand.left %}neg{% endif %}">{{ r.grand.left|money }}</b></div>
   </div>
   <div class="ow-prog"><i style="width:{% if r.grand.pct %}{% if r.grand.pct > 100 %}100{% else %}{{ r.grand.pct }}{% endif %}{% else %}0{% endif %}%"></i></div>
-  <div class="hint">{% if r.grand.pct is not None %}{{ r.grand.pct }}% yig'ildi.{% else %}Oylik narx belgilanmagan.{% endif %} Kutilgan = narx − chegirma (grant — 0 so'm). Jami qarz (barcha oylar bo'yicha to'lanmagan): <b class="{% if r.grand.debt %}neg{% endif %}">{{ r.grand.debt|money }} so'm</b>{% if r.grand.unpaid_payroll %} · to'lanmagan oyliklar: <b>{{ r.grand.unpaid_payroll|money }}</b>{% endif %}.</div>
+  <div class="hint">{% if r.grand.pct is not None %}{{ r.grand.pct }}% yig'ildi.{% else %}Oylik narx belgilanmagan.{% endif %} Kutilgan = narx − chegirma (grant — 0 so'm). Jami qarz (barcha oylar bo'yicha to'lanmagan, eski oylar bilan): <b class="{% if r.grand.debt %}neg{% endif %}">{{ r.grand.debt|money }} so'm</b>{% if r.grand.unpaid_payroll %} · to'lanmagan oyliklar: <b>{{ r.grand.unpaid_payroll|money }}</b>{% endif %}.</div>
 </div>
 
 {% if scope.is_all and r.orgs|length > 1 %}
@@ -84,7 +87,7 @@
     <h3>{{ o.org.label }}<small>{{ o.total.students|money }} o'quvchi</small></h3>
     <dl>
       <dt>Kutilgan</dt><dd>{{ o.total.expected|money }}</dd>
-      <dt>Kelgan</dt><dd class="pos">{{ o.total.income_m|money }}</dd>
+      <dt>To'langan</dt><dd class="pos">{{ o.total.income_m|money }}</dd>
       <dt>Xarajat</dt><dd>{{ o.total.expense_m|money }}</dd>
       <dt>Foyda</dt><dd class="{% if o.total.profit_m < 0 %}neg{% endif %}">{{ o.total.profit_m|money }}</dd>
       <dt>Qarz</dt><dd class="{% if o.total.debt %}neg{% endif %}">{{ o.total.debt|money }}</dd>
@@ -98,7 +101,7 @@
 <div class="card">
   <h2>{% if scope.kind == 'branch' %}{{ scope.label }}{% elif r.orgs|length == 1 %}{{ r.orgs.0.org.label }}{% else %}Filiallar{% endif %} <small>{{ month_label }}</small></h2>
   <div class="tbl-wrap"><table class="tbl ow-tbl">
-    <thead><tr><th>Filial</th><th class="n">O'quvchi</th><th class="n">Kutilgan</th><th class="n">Kelgan</th><th class="n">%</th><th class="n">Xarajat</th><th class="n">Foyda</th><th class="n">Qarz</th></tr></thead>
+    <thead><tr><th>Filial</th><th class="n">O'quvchi</th><th class="n">Kutilgan</th><th class="n">To'langan</th><th class="n">%</th><th class="n">Xarajat</th><th class="n">Foyda</th><th class="n">Qarz</th></tr></thead>
     <tbody>
     {% for o in r.orgs %}{% for b in o.rows %}
       <tr><td>{{ b.branch.name }}</td><td class="n">{{ b.students|money }}</td><td class="n">{{ b.expected|money }}</td><td class="n">{{ b.income_m|money }}</td>

@@ -20,6 +20,7 @@ from billing.services import account, first_of_month, recalc_charges, recalc_cur
 from org.scope import current_org, orgs_for, pick_branch, scope_discounts, scope_groups, scope_via_student
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 
 
@@ -102,6 +103,7 @@ class SettingsForm(forms.Form):
 
 
 @panel_required('payments.view')
+@org_hub('finance')
 def finance(request):
     today = timezone.localdate()
     q = request.GET.get('q', '').strip()

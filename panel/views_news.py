@@ -11,6 +11,7 @@ from org.scope import pick_branch, scope_announcements, scope_groups
 from notices.services import read_summary, read_times, recipients_of
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .forms import AnnouncementForm
 
@@ -20,6 +21,7 @@ def _visible(user):
 
 
 @panel_required('announcements.view')
+@org_hub('news')
 def news(request):
     page = Paginator(_visible(request.user).order_by('-created_at'), 20).get_page(request.GET.get('page'))
     rows = []

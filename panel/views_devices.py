@@ -17,6 +17,7 @@ from billing.reports import real_students
 from org.scope import pick_branch, scope_devices, scope_staff, scope_students, scope_teachers
 
 from . import audit
+from .hubs import org_hub
 from .access import can, panel_required, perms_of
 from .models import StaffProfile
 
@@ -158,6 +159,7 @@ def staff_photo_delete(request, pk):
 
 
 @panel_required('devices.view')
+@org_hub('devices')
 def devices(request):
     granted = perms_of(request.user)
     devices_qs = list(scope_devices(Device.objects.all(), request.user))
