@@ -56,7 +56,8 @@ def build_report(user, month, today):
 
     students = real_students(user)
     student_ids = list(students.values_list('pk', flat=True))
-    ensure_charges(student_ids, today)       # yetishmayotgan oylik hisoblar (narx bor bo'lsa) yoziladi; qayta chaqirish xavfsiz
+    ensure_charges(student_ids, today)       # 10 daqiqa eslab qolinadi (billing.services)
+    sub = students.values('pk')              # keyingi so'rovlarda minglab id o'rniga ichki so'rov       # yetishmayotgan oylik hisoblar (narx bor bo'lsa) yoziladi; qayta chaqirish xavfsiz
 
     branches = list(branches_for(user).select_related('organization').order_by('organization__name', 'name'))   # tanlangan ish maydoni bo'yicha
     ids = {b.pk for b in branches}
@@ -69,10 +70,10 @@ def build_report(user, month, today):
                     out[row['_b']][k] = v or ZERO
         return out
 
-    pay = Payment.objects.filter(voided=False, student_id__in=student_ids)
+    pay = Payment.objects.filter(voided=False, student__in=sub)
     exp = scope_by_branch(Expense.objects.all(), user)
     n_students = per_branch(students, 'branch_id', n=Count('pk'))
-    charges_m = Charge.objects.filter(month=month, cancelled=False, student_id__in=student_ids)
+    charges_m = Charge.objects.filter(month=month, cancelled=False, student__in=sub)
     expected = per_branch(charges_m, 'student__branch_id', s=Sum('amount'))
     income_m = per_branch(pay.filter(paid_on__year=month.year, paid_on__month=month.month), 'student__branch_id', s=Sum('amount'))
     income_y = per_branch(pay.filter(paid_on__gte=ytd_from, paid_on__lte=today), 'student__branch_id', s=Sum('amount'))
@@ -81,7 +82,7 @@ def build_report(user, month, today):
     sal_m = per_branch(exp.filter(date__year=month.year, date__month=month.month, salary_payment__isnull=False), 'branch_id', s=Sum('amount'))
 
     # qarz: jami hisoblangan − jami to'langan (o'quvchi bo'yicha, manfiysi — avans — hisobga olinmaydi)
-    charged = dict(Charge.objects.filter(cancelled=False, month__lte=first_of_month(today), student_id__in=student_ids)
+    charged = dict(Charge.objects.filter(cancelled=False, month__lte=first_of_month(today), student__in=sub)
                    .values_list('student_id').annotate(s=Sum('amount')))
     paid = dict(pay.values_list('student_id').annotate(s=Sum('amount')))
     branch_of = dict(students.annotate(_b=bkey('branch_id')).values_list('pk', '_b'))
@@ -149,11 +150,11 @@ def build_report(user, month, today):
         qs = qs.filter(**{f'{field}__gte': ytd_from})
         return {r['m'].date() if hasattr(r['m'], 'date') else r['m']: r['s'] or ZERO
                 for r in qs.annotate(m=TruncMonth(field)).values('m').annotate(s=Sum('amount')).order_by('m')}
-    sel_students = [s for s in student_ids if branch_of.get(s) in ids]
-    inc_series = by_month(Payment.objects.filter(voided=False, student_id__in=sel_students), 'paid_on')
+    sel_students = students.annotate(_b=bkey('branch_id')).filter(_b__in=ids).values('pk')
+    inc_series = by_month(Payment.objects.filter(voided=False, student__in=sel_students), 'paid_on')
     exp_series = by_month(Expense.objects.filter(branch_id__in=ids), 'date')
     exp_plan = {}
-    plan_rows = Charge.objects.filter(cancelled=False, student_id__in=sel_students, month__gte=ytd_from).values('month').annotate(s=Sum('amount'))
+    plan_rows = Charge.objects.filter(cancelled=False, student__in=sel_students, month__gte=ytd_from).values('month').annotate(s=Sum('amount'))
     for r in plan_rows:
         exp_plan[r['month']] = r['s'] or ZERO
     series = [{'label': UZ_MONTHS[m.month], 'month': m.isoformat(), 'income': int(inc_series.get(m, ZERO)), 'expense': int(exp_series.get(m, ZERO)),

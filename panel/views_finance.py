@@ -127,14 +127,19 @@ def debtors(request):
     q, sinf, holat = request.GET.get('q', '').strip(), request.GET.get('sinf', ''), request.GET.get('holat', '')
     sums = summaries(list(reports.real_students(request.user).values_list('pk', flat=True)))
     owing = {pk: x for pk, x in sums.items() if x['debt'] > 0 and (holat != 'muddati' or x['overdue'] > 0)}
-    qs = real_students(request.user).filter(pk__in=owing).prefetch_related('parents')
+    cand = reports.real_students(request.user).filter(pk__in=owing)
     if q:
-        qs = qs.filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q))
+        cand = cand.filter(Q(user__last_name__icontains=q) | Q(user__first_name__icontains=q))
     if sinf.isdigit():
-        qs = qs.filter(group_id=int(sinf))
-    rows = [{'s': s, 'debt': owing[s.pk]['debt'], 'overdue': owing[s.pk]['overdue'], 'parent': next(iter(s.parents.all()), None)} for s in qs]
-    rows.sort(key=lambda r: (-r['overdue'], -r['debt'], r['s'].user.last_name, r['s'].user.first_name))
-    page = Paginator(rows, 50).get_page(request.GET.get('page'))
+        cand = cand.filter(group_id=int(sinf))
+    ids = sorted(set(cand.values_list('pk', flat=True)), key=lambda pk: (-owing[pk]['overdue'], -owing[pk]['debt'], pk))
+    page_ids = Paginator(ids, 50).get_page(request.GET.get('page'))
+    loaded = {s.pk: s for s in real_students(request.user).filter(pk__in=list(page_ids)).prefetch_related('parents')}
+    page_rows = [{'s': loaded[pk], 'debt': owing[pk]['debt'], 'overdue': owing[pk]['overdue'], 'parent': next(iter(loaded[pk].parents.all()), None)}
+                 for pk in page_ids if pk in loaded]
+    page_ids.object_list = page_rows         # shablon `page` ni qatorlar ro'yxati sifatida ishlatadi (faqat joriy sahifa yuklanadi)
+    page = page_ids
+    rows = [{'debt': owing[pk]['debt'], 'overdue': owing[pk]['overdue']} for pk in ids]
     params = request.GET.copy()
     params.pop('page', None)
     return render(request, 'panel/debtors.html', {

@@ -6,12 +6,17 @@ Qoidalar:
 - To'lovlar eng eski oydan boshlab taqsimlanadi (qisman to'lov mumkin). Ortiqcha summa (avans) keyingi oylar hisobiga o'tadi.
 - Muddati o'tgan qarz: to'lov muddati (oyning X-kuni) o'tgan, lekin to'lanmagan summa. Jarima yo'q.
 """
+import hashlib
+import sys
 from collections import defaultdict
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
+from django.core.cache import cache
 from django.db.models import Sum
 from django.utils import timezone
+
+from accounts.models import Student
 
 from .models import BillingSettings, Charge, Payment, StudentDiscount
 
@@ -112,11 +117,28 @@ def _assignments(student_ids):
     return result
 
 
+ENSURE_TTL = 600     # katta ro'yxatlarda (50+ o'quvchi) bir xil to'plam uchun 10 daqiqada bir marta tekshiriladi
+
+
 def ensure_charges(student_ids, today=None):
-    """Yetishmayotgan oylik hisoblarni yaratadi (narx belgilangan bo'lsa). Qayta chaqirish xavfsiz."""
+    """Yetishmayotgan oylik hisoblarni yaratadi (narx belgilangan bo'lsa). Qayta chaqirish xavfsiz.
+    Katta to'plam (ro'yxat, hisobot) uchun natija 10 daqiqa eslab qolinadi: har sahifa ochilganda minglab o'quvchini qayta tekshirmaslik uchun.
+    Yangi o'quvchi qo'shilsa to'plam o'zgaradi va tekshiruv qaytadan bajariladi."""
     ids = sorted({int(i) for i in student_ids})
     if not ids:
         return 0
+    memo = None
+    if len(ids) > 50 and 'test' not in sys.argv:
+        memo = 'billing:ensure:' + hashlib.md5(f'{(today or timezone.localdate()).isoformat()}:{ids}'.encode()).hexdigest()
+        if cache.get(memo):
+            return 0
+    created = _ensure_charges(ids, today)
+    if memo:
+        cache.set(memo, 1, ENSURE_TTL)
+    return created
+
+
+def _ensure_charges(ids, today=None):
     students = _students(ids)
     cfgs = _cfg_by_org(students)
     months_by_org = {oid: billed_months(today, c) for oid, c in cfgs.items()}
@@ -221,9 +243,15 @@ def summaries(student_ids, today=None):
     today = today or timezone.localdate()
     ids = sorted({int(i) for i in student_ids})
     ensure_charges(ids, today)
-    students = _students(ids)
-    cfgs = _cfg_by_org(students)
-    due_cfg = {s.pk: cfgs[org_of(s).pk] for s in students}      # har o'quvchining o'z tashkiloti to'lov muddati
+    from org.models import Organization, default_branch
+    default_org = default_branch().organization_id
+    org_of_student = {}
+    for chunk in _chunks(ids):
+        for sid, oid in Student.objects.filter(pk__in=chunk).values_list('pk', 'branch__organization_id'):
+            org_of_student[sid] = oid or default_org
+    orgs = {o.pk: o for o in Organization.objects.filter(pk__in=set(org_of_student.values()))}
+    cfg_by_org = {oid: BillingSettings.get(o) for oid, o in orgs.items()}
+    due_cfg = {sid: cfg_by_org[oid] for sid, oid in org_of_student.items()}      # har o'quvchining o'z tashkiloti to'lov muddati
     charged, overdue_charged, paid = defaultdict(lambda: ZERO), defaultdict(lambda: ZERO), defaultdict(lambda: ZERO)
     for chunk in _chunks(ids):
         for sid, month, amount in Charge.objects.filter(student_id__in=chunk, cancelled=False).values_list('student_id', 'month', 'amount'):
