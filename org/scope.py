@@ -12,7 +12,16 @@ def _is_all(user):
 
 
 def branch_ids(user):
-    """Foydalanuvchi ko'ra oladigan filial id lari; None — hammasi."""
+    """Foydalanuvchi ko'ra oladigan filial id lari; None — hammasi. Panelda tanlangan ish maydoni (tashkilot/filial)
+    bo'lsa (`user._scope_ids`, qarang `org/workspace.py`) natija shu bilan cheklanadi."""
+    base = _base_branch_ids(user)
+    scoped = getattr(user, '_scope_ids', None)
+    if scoped is None:
+        return base
+    return list(scoped) if base is None else [b for b in base if b in scoped]
+
+
+def _base_branch_ids(user):
     if not (user.is_authenticated and user.is_active):
         return []
     if _is_all(user):

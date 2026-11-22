@@ -4,6 +4,12 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 
 ## 2026-11-22 (exam integratsiyasi)
 
+## Ish maydoni (workspace) va tushunarli founder sahifasi (2026-11-22)
+- **Ish maydoni tanlagichi** (panel chap menyusi): Hammasi / tashkilot / filial. Tanlov sessiyada saqlanadi va panelning HAMMA ro'yxati va hisobotiga o'zi qo'llanadi (`org/workspace.py`, `org/middleware.py`; `org.scope.branch_ids` tanlovni hisobga oladi). Panel tanlangan tashkilot rangiga bo'yaladi. Bitta filialga ruxsati bor xodimda tanlagich yo'q; ruxsatsiz tanlov 'Hammasi'ga qaytadi.
+- **«Hammasi» rejimida ro'yxat o'rniga tashkilot kartalari** (`panel/hubs.py`): o'quvchilar, ustozlar, xodimlar, ota-onalar — har tashkilotda soni (markaz filiallari alohida); kartani bossangiz o'sha tashkilot ro'yxati ochiladi. Qidiruv (`?q=`) hamma tashkilot bo'yicha ishlaydi. Minglab yozuv bir sahifaga to'kilmaydi.
+- **Founder sahifasi soddalashtirildi:** 4 raqam (o'quvchi, tushum, xarajat, foyda) har birining tagida «nima ekani» yozilgan; davr bitta tanlanadi (shu oy / o'quv yili); «to'lovlar holati» (kutilgan / kelgan / kelmagan); «Hammasi»da tashkilot kartalari, tashkilot tanlansa — filiallar jadvali; chegirma/grant tarkibi yig'ma blokda.
+- Testlar: `panel/test_workspace.py`, `panel/test_owner.py`.
+
 ## Maktab egasi uchun «Raqamlar» sahifasi (2026-11-22)
 - Founder (`is_owner`) `/panel/` ga kirganda yangi raqamli sahifa ochiladi (`panel/owner_stats.py`, `views_owner.py`, `templates/panel/owner.html`); eski kundalik panel `?kunlik=1` da qoladi, boshqa xodimlar uchun o'zgarmagan.
 - **Foyda = kassaga tushgan tushum − xarajatlar** (oyliklar ham xarajat). Tepada 4 ta raqam: jami o'quvchi, tushum, xarajat, foyda (o'quv yili boshidan + shu oy).

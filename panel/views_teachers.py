@@ -14,6 +14,7 @@ from accounts.student_import import _unique_username
 from org.scope import pick_branch, scope_groups, scope_teachers
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .forms import PhoneField
 from .views_devices import apply_photo, next_teacher_id, photo_ok
@@ -82,6 +83,7 @@ def _secret(request, text):
 
 
 @panel_required('teachers.view')
+@org_hub('teachers')
 def teachers(request):
     q = request.GET.get('q', '').strip()
     qs = teachers_qs(request.user).prefetch_related('teachings__subject', 'teachings__group').order_by('last_name', 'first_name')

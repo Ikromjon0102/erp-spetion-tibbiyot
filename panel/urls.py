@@ -1,10 +1,11 @@
 from django.urls import path
 
-from . import views_core, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
+from . import views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
 
 app_name = 'panel'
 urlpatterns = [
     path('', views_core.dashboard, name='dashboard'),
+    path('maydon/', views_scope.set_scope, name='set_scope'),
     path('jurnal/', views_core.audit_list, name='audit'),
 
     path('oquvchilar/', views_students.students, name='students'),

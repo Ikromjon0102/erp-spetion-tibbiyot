@@ -98,14 +98,15 @@ class OwnerDashboardTests(TestCase):
         self.assertEqual(counts['Filial 2'], 2)
         self.assertEqual(o['total']['expected'], 3_000_000)
 
-    def test_org_filter(self):
-        rep = self.report(org_id=self.org.pk)
+    def test_scope_limits_report_to_selected_org(self):
+        self.owner._scope_ids = [self.branch.pk]
+        rep = self.report()
         self.assertEqual([o['org'] for o in rep['orgs']], [self.org])
 
     def test_page_renders_for_owner_and_old_panel_still_available(self):
         self.client.force_login(self.owner)
         body = self.client.get(reverse('panel:dashboard')).content.decode()
-        self.assertIn('Jami o&#x27;quvchi', body.replace("'", '&#x27;'))
+        self.assertIn('kassaga kirgan pul', body)
         self.assertIn('Grant (100% chegirma)', body)
         old = self.client.get(reverse('panel:dashboard') + '?kunlik=1').content.decode()
         self.assertIn('Bugun maktabda', old)
@@ -118,7 +119,7 @@ class OwnerDashboardTests(TestCase):
         u.branches.add(self.branch)
         self.client.force_login(u)
         r = self.client.get(reverse('panel:dashboard'))
-        self.assertNotIn('Foyda · o', r.content.decode())
+        self.assertNotIn('kassaga kirgan pul', r.content.decode())
 
     def test_month_parsing_never_future(self):
         self.assertEqual(owner_stats.parse_month('2099-01', self.today), self.month)

@@ -52,9 +52,9 @@ class IsolationTests(TestCase):
         for s in (self.s_med, self.s_kg):
             Payment.objects.create(student=s, amount=100000, method='cash', paid_on=timezone.localdate(), received_by=self.owner)
 
-    def get(self, user, name, *args):
+    def get(self, user, name, *args, **params):
         self.client.force_login(user)
-        return self.client.get(reverse(name, args=args))
+        return self.client.get(reverse(name, args=args), params)
 
     def test_student_branch_follows_group(self):
         self.assertEqual(self.s_med.branch, self.med)
@@ -69,7 +69,9 @@ class IsolationTests(TestCase):
         self.assertNotIn('Vali', body)
 
     def test_owner_sees_everything(self):
-        body = self.get(self.owner, 'panel:students').content.decode()
+        # «Hammasi» rejimida ro'yxat o'rniga tashkilot kartalari chiqadi; qidiruv hamma tashkilot bo'yicha ishlaydi
+        self.assertIn('hub-card', self.get(self.owner, 'panel:students').content.decode())
+        body = self.get(self.owner, 'panel:students', q='a').content.decode()
         self.assertIn('Ali', body)
         self.assertIn('Vali', body)
 
@@ -200,7 +202,7 @@ class IsolationTests(TestCase):
 
     def test_dashboard_counts_only_own(self):
         self.assertEqual(self.get(self.dir_kg, 'panel:dashboard').context['students_total'], 1)
-        self.assertEqual(self.get(self.owner, 'panel:dashboard').context['students_total'], 2)
+        self.assertEqual(self.get(self.owner, 'panel:dashboard', kunlik='1').context['students_total'], 2)
 
     def test_staff_without_branches_sees_nothing(self):
         nobody = staff('nobody', 'Direktor', self.med)

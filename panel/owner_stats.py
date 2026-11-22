@@ -15,7 +15,8 @@ from django.db.models.functions import Coalesce, TruncMonth
 from billing.models import Charge, Payment
 from billing.services import academic_months, academic_year_start, ensure_charges, first_of_month
 from finance.models import Expense, Payslip
-from org.models import Branch, default_branch
+from org.models import default_branch
+from org.scope import branches_for, scope_by_branch
 from .views_core import real_students
 
 ZERO = Decimal(0)
@@ -45,7 +46,7 @@ def _tier_label(percent, amount):
     return "To'liq narx"
 
 
-def build_report(user, month, today, org_id=None):
+def build_report(user, month, today):
     month = first_of_month(month)
     year_start = academic_year_start(month)
     months = [m for m in academic_months(year_start) if m <= first_of_month(today)]
@@ -57,9 +58,7 @@ def build_report(user, month, today, org_id=None):
     student_ids = list(students.values_list('pk', flat=True))
     ensure_charges(student_ids, today)       # yetishmayotgan oylik hisoblar (narx bor bo'lsa) yoziladi; qayta chaqirish xavfsiz
 
-    branches = list(Branch.objects.filter(is_active=True).select_related('organization').order_by('organization__name', 'name'))
-    if org_id:
-        branches = [b for b in branches if b.organization_id == org_id]
+    branches = list(branches_for(user).select_related('organization').order_by('organization__name', 'name'))   # tanlangan ish maydoni bo'yicha
     ids = {b.pk for b in branches}
 
     def per_branch(qs, key, **agg):
@@ -71,7 +70,7 @@ def build_report(user, month, today, org_id=None):
         return out
 
     pay = Payment.objects.filter(voided=False, student_id__in=student_ids)
-    exp = Expense.objects.all()
+    exp = scope_by_branch(Expense.objects.all(), user)
     n_students = per_branch(students, 'branch_id', n=Count('pk'))
     charges_m = Charge.objects.filter(month=month, cancelled=False, student_id__in=student_ids)
     expected = per_branch(charges_m, 'student__branch_id', s=Sum('amount'))
@@ -94,7 +93,7 @@ def build_report(user, month, today, org_id=None):
 
     # to'lanmagan oyliklar (shu oy hisoblangan, hali to'lanmagan qismi)
     unpaid = defaultdict(Decimal)
-    for ps in Payslip.objects.filter(month=month).prefetch_related('payments'):
+    for ps in scope_by_branch(Payslip.objects.filter(month=month), user).prefetch_related('payments'):
         unpaid[ps.branch_id] += max(ps.remaining, ZERO)
 
     # chegirma bo'yicha taqsimot (kutilayotgan tushum tarkibi)

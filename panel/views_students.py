@@ -27,6 +27,7 @@ from journal.models import Attendance
 
 from . import audit
 from .models import StaffProfile
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .forms import ImportForm, ParentForm, StudentForm
 from org.scope import pick_branch, scope_groups, scope_students
@@ -96,6 +97,7 @@ def _presence_map(student_ids, today):
 
 
 @panel_required('students.view')
+@org_hub('students')
 def students(request):
     granted = perms_of(request.user)
     page = Paginator(_filtered(request, granted), PAGE_SIZE).get_page(request.GET.get('page'))

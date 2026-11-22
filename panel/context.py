@@ -10,4 +10,5 @@ def panel_context(request):
         return {'panel_access': False, 'panel_can': set(), 'panel_owner': False, 'panel_position': ''}
     profile = profile_of(user)
     position = 'Texnik administrator' if user.is_superuser and not profile else (profile.position.name if profile else '')
-    return {'panel_access': True, 'panel_can': perms_of(user), 'panel_owner': is_owner(user), 'panel_position': position}
+    return {'panel_access': True, 'panel_can': perms_of(user), 'panel_owner': is_owner(user), 'panel_position': position,
+            'scope': getattr(request, 'scope', None)}

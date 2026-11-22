@@ -13,6 +13,7 @@ from accounts.student_import import _unique_username
 from org.scope import branch_ids, scope_students
 
 from . import audit
+from .hubs import org_hub
 from .access import panel_required, perms_of
 from .forms import PhoneField
 from .models import StaffProfile
@@ -62,6 +63,7 @@ def _can_reset(user):
 
 
 @panel_required('parents.view')
+@org_hub('parents')
 def parents(request):
     q = request.GET.get('q', '').strip()
     qs = parents_qs(request.user).prefetch_related('children__user', 'children__group').order_by('last_name', 'first_name', 'username')

@@ -12,6 +12,7 @@ from accounts.student_import import _unique_username
 from org.scope import branch_ids, branches_for, pick_branch, scope_staff
 
 from . import audit
+from .hubs import org_hub
 from .access import is_owner, panel_required, perms_of
 from .forms import PositionForm, StaffCreateForm
 from .models import AuditLog, Position, StaffProfile
@@ -46,6 +47,7 @@ def _perm_diff(old, new):
 # ------------------------------------------------------------------ xodimlar
 
 @panel_required('staff.view')
+@org_hub('staff')
 def staff_list(request):
     profiles = list(scope_staff(StaffProfile.objects.select_related('user', 'position'), request.user).order_by('position__order', 'user__last_name'))
     profile_user_ids = {p.user_id for p in profiles}
