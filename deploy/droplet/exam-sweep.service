@@ -1,0 +1,14 @@
+[Unit]
+Description=Spetion Exam deadline sweep loop
+After=network.target postgresql.service exam-api.service
+
+[Service]
+User=erp
+Group=erp
+WorkingDirectory=/var/www/exam/backend
+ExecStart=/var/www/exam/venv/bin/python -m scripts.run_sweep_loop
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -7,6 +7,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **ERP `examlink` ilovasi**: `ExamLink` (ERP o'quvchi ↔ exam o'quvchi), `client.py` (5 s timeout, dinamika 10 daqiqa keshlanadi, exam ishlamasa sahifa buzilmaydi), `matching.py` (imlo variantlarini tenglaydi: o'/g', dj→j, x→h, q→k, so'zlar tartibi; ≥0.85, avval sinfi mos juftlar).
 - **Panel «Sozlamalar → Exam bilan bog'lash»** (`org.settings` ruxsati): taklif qilingan juftlar, tasdiqlash, bog'lanishni uzish, juft topilmaganlar ro'yxati.
 - **Ota-ona ilovasi**: «Baholar» sahifasida «Imtihonlar dinamikasi» (hozirgi %, yil boshidan o'zgarish, fanlar, choraklar).
+- **Deploy to'plami** `deploy/droplet/`: `setup.sh` (yangi Ubuntu droplet: Postgres, nginx, systemd, swap, firewall, kunlik backup, secretlar), `push.sh <ip> [--first]` (ERP + exam kodini yuboradi, migratsiya), `MIGRATE_DATA.md` (eski serverdan ma'lumot ko'chirish). Hali hech qayerda ishga tushirilmagan.
 - Sozlama: `EXAM_API_URL`, `EXAM_API_KEY`.
 - Exam ko'p tashkilotli qilindi (maktab/markaz alohida sinflar bilan) — tafsilot exam `CHANGELOG.md`.
 
