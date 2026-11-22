@@ -34,7 +34,7 @@
   </div>
   <div class="pres {{ c.info.presence.state }}"><span class="dot"></span>{{ c.info.presence.text }}</div>
   <div class="mini">
-    <div><small>O'rtacha baho</small><b class="{{ c.info.avg_class }}">{{ c.info.avg|default:"—" }}</b></div>
+    {% if c.branch.organization.kind != 'kindergarten' %}<div><small>O'rtacha baho</small><b class="{{ c.info.avg_class }}">{{ c.info.avg|default:"—" }}</b></div>{% endif %}
     <div><small>Davomat (30 kun)</small><b>{% if c.info.rate is not None %}{{ c.info.rate }}%{% else %}—{% endif %}</b></div>
   </div>
 </a>

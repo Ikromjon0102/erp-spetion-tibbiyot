@@ -72,21 +72,51 @@ class ExamLinkFlowTests(TestCase):
         self.client.post(reverse('panel:examlink_unlink', args=[link.pk]))
         self.assertFalse(ExamLink.objects.exists())
 
+    def exam_json(self, user=None):
+        self.client.force_login(user or self.kid.user)
+        return self.client.get(reverse('student_exam', args=[self.kid.pk]))
+
     def test_exam_down_does_not_break_child_page(self):
         ExamLink.objects.create(student=self.kid, exam_student_id=1)
         with mock.patch.object(client, '_get', side_effect=client.ExamUnavailable('x')):
-            self.assertIsNone(child_context(self.kid, self.kid.user)['exam'])
+            self.assertEqual(self.exam_json().json(), {'ok': True, 'data': None})
+            page = self.client.get(reverse('student_detail', args=[self.kid.pk]))
+        self.assertEqual(page.status_code, 200)
+        self.assertTrue(child_context(self.kid, self.kid.user)['has_exam'])
 
-    def test_dynamics_in_context_and_cached(self):
+    def test_dynamics_endpoint_and_cached(self):
         ExamLink.objects.create(student=self.kid, exam_student_id=1)
         data = {'points': [{'x': 1}], 'overall': {'current_percent': 80}, 'subjects': [], 'quarters': [], 'school_year_start': 2026}
         with mock.patch.object(client, '_get', return_value=data) as g:
-            self.assertEqual(child_context(self.kid, self.kid.user)['exam'], data)
-            child_context(self.kid, self.kid.user)
+            self.assertEqual(self.exam_json().json()['data'], data)
+            self.exam_json()
         self.assertEqual(g.call_count, 1)
 
+    def test_page_does_not_call_exam_server(self):
+        """Sahifa exam serveriga bog'lanmaydi (sekin bo'lishi mumkin): dinamika alohida so'rov bilan yuklanadi."""
+        ExamLink.objects.create(student=self.kid, exam_student_id=1)
+        with mock.patch.object(client, '_get') as g:
+            self.client.force_login(self.kid.user)
+            self.client.get(reverse('student_detail', args=[self.kid.pk]))
+        g.assert_not_called()
+
     def test_unlinked_has_no_exam(self):
-        self.assertIsNone(child_context(self.kid, self.kid.user)['exam'])
+        self.assertFalse(child_context(self.kid, self.kid.user)['has_exam'])
+        self.assertEqual(self.exam_json().json(), {'ok': True, 'data': None})
+
+    def test_other_family_cannot_read_dynamics(self):
+        ExamLink.objects.create(student=self.kid, exam_student_id=1)
+        stranger = User.objects.create_user('begona', password='x', role='parent')
+        with mock.patch.object(client, '_get', return_value={'points': [{'x': 1}]}):
+            self.assertEqual(self.exam_json(stranger).status_code, 403)
+
+    def test_kindergarten_has_no_exam(self):
+        from org.models import Branch, Organization
+        org = Organization.objects.create(name="Bog'cha X", short_name='X', kind='kindergarten')
+        kg = Student.objects.create(user=User.objects.create_user('kg1', password='x', role='student'),
+                                    branch=Branch.objects.create(organization=org, name='Asosiy'))
+        ExamLink.objects.create(student=kg, exam_student_id=5)
+        self.assertFalse(child_context(kg, kg.user)['has_exam'])
 
     @override_settings(EXAM_API_URL='', EXAM_API_KEY='')
     def test_disabled(self):

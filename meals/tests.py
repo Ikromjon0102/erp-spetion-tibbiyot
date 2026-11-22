@@ -275,9 +275,10 @@ class ParentViewTests(TestCase):
             plan.set_today(1)
             plan.save()
         lunch = MealType.objects.get(organization=self.med.organization, name='Tushlik')
-        services.set_entry(self.med.organization, 1, lunch, ['Osh', 'Non'])
         lunch_b = MealType.objects.get(organization=self.blue.organization, name='Tushlik')
-        services.set_entry(self.blue.organization, 1, lunch_b, ['Lag\'mon'])
+        for day in range(1, 15):        # jadvalda haftaning hamma kuni ko'rinadi, shuning uchun sikl to'liq to'ldiriladi
+            services.set_entry(self.med.organization, day, lunch, ['Osh', 'Non'])
+            services.set_entry(self.blue.organization, day, lunch_b, ['Lag\'mon'])
         self.parent = User.objects.create_user('998960', password='x', role='parent')
 
         def kid(name, branch):
@@ -293,28 +294,38 @@ class ParentViewTests(TestCase):
 
     def test_each_child_sees_own_organizations_menu(self):
         body = self.page(self.k_med)
-        self.assertIn('Bugungi menyu', body)
+        self.assertIn('data-meal=', body)
         self.assertIn('Osh', body)
         self.assertNotIn('Lag&#x27;mon', body)
+        self.assertNotIn('Lag\\u0027mon', body)
         body = self.page(self.k_blue)
         self.assertIn('Lag&#x27;mon', body)
         self.assertNotIn('>Osh<', body)
 
+    def test_menu_is_in_schedule_not_home_card(self):
+        body = self.page(self.k_med)
+        self.assertNotIn('Bugungi menyu', body)
+        self.assertIn('class="row meal-row"', body)
+        self.assertIn('12:30', body)        # tushlik standart soati
+
+    def test_meal_time_is_editable(self):
+        from datetime import time
+        MealType.objects.filter(organization=self.med.organization, name='Tushlik').update(at=time(13, 15))
+        self.assertIn('13:15', self.page(self.k_med))
+
     def test_center_has_no_menu(self):
-        self.assertNotIn('Bugungi menyu', self.page(self.k_center))
+        self.assertNotIn('meal-row"', self.page(self.k_center))
 
     def test_disabled_org_hides_menu(self):
         org = self.med.organization
         org.meals_enabled = False
         org.save()
-        self.assertNotIn('Bugungi menyu', self.page(self.k_med))
-
-    def test_shows_not_arrived_note(self):
-        self.assertIn('hali maktabga kelmagan', self.page(self.k_med))
+        self.assertNotIn('data-meal=', self.page(self.k_med))
 
     def test_no_menu_on_holiday(self):
-        NoMealDay.objects.create(organization=self.med.organization, start=timezone.localdate(), end=timezone.localdate(), reason='Bayram')
-        self.assertNotIn('Bugungi menyu', self.page(self.k_med))
+        NoMealDay.objects.create(organization=self.med.organization, start=timezone.localdate() - timedelta(days=7),
+                                 end=timezone.localdate() + timedelta(days=14), reason='Bayram')
+        self.assertNotIn('data-meal=', self.page(self.k_med))
 
     def test_shows_dish_photo_when_uploaded(self):
         media = tempfile.mkdtemp()

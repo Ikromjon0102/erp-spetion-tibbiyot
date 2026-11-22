@@ -1,6 +1,6 @@
 """Bola sahifasi (ota-ona / o'quvchi) uchun ma'lumotlarni tayyorlash: baholar, davomat, jadval, to'lov, holat."""
 from collections import Counter, defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.utils import timezone
 
@@ -46,6 +46,32 @@ def homework_for(student, viewer, is_guardian):
             'teacher': (teacher.get_full_name() or teacher.username) if teacher else '',
         })
     return dict(by_subject), unread
+
+
+def _meal_rows(org, monday, today):
+    """Taomnoma qatorlari jadval ichida: {hafta kuni: [qator]} va modal uchun {kalit: taomlar}. Faqat ovqat beriladigan kunlar."""
+    rows, detail = {}, {}
+    if org is None or not org.meals_enabled:
+        return rows, detail
+    from django.urls import reverse
+    from meals.services import menu_for_date
+    for idx in range(6):
+        d = monday + timedelta(days=idx)
+        menu = menu_for_date(org, d)
+        for m in menu['meals']:
+            if not m['served']:
+                continue
+            start = m['type'].start_time()
+            end = (datetime.combine(d, start) + timedelta(minutes=30)).time()
+            key = f'{d.isoformat()}-{m["type"].pk}'
+            names = ', '.join(x.name for x in m['dishes'])
+            rows.setdefault(idx, []).append({
+                'meal': True, 'key': key, 'period': '', 'start': f'{start:%H:%M}', 'end': f'{end:%H:%M}',
+                'subject': m['type'].name, 'teacher': names, 'room': '', 'mark': None, 'hw': 0, 'hw_unread': 0,
+            })
+            detail[key] = {'title': m['type'].name, 'date': d.strftime('%d.%m'), 'time': f'{start:%H:%M}',
+                           'dishes': [{'name': x.name, 'photo': reverse('dish_photo', args=[x.pk]) if x.photo else ''} for x in m['dishes']]}
+    return rows, detail
 
 
 def grade_class(avg):
@@ -96,9 +122,11 @@ def overview(student):
 def child_context(student, viewer):
     now = timezone.localtime()
     today = now.date()
+    org = student.branch.organization if student.branch_id else None
+    kindergarten = org is not None and org.kind == 'kindergarten'     # bog'chada baho/imtihon/vazifa yo'q, jadval — mashg'ulotlar
 
     # --- baholar
-    grades = list(student.grades.select_related('teaching__subject').order_by('-date', '-id')[:300])
+    grades = [] if kindergarten else list(student.grades.select_related('teaching__subject').order_by('-date', '-id')[:300])
     by_subject = defaultdict(list)
     for g in grades:
         by_subject[g.teaching.subject.name].append(g)
@@ -151,12 +179,16 @@ def child_context(student, viewer):
             })
     today_idx = today.weekday() if today.weekday() < len(days) else None
     is_guardian = student.parents.filter(pk=viewer.pk).exists()
-    homework, hw_unread = homework_for(student, viewer, is_guardian)
+    homework, hw_unread = ({}, 0) if kindergarten else homework_for(student, viewer, is_guardian)
     for day in days:
         for lesson in day['lessons']:
             hws = homework.get(lesson['subject'], [])
             lesson['hw'] = len(hws)
             lesson['hw_unread'] = sum(1 for h in hws if not h['read'])
+    meal_rows, meal_detail = _meal_rows(org, today - timedelta(days=today.weekday()) if today.weekday() < 6 else today + timedelta(days=1), today)
+    for idx, rows in meal_rows.items():      # ovqat o'z soatida jadvalga qo'shiladi (dars bilan vaqt bo'yicha tartiblanadi)
+        if idx < len(days):
+            days[idx]['lessons'] = sorted(days[idx]['lessons'] + rows, key=lambda x: x['start'])
 
     # --- to'lov: faqat ota-ona va ma'muriyatga
     bill, payments, debt = None, None, 0
@@ -176,23 +208,11 @@ def child_context(student, viewer):
         siblings = siblings if len(siblings) > 1 else []
 
     pres = presence(student, now)
-    meals = None
-    org = student.branch.organization if student.branch_id else None
-    if org is not None and org.meals_enabled:
-        from meals.services import menu_for_date
-        meals = {'today': menu_for_date(org, today), 'tomorrow': menu_for_date(org, today + timedelta(days=1)),
-                 'arrived': pres.get('state') in ('in', 'out')}
-
-    exam = None
-    link = getattr(student, 'exam_link', None)
-    if link is not None:
-        from examlink.client import fetch_dynamics
-        exam = fetch_dynamics(link.exam_student_id)
-        if exam and not exam.get('points'):
-            exam = None          # hali natija yo'q
+    has_exam = (not kindergarten) and getattr(student, 'exam_link', None) is not None      # dinamika alohida (sekin) so'rov bilan yuklanadi
 
     return {
-        'student': student, 'today': today, 'presence': pres, 'meals': meals, 'exam': exam,
+        'student': student, 'today': today, 'presence': pres, 'has_exam': has_exam, 'kindergarten': kindergarten,
+        'meal_detail': meal_detail,
         'avg': f'{overall:.1f}' if overall is not None else None,
         'avg_class': grade_class(overall) if overall is not None else '',
         'n_grades': len(grades), 'subjects': subjects, 'recent_grades': recent_grades,

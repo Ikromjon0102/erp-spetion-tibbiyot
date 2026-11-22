@@ -1,7 +1,7 @@
 """Taomnoma boshqaruvi (panel). Oshpaz platformaga kirmaydi: menyuni va taomlar rasmini xodim (zavxoz, hisobchi, direktor...)
 bir marta kiritadi, ruxsat `meals.*` — founder kerakli odamga beradi. Rasm bir marta yuklanadi va har siklda qayta ishlatiladi."""
 import re
-from datetime import date
+from datetime import date, time
 
 from django import forms
 from django.contrib import messages
@@ -226,6 +226,16 @@ def meals_settings(request):
             mt = get_object_or_404(MealType, pk=request.POST.get('id'), organization=org)
             mt.is_active = not mt.is_active
             mt.save(update_fields=['is_active'])
+        elif action == 'type_time':
+            mt = get_object_or_404(MealType, pk=request.POST.get('id'), organization=org)
+            raw = request.POST.get('at', '').strip()
+            try:
+                mt.at = time.fromisoformat(raw) if raw else None
+            except ValueError:
+                messages.error(request, "Soatni to'g'ri kiriting (masalan 12:30)")
+                return _back(org, 'panel:meals_settings')
+            mt.save(update_fields=['at'])
+            messages.success(request, f"«{mt.name}» vaqti saqlandi")
         elif action == 'holiday_add':
             try:
                 start = date.fromisoformat(request.POST.get('start', ''))

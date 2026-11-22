@@ -87,6 +87,7 @@ class MealType(models.Model):
     name = models.CharField('Nomi', max_length=60)
     order = models.PositiveSmallIntegerField('Tartib', default=0)
     is_active = models.BooleanField('Faol', default=True)
+    at = models.TimeField('Soat', null=True, blank=True, help_text="Ota-onaga dars jadvalida shu vaqtda ko'rinadi. Bo'sh bo'lsa: 1-tur 12:30, 2-tur 15:30.")
 
     class Meta:
         ordering = ['order', 'id']
@@ -96,6 +97,14 @@ class MealType(models.Model):
 
     def __str__(self):
         return self.name
+
+    def start_time(self):
+        """Ovqat vaqti: kiritilgan bo'lsa shu, bo'lmasa tartibiga qarab standart (tushlik 12:30, poldnik 15:30, keyingilari 30 daqiqadan)."""
+        if self.at:
+            return self.at
+        from datetime import time
+        defaults = [time(12, 30), time(15, 30)]
+        return defaults[self.order - 1] if 1 <= self.order <= len(defaults) else time(16, 0)
 
 
 class MenuEntry(models.Model):

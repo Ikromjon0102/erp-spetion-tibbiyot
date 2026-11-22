@@ -43,7 +43,7 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Oylik to'lovi avtomatik «Maosh» xarajatini yaratadi (qo'lda ikki marta kiritilmaydi).
 
 ## 2. Brend
-- Logo hamma tashkilotda bir xil; **ilova fon rangi** tashkilotga qarab: tibbiyot to'q yashil `#166534`, asosiy maktab to'q ko'k `#1E3A8A`, o'quv markaz qizil `#B91C1C`, bog'cha to'q sariq `#C2410C` (boshlang'ich; tasdiqlandi 2026-11-21). Rang `Organization.brand_color` da; butun palitra (och/qorong'i rejim) shu bitta rangdan hisoblanadi.
+- Logo hamma tashkilotda bir xil; **ilova fon rangi** tashkilotga qarab: tibbiyot to'q yashil `#166534`, asosiy maktab to'q ko'k `#1E3A8A`, o'quv markaz qizil `#E53935`, bog'cha to'q sariq `#F97316` (2026-11-22: qizil ochroq, sariqdan ajralib turishi uchun o'zgartirildi) (boshlang'ich; tasdiqlandi 2026-11-21). Rang `Organization.brand_color` da; butun palitra (och/qorong'i rejim) shu bitta rangdan hisoblanadi.
 - **Keyin o'zgartirish:** founder va filial adminlari panelda (Sozlamalar → Tashkilot va brend) o'z tashkilotining nomi va rangini o'zgartira oladi (`org.settings` ruxsati). Modullarni (taomnoma, xarajat) yoqish-o'chirish faqat «Maktab egasi»da.
 - Ota-ona farzandni almashtirsa, ilova rangi o'sha farzand tashkilotiga o'tadi.
 

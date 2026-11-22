@@ -10,8 +10,8 @@ from org.models import Branch, Organization
 ORGS = [
     # nomi, qisqa nomi, turi, rang, taomnoma, filiallar
     ('Asosiy maktab', 'Asosiy maktab', 'school', '#1E3A8A', True, ['Asosiy']),
-    ("Bog'cha", "Bog'cha", 'kindergarten', '#C2410C', True, ['Asosiy']),
-    ("O'quv markaz", 'Markaz', 'center', '#B91C1C', False, ['Filial 1']),
+    ("Bog'cha", "Bog'cha", 'kindergarten', '#F97316', True, ['Asosiy']),
+    ("O'quv markaz", 'Markaz', 'center', '#E53935', False, ['Filial 1']),
 ]
 
 

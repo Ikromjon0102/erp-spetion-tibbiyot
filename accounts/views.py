@@ -124,13 +124,31 @@ def home(request):
 
 @login_required
 def student_detail(request, pk):
-    student = get_object_or_404(Student.objects.select_related('user', 'group'), pk=pk)
+    student = get_object_or_404(Student.objects.select_related('user', 'group', 'branch__organization', 'exam_link'), pk=pk)
     if not can_view_student(request.user, student):
         raise PermissionDenied
     if request.user.is_teacher and student.parents.filter(pk=request.user.pk).exists():
         request.session['mode'] = 'parent'  # ustoz o'z farzandini ochdi: keyingi safar ham shu rejimda
     request.theme_org = student.branch.organization if student.branch_id else None   # ilova rangi bolaning tashkiloti rangida
     return render(request, 'app/child.html', child_context(student, request.user))
+
+
+@login_required
+def student_exam(request, pk):
+    """Imtihon dinamikasi (JSON). Exam platformasiga server-server so'rov sekin bo'lishi mumkin, shuning uchun sahifa bilan birga emas,
+    sahifa ochilgandan keyin alohida yuklanadi."""
+    student = get_object_or_404(Student.objects.select_related('branch__organization', 'exam_link'), pk=pk)
+    if not can_view_student(request.user, student):
+        raise PermissionDenied
+    link = getattr(student, 'exam_link', None)
+    org = student.branch.organization if student.branch_id else None
+    if link is None or (org is not None and org.kind == 'kindergarten'):
+        return JsonResponse({'ok': True, 'data': None})
+    from examlink.client import fetch_dynamics
+    data = fetch_dynamics(link.exam_student_id)
+    if data is not None and not data.get('points'):
+        data = None
+    return JsonResponse({'ok': True, 'data': data})
 
 
 @login_required

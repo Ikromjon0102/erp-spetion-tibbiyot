@@ -45,7 +45,7 @@
   .chip.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 
   /* hero */
-  .hero { background:linear-gradient(135deg,#14532D 0%,#166534 60%,#1B7F3B 100%); color:#fff; border-radius:22px; padding:16px; margin-bottom:12px; box-shadow:0 8px 22px rgba(22,101,52,.28); }
+  .hero { background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 72%,#000) 0%,var(--accent) 100%); color:var(--on-accent); border-radius:22px; padding:16px; margin-bottom:12px; box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 32%,transparent); }
   .hero-top { display:flex; align-items:center; gap:12px; }
   .hero-av img { width:100%; height:100%; object-fit:cover; display:block; }
   .hero-av { overflow:hidden; width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.18); display:grid; place-items:center; font:800 19px 'Inter',sans-serif; flex-shrink:0; }
@@ -153,6 +153,31 @@
   .pbar i { display:block; height:100%; background:var(--accent); border-radius:99px; }
   .pbar.part i { background:var(--late); }
 
+  /* ovqat qatori (jadval ichida) */
+  .row.meal-row { border-style:dashed; border-color:var(--tint-line); background:var(--tint); cursor:pointer; }
+  .row.meal-row .mi { width:34px; height:34px; border-radius:11px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; flex-shrink:0; }
+  .row.meal-row .info small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mchip { font:700 10.5px 'Space Mono',monospace; text-transform:uppercase; background:var(--card); color:var(--accent-deep); padding:4px 8px; border-radius:8px; flex-shrink:0; }
+  .mdish { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); font-weight:700; font-size:16px; }
+  .mdish:first-child { border-top:0; }
+  .mdish img, .mdish .noimg { width:64px; height:64px; border-radius:14px; object-fit:cover; background:var(--tint); flex-shrink:0; }
+
+  /* imtihon dinamikasi */
+  .xm-big { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .xm-big b { font-size:32px; font-weight:800; line-height:1; }
+  .xm-delta { font-weight:800; font-size:13px; padding:3px 9px; border-radius:8px; }
+  .xm-delta.up { background:#E3F4E8; color:#1B7A3A; } .xm-delta.down { background:var(--bad-tint); color:var(--bad); } .xm-delta.flat { background:var(--tint); color:var(--dim); }
+  .xm-chart { width:100%; height:auto; display:block; margin-top:10px; touch-action:manipulation; }
+  .xm-chart text { font:600 10px 'Inter',sans-serif; fill:var(--dim); }
+  .xm-tip { min-height:38px; margin-top:6px; font-size:13px; color:var(--dim); }
+  .xm-tip b { color:var(--ink); }
+  .xm-legend { display:flex; gap:14px; font-size:12px; color:var(--dim); margin-top:4px; }
+  .xm-legend i { display:inline-block; width:16px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px; background:var(--accent); }
+  .xm-legend i.cls { background:none; border-top:2px dashed var(--faint); height:0; }
+  .xm-sub { display:grid; grid-template-columns:1fr auto; gap:2px 10px; margin-top:12px; align-items:center; font-weight:700; }
+  .xm-sub .bar { grid-column:1 / -1; height:8px; border-radius:6px; background:var(--line); overflow:hidden; }
+  .xm-sub .bar i { display:block; height:100%; background:var(--accent); border-radius:6px; }
+
 </style>
 {% endblock %}
 
@@ -184,9 +209,9 @@
     <button class="stat {% if att_stats.rate is not None and att_stats.rate >= 90 %}good{% endif %}" data-go="attendance">
       <span class="k">Davomat</span><span class="v">{% if att_stats.rate is not None %}{{ att_stats.rate }}%{% else %}—{% endif %}</span><span class="s">so'nggi 30 kun</span>
     </button>
-    <button class="stat" data-go="grades">
+    {% if not kindergarten %}<button class="stat" data-go="grades">
       <span class="k">O'rtacha baho</span><span class="v">{{ avg|default:"—" }}</span><span class="s">{{ n_grades }} ta baho</span>
-    </button>
+    </button>{% endif %}
     {% if payments is not None %}
     <button class="stat {% if debt %}warn{% else %}good{% endif %}" data-go="payments">
       <span class="k">To'lov</span>
@@ -197,30 +222,11 @@
   </div>
 
   <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
-  {% if meals and meals.today.served or meals.tomorrow.served %}
-  <h2 class="sec">{% if meals.today.served %}Bugungi menyu{% else %}Ertangi menyu{% endif %} <small>{{ today|date:"j F" }}</small></h2>
-  {% if meals.today.served %}
-  <div class="card">
-    {% for x in meals.today.meals %}{% if x.served %}
-    <div class="meal"><div class="meal-t">{{ x.type.name }}</div>
-      <div class="dishes">{% for d in x.dishes %}<div class="dish">{% if d.photo %}<img src="{% url 'dish_photo' d.pk %}" alt="" loading="lazy">{% else %}<span class="noimg"></span>{% endif %}<span>{{ d.name }}</span></div>{% endfor %}</div></div>
-    {% endif %}{% endfor %}
-    <div class="hint" style="margin-top:8px">{% if meals.arrived %}Farzandingiz bugun maktabda bo'ldi.{% else %}Farzandingiz bugun hali maktabga kelmagan.{% endif %}</div>
-  </div>
-  {% else %}
-  <div class="card">
-    {% for x in meals.tomorrow.meals %}{% if x.served %}
-    <div class="meal"><div class="meal-t">{{ x.type.name }}</div>
-      <div class="dishes">{% for d in x.dishes %}<div class="dish">{% if d.photo %}<img src="{% url 'dish_photo' d.pk %}" alt="" loading="lazy">{% else %}<span class="noimg"></span>{% endif %}<span>{{ d.name }}</span></div>{% endfor %}</div></div>
-    {% endif %}{% endfor %}
-  </div>
-  {% endif %}
-  {% endif %}
-
-  <h2 class="sec">Bugungi darslar <small>{{ today|date:"j F" }}</small></h2>
+  <h2 class="sec">{% if kindergarten %}Bugungi mashg'ulotlar{% else %}Bugungi darslar{% endif %} <small>{{ today|date:"j F" }}</small></h2>
   {% if today_lessons %}
   <div class="list" id="todayList">
     {% for l in today_lessons %}
+    {% if l.meal %}{% include 'app/_meal_row.html' %}{% else %}
     <div class="row{% if l.hw %} tap{% endif %}" data-start="{{ l.start }}" data-end="{{ l.end }}" data-subject="{{ l.subject }}">
       <div class="time">{{ l.start }}<small>{{ l.end }}</small></div>
       <div class="info"><b>{{ l.subject }}</b><small>{{ l.teacher|default:"—" }}{% if l.room %} · {{ l.room }}-xona{% endif %}</small></div>
@@ -228,10 +234,11 @@
       {% if l.mark %}<span class="st {{ l.mark.1 }}">{{ l.mark.0 }}</span>{% endif %}
       <span class="tag-now" hidden>HOZIR</span>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
   {% else %}
-  <div class="empty">{% if today_idx is None %}Bugun dam olish kuni{% else %}Bugun dars yo'q{% endif %}</div>
+  <div class="empty">{% if today_idx is None %}Bugun dam olish kuni{% elif kindergarten %}Bugun mashg'ulot yo'q{% else %}Bugun dars yo'q{% endif %}</div>
   {% endif %}
 
   {% if recent_grades %}
@@ -256,23 +263,12 @@
 </section>
 
 <!-- ====================== BAHOLAR ====================== -->
-<section class="tabpane" id="tab-grades" hidden>
+{% if not kindergarten %}<section class="tabpane" id="tab-grades" hidden>
   <h1 class="page">Baholar</h1>
-  {% if exam %}
-  <h2 class="sec">Imtihonlar dinamikasi <small>{{ exam.school_year_start }}/{{ exam.school_year_start|add:1 }} o'quv yili</small></h2>
-  <div class="card">
-    {% if exam.overall.current_percent is not None %}
-    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-      <span style="font-size:30px;font-weight:800">{{ exam.overall.current_percent|floatformat:0 }}%</span>
-      <span class="cap">hozir{% if exam.overall.delta is not None %} · yil boshidan {% if exam.overall.delta > 0 %}+{% endif %}{{ exam.overall.delta|floatformat:0 }}%{% endif %} · {{ exam.overall.exams_count }} ta imtihon</span>
-    </div>
-    {% if exam.overall.class_percent is not None %}<div class="cap">Sinf o'rtachasi: {{ exam.overall.class_percent|floatformat:0 }}%</div>{% endif %}
-    {% endif %}
-    {% for sub in exam.subjects %}
-    <div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-weight:700"><span>{{ sub.subject_name }}</span><span>{{ sub.current_percent|floatformat:0 }}%{% if sub.delta is not None %} <small class="cap">({% if sub.delta > 0 %}+{% endif %}{{ sub.delta|floatformat:0 }})</small>{% endif %}</span></div>
-      <div style="height:8px;border-radius:6px;background:rgba(128,128,128,.2);overflow:hidden;margin-top:4px"><div style="height:100%;width:{{ sub.current_percent|floatformat:0 }}%;background:var(--accent-deep)"></div></div></div>
-    {% endfor %}
-    {% if exam.quarters %}<div class="cap" style="margin-top:12px">{% for q in exam.quarters %}{% if q.percent is not None %}{{ q.number }}-chorak: {{ q.percent|floatformat:0 }}%{% if not forloop.last %} · {% endif %}{% endif %}{% endfor %}</div>{% endif %}
+  {% if has_exam %}
+  <div id="examBox" data-url="{% url 'student_exam' student.pk %}" hidden>
+    <h2 class="sec">Imtihonlar dinamikasi <small id="examYear"></small></h2>
+    <div class="card" id="examCard"></div>
   </div>
   {% endif %}
   {% if subjects %}
@@ -302,7 +298,7 @@
   {% else %}
   <div class="empty">Hozircha baho qo'yilmagan</div>
   {% endif %}
-</section>
+</section>{% endif %}
 
 <!-- ====================== DAVOMAT ====================== -->
 <section class="tabpane" id="tab-attendance" hidden>
@@ -354,7 +350,7 @@
 
 <!-- ====================== JADVAL ====================== -->
 <section class="tabpane" id="tab-schedule" hidden>
-  <h1 class="page">Dars jadvali</h1>
+  <h1 class="page">{% if kindergarten %}Mashg'ulotlar jadvali{% else %}Dars jadvali{% endif %}</h1>
   <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
   <div class="daychips" id="dayChips">
     {% for d in days %}<button data-day="{{ d.idx }}" class="{% if d.is_today %}today{% endif %}">{{ d.code }}<small>{{ d.name|slice:":3" }}</small></button>{% endfor %}
@@ -364,6 +360,7 @@
     {% if d.lessons %}
     <div class="list">
       {% for l in d.lessons %}
+      {% if l.meal %}{% include 'app/_meal_row.html' %}{% else %}
       <div class="row{% if l.hw %} tap{% endif %}" {% if d.is_today %}data-start="{{ l.start }}" data-end="{{ l.end }}"{% endif %} data-subject="{{ l.subject }}">
         <span class="num">{{ l.period }}</span>
         <div class="time">{{ l.start }}<small>{{ l.end }}</small></div>
@@ -371,9 +368,10 @@
         {% if l.hw %}<span class="hwb" data-hwb="{{ l.subject }}">Vazifa{% if l.hw_unread %}<i class="newdot"></i>{% endif %}</span>{% endif %}
         {% if d.is_today %}<span class="tag-now" hidden>HOZIR</span>{% endif %}
       </div>
+      {% endif %}
       {% endfor %}
     </div>
-    {% else %}<div class="empty">Bu kuni dars yo'q</div>{% endif %}
+    {% else %}<div class="empty">{% if kindergarten %}Bu kuni mashg'ulot yo'q{% else %}Bu kuni dars yo'q{% endif %}</div>{% endif %}
   </div>
   {% endfor %}
 </section>
@@ -439,22 +437,23 @@
 <div class="ov" id="hwOv"><div class="sheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
   <div class="sh-head">
-    <div class="grow"><div class="meta">UY VAZIFASI</div><div class="title" id="hwTitle"></div></div>
+    <div class="grow"><div class="meta" id="hwMeta">UY VAZIFASI</div><div class="title" id="hwTitle"></div></div>
     <button class="xbtn" id="hwClose" aria-label="Yopish"><svg class="ic"><use href="#i-x"/></svg></button>
   </div>
   <div class="sh-body" id="hwBody"></div>
 </div></div>
 <nav class="tabbar" aria-label="Bo'limlar"><div class="tabbar-in">
   <button data-tab="home"><span class="pill"><svg class="ic"><use href="#i-home"/></svg></span>Bosh</button>
-  <button data-tab="grades"><span class="pill"><svg class="ic"><use href="#i-star"/></svg></span>Baholar</button>
+  {% if not kindergarten %}<button data-tab="grades"><span class="pill"><svg class="ic"><use href="#i-star"/></svg></span>Baholar</button>{% endif %}
   <button data-tab="attendance"><span class="pill"><svg class="ic"><use href="#i-check"/></svg></span>Davomat</button>
-  <button data-tab="schedule"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>Jadval{% if hw_unread %}<i class="badge" id="hwBadge" title="Yangi vazifa"></i>{% endif %}</button>
+  <button data-tab="schedule"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>{% if kindergarten %}Mashg'ulot{% else %}Jadval{% endif %}{% if hw_unread %}<i class="badge" id="hwBadge" title="Yangi vazifa"></i>{% endif %}</button>
   {% if payments is not None %}<button data-tab="payments"><span class="pill"><svg class="ic"><use href="#i-wallet"/></svg></span>To'lov</button>{% endif %}
 </div></nav>
 {% endblock %}
 
 {% block js %}
 {{ homework|json_script:"hw-data" }}
+{{ meal_detail|json_script:"meal-data" }}
 <script>
 (function(){
   // ---------- vazifalar: jadvalda fan ustiga bosilsa shu fandan berilgan vazifalar ochiladi ----------
@@ -468,6 +467,7 @@
   }
   function openHw(subject){
     var items = HW[subject]; if (!items || !items.length) return;
+    document.getElementById('hwMeta').textContent = 'UY VAZIFASI';
     document.getElementById('hwTitle').textContent = subject;
     body.innerHTML = items.map(function(h){
       return '<div class="hwi' + (h.past ? ' past' : '') + '"><div class="top"><span class="due ' + dueClass(h) + '">' + esc(dueText(h)) + '</span>'
@@ -497,6 +497,7 @@
   }
   function openAll(){
     var all = allItems(); if (!all.length) return;
+    document.getElementById('hwMeta').textContent = 'UY VAZIFASI';
     document.getElementById('hwTitle').textContent = 'Barcha vazifalar';
     body.innerHTML = all.map(function(x){ var h = x.h;
       return '<div class="hwi' + (h.past ? ' past' : '') + '"><div class="subj">' + esc(x.s) + '</div><div class="top"><span class="due ' + dueClass(h) + '">' + esc(dueText(h)) + '</span>'
@@ -531,7 +532,18 @@
     fetch('/vazifa/oqildi/', {method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': m ? decodeURIComponent(m[1]) : ''}, body: JSON.stringify({ids: ids})}).catch(function(){});
   }
+  var MEALS = JSON.parse(document.getElementById('meal-data').textContent);
+  function openMeal(key){
+    var m = MEALS[key]; if (!m) return;
+    document.getElementById('hwMeta').textContent = 'OVQAT · ' + m.date + ' · ' + m.time;
+    document.getElementById('hwTitle').textContent = m.title;
+    body.innerHTML = m.dishes.map(function(d){
+      return '<div class="mdish">' + (d.photo ? '<img src="' + esc(d.photo) + '" alt="" loading="lazy">' : '<span class="noimg"></span>') + '<span>' + esc(d.name) + '</span></div>';
+    }).join('');
+    ov.classList.add('show'); document.body.style.overflow = 'hidden';
+  }
   document.addEventListener('click', function(e){
+    var m = e.target.closest('.row.meal-row[data-meal]'); if (m) return openMeal(m.dataset.meal);
     var r = e.target.closest('.row.tap[data-subject]'); if (r) openHw(r.dataset.subject);
   });
 })();
@@ -569,6 +581,88 @@
     });
   }
   markNow(); setInterval(markNow, 60000);
+})();
+
+(function(){
+  // ---------- imtihonlar dinamikasi: sahifa ochilgach alohida yuklanadi, so'ng chiziqli grafik + fanlar + choraklar ----------
+  var box = document.getElementById('examBox'); if (!box) return;
+  var card = document.getElementById('examCard');
+  function esc(t){ return String(t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmt(n){ return Math.round(n); }
+  function dchip(d){
+    if (d === null || d === undefined) return '';
+    var c = d > 0.5 ? 'up' : d < -0.5 ? 'down' : 'flat', ar = d > 0.5 ? '▲' : d < -0.5 ? '▼' : '•';
+    return '<span class="xm-delta ' + c + '">' + ar + ' ' + (d > 0 ? '+' : '') + fmt(d) + '%</span>';
+  }
+  function ddmm(iso){ var p = iso.split('-'); return p[2] + '.' + p[1]; }
+  function chart(points){
+    var W = 320, H = 170, L = 30, R = 10, T = 10, B = 24, n = points.length;
+    function x(i){ return n === 1 ? (L + W - R) / 2 : L + (W - L - R) * i / (n - 1); }
+    function y(v){ return T + (H - T - B) * (1 - v / 100); }
+    var g = '';
+    [0, 25, 50, 75, 100].forEach(function(v){
+      g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)" stroke-width="1"/><text x="' + (L - 5) + '" y="' + (y(v) + 3) + '" text-anchor="end">' + v + '</text>';
+    });
+    var line = points.map(function(p, i){ return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.percent).toFixed(1); }).join(' ');
+    var area = n > 1 ? line + ' L' + x(n - 1).toFixed(1) + ' ' + y(0) + ' L' + x(0).toFixed(1) + ' ' + y(0) + ' Z' : '';
+    var cls = '', seg = [];
+    points.forEach(function(p, i){ if (p.class_percent !== null && p.class_percent !== undefined) seg.push(x(i).toFixed(1) + ',' + y(p.class_percent).toFixed(1)); });
+    if (seg.length > 1) cls = '<polyline points="' + seg.join(' ') + '" fill="none" stroke="var(--faint)" stroke-width="2" stroke-dasharray="5 4"/>';
+    var dots = points.map(function(p, i){
+      return '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.percent).toFixed(1) + '" r="4.5" fill="var(--card)" stroke="var(--accent)" stroke-width="2.5"/>'
+        + '<circle class="hit" data-i="' + i + '" cx="' + x(i).toFixed(1) + '" cy="' + y(p.percent).toFixed(1) + '" r="15" fill="transparent" style="cursor:pointer"/>';
+    }).join('');
+    var lab = '<text x="' + L + '" y="' + (H - 6) + '" text-anchor="start">' + ddmm(points[0].date) + '</text>' + (n > 1 ? '<text x="' + (W - R) + '" y="' + (H - 6) + '" text-anchor="end">' + ddmm(points[n - 1].date) + '</text>' : '');
+    return '<svg class="xm-chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Imtihon natijalari grafigi">' + g
+      + (area ? '<path d="' + area + '" fill="var(--accent)" opacity=".12"/>' : '') + cls
+      + (n > 1 ? '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' : '') + dots + lab + '</svg>';
+  }
+  function quarters(qs){
+    var list = qs.filter(function(q){ return q.percent !== null && q.percent !== undefined; }); if (!list.length) return '';
+    var W = 320, H = 120, T = 14, B = 22, bw = 36, gap = (W - list.length * bw) / (list.length + 1), out = '';
+    list.forEach(function(q, i){
+      var bx = gap + i * (bw + gap), h = (H - T - B) * q.percent / 100, by = H - B - h;
+      out += '<rect x="' + bx.toFixed(1) + '" y="' + by.toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="7" fill="var(--accent)" opacity="' + (0.45 + 0.55 * (i + 1) / list.length).toFixed(2) + '"/>'
+        + '<text x="' + (bx + bw / 2).toFixed(1) + '" y="' + (by - 4).toFixed(1) + '" text-anchor="middle" style="fill:var(--ink)">' + fmt(q.percent) + '%</text>'
+        + '<text x="' + (bx + bw / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + q.number + '-chorak</text>';
+    });
+    return '<h2 class="sec" style="margin:18px 0 0">Choraklar bo\u2018yicha</h2><svg class="xm-chart" viewBox="0 0 ' + W + ' ' + H + '">' + out + '</svg>';
+  }
+  function render(d){
+    var ov = d.overall || {}, pts = d.points || [], subs = d.subjects || [], sel = '';
+    document.getElementById('examYear').textContent = d.school_year_start ? d.school_year_start + '/' + (d.school_year_start + 1) + " o'quv yili" : '';
+    function draw(){
+      var cur = sel ? pts.filter(function(p){ return p.subject_name === sel; }) : pts;
+      var head = '';
+      if (ov.current_percent !== null && ov.current_percent !== undefined) {
+        head = '<div class="xm-big"><b>' + fmt(ov.current_percent) + '%</b>' + dchip(ov.delta) + '<span class="muted" style="font-size:13px">' + ov.exams_count + ' ta imtihon'
+          + (ov.class_percent !== null && ov.class_percent !== undefined ? ' \u00b7 sinf o\u2018rtachasi ' + fmt(ov.class_percent) + '%' : '') + '</span></div>';
+      }
+      var chips = '<div class="chips" style="margin-top:10px;padding-bottom:2px"><button type="button" class="chip' + (sel ? '' : ' on') + '" data-xs="">Barchasi</button>'
+        + subs.map(function(s){ return '<button type="button" class="chip' + (sel === s.subject_name ? ' on' : '') + '" data-xs="' + esc(s.subject_name) + '">' + esc(s.subject_name) + '</button>'; }).join('') + '</div>';
+      var body = cur.length ? chart(cur) + '<div class="xm-legend"><span><i></i>O\u2018quvchi</span><span><i class="cls"></i>Sinf o\u2018rtachasi</span></div><div class="xm-tip" id="xmTip"></div>'
+        : '<div class="empty" style="margin-top:10px">Natija yo\u2018q</div>';
+      var rows = subs.map(function(s){
+        return '<div class="xm-sub"><span>' + esc(s.subject_name) + '</span><span>' + fmt(s.current_percent) + '% ' + dchip(s.delta) + '</span><div class="bar"><i style="width:' + Math.max(2, Math.min(100, s.current_percent)) + '%"></i></div></div>';
+      }).join('');
+      card.innerHTML = head + chips + body + (subs.length ? '<h2 class="sec" style="margin:18px 0 0">Fanlar bo\u2018yicha</h2>' + rows : '') + quarters(d.quarters || []);
+      var tip = document.getElementById('xmTip');
+      function show(i){
+        var p = cur[i]; if (!p || !tip) return;
+        tip.innerHTML = '<b>' + esc(p.subject_name) + '</b> \u00b7 ' + esc(p.exam_title) + '<br>' + ddmm(p.date) + ' \u2014 <b>' + fmt(p.percent) + '%</b>'
+          + (p.class_percent !== null && p.class_percent !== undefined ? ' (sinf: ' + fmt(p.class_percent) + '%)' : '') + (p.provisional ? ' \u00b7 tekshirilmoqda' : '');
+      }
+      if (cur.length) show(cur.length - 1);
+      card.querySelectorAll('.hit').forEach(function(c){ c.addEventListener('click', function(){ show(+c.dataset.i); }); });
+      card.querySelectorAll('[data-xs]').forEach(function(b){ b.addEventListener('click', function(){ sel = b.dataset.xs; draw(); }); });
+    }
+    draw();
+    box.hidden = false;
+  }
+  function load(){
+    fetch(box.dataset.url, {credentials: 'same-origin'}).then(function(r){ return r.json(); }).then(function(j){ if (j && j.data) render(j.data); }).catch(function(){});
+  }
+  if ('requestIdleCallback' in window) requestIdleCallback(load, {timeout: 1500}); else setTimeout(load, 300);
 })();
 </script>
 {% endblock %}

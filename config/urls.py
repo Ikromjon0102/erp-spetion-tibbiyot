@@ -22,6 +22,7 @@ urlpatterns = [
     path('vazifa/oqildi/', acc.homework_read, name='homework_read'),
     path('', acc.home, name='home'),
     path('oquvchi/<int:pk>/', acc.student_detail, name='student_detail'),
+    path('oquvchi/<int:pk>/imtihon/', acc.student_exam, name='student_exam'),
     path('oquvchi/<int:pk>/chek/<int:pay>/', billing_views.receipt, name='receipt'),
     path('rasm/<int:pk>/', face_photo, name='face_photo'),
     path('taom/<int:pk>/rasm/', views_meals.dish_photo, name='dish_photo'),

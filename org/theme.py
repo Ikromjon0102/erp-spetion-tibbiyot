@@ -36,17 +36,17 @@ def palette(color):
     """{'light': {...}, 'dark': {...}} — CSS o'zgaruvchilari qiymatlari. Noto'g'ri rang bo'lsa standart (yashil) olinadi."""
     h, s, l = _parse(color)
     base = color if is_valid(color) else DEFAULT_COLOR
-    soft = min(s, 0.25)
+    soft = min(s, 0.42)       # fon/chiziqlar tashkilot rangida sezilarli tusli (kun/tun rejimi kabi butun sahifa rangi o'zgaradi)
     light = {
         '--accent': base.upper(),
         '--accent-deep': _hex(h, s, l * 0.78),
         '--on-accent': '#FFFFFF' if _luminance(base) < 0.5 else '#111111',
-        '--tint': _hex(h, min(s, 0.5), 0.95),
-        '--tint-line': _hex(h, min(s, 0.45), 0.76),
-        '--bg': _hex(h, soft, 0.965),
+        '--tint': _hex(h, min(s, 0.55), 0.92),
+        '--tint-line': _hex(h, min(s, 0.45), 0.74),
+        '--bg': _hex(h, soft, 0.93),
         '--card': '#FFFFFF',
-        '--line': _hex(h, soft, 0.91),
-        '--line-strong': _hex(h, soft, 0.80),
+        '--line': _hex(h, soft, 0.86),
+        '--line-strong': _hex(h, soft, 0.74),
         '--ink': _hex(h, 0.25, 0.10),
         '--dim': _hex(h, 0.10, 0.40),
         '--faint': _hex(h, 0.08, 0.68),

@@ -3,6 +3,13 @@
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
 ## 2026-11-22 (exam integratsiyasi)
+
+## Ota-ona ilovasi: fikrlar asosida tuzatishlar (2026-11-22)
+- **Butun sahifa tashkilot rangida:** yuqori panel, pastki menyu faol tugmasi, hero va fon tashkilot rangidan hisoblanadi (oldin hero qattiq yashil edi). Qizil `#E53935` (ochroq), to'q sariq `#F97316` — endi bir-biriga yaqin emas.
+- **Menyu jadvalga ko'chdi:** bosh sahifadagi menyu kartasi olib tashlandi; tushlik/poldnik dars jadvalida o'z soatida chiqadi, bosilsa taomlar rasmi bilan modal oyna. Ovqat soati panelda (Taomnoma sozlamalari) o'zgartiriladi (`MealType.at`, standart 12:30 / 15:30).
+- **Bog'cha:** baho, imtihon, vazifa yo'q; «Dars jadvali» → «Mashg'ulotlar».
+- **Tezlik:** imtihon dinamikasi sahifa bilan birga emas, alohida (`/oquvchi/<id>/imtihon/`) yuklanadi; Google Fonts ekranni to'smaydi; so'rovlar kamaydi. Server javobi ~0.3 s.
+- **Imtihon dinamikasi:** chiziqli grafik (o'quvchi va sinf o'rtachasi, fan bo'yicha filtr, nuqtani bosib tafsilot), fanlar bo'yicha ko'rsatkich va o'zgarish, choraklar ustunli grafigi.
 - **Exam (`exam-spetion`)**: `/api/v1/integration/students` va `/students/{id}/dynamics` (faqat o'qish, `X-Integration-Key` = `ERP_API_KEY`; kalit bo'sh bo'lsa 404; dinamikada sinf reytingi yo'q). Testlar: `test_integration.py`.
 - **ERP `examlink` ilovasi**: `ExamLink` (ERP o'quvchi ↔ exam o'quvchi), `client.py` (5 s timeout, dinamika 10 daqiqa keshlanadi, exam ishlamasa sahifa buzilmaydi), `matching.py` (imlo variantlarini tenglaydi: o'/g', dj→j, x→h, q→k, so'zlar tartibi; ≥0.85, avval sinfi mos juftlar).
 - **Panel «Sozlamalar → Exam bilan bog'lash»** (`org.settings` ruxsati): taklif qilingan juftlar, tasdiqlash, bog'lanishni uzish, juft topilmaganlar ro'yxati.

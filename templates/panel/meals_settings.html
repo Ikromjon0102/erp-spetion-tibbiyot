@@ -16,8 +16,11 @@
 
 <div class="card" style="max-width:640px">
   <b>Ovqat turlari</b>
-  {% for t in types %}<form method="post" style="display:flex;gap:10px;align-items:center;margin:6px 0">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_toggle"><input type="hidden" name="id" value="{{ t.pk }}">
-    <span style="flex:1">{{ t.name }}{% if not t.is_active %} <span class="badge gray">o'chirilgan</span>{% endif %}</span><button class="btn">{% if t.is_active %}O'chirish{% else %}Yoqish{% endif %}</button></form>{% endfor %}
+  {% for t in types %}<div style="display:flex;gap:10px;align-items:center;margin:6px 0;flex-wrap:wrap">
+    <span style="flex:1;min-width:140px">{{ t.name }}{% if not t.is_active %} <span class="badge gray">o'chirilgan</span>{% endif %}</span>
+    <form method="post" style="display:flex;gap:6px;align-items:center;margin:0">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_time"><input type="hidden" name="id" value="{{ t.pk }}">
+      <input type="time" name="at" value="{{ t.start_time|time:'H:i' }}" title="Ota-ona jadvalida ko'rinadigan soat"><button class="btn">Soatni saqlash</button></form>
+    <form method="post" style="margin:0">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_toggle"><input type="hidden" name="id" value="{{ t.pk }}"><button class="btn">{% if t.is_active %}O'chirish{% else %}Yoqish{% endif %}</button></form></div>{% endfor %}
   <form method="post" style="display:flex;gap:8px;margin-top:10px">{% csrf_token %}<input type="hidden" name="org" value="{{ org.pk }}"><input type="hidden" name="action" value="type_add">
     <input type="text" name="name" placeholder="Masalan: Nonushta" maxlength="60" style="flex:1"><button class="btn">Qo'shish</button></form>
 </div>

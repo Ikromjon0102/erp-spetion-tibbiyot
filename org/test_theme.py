@@ -17,7 +17,7 @@ FAST = override_settings(PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5Passw
 class PaletteTests(SimpleTestCase):
     def test_accent_is_the_brand_color_in_light_mode(self):
         self.assertEqual(theme.palette('#166534')['light']['--accent'], '#166534')
-        self.assertEqual(theme.palette('#b91c1c')['light']['--accent'], '#B91C1C')
+        self.assertEqual(theme.palette('#e53935')['light']['--accent'], '#E53935')
 
     def test_invalid_color_falls_back_to_default(self):
         for bad in ('', 'red', '#12', '#GGGGGG', None, 'url(x)'):
@@ -29,14 +29,14 @@ class PaletteTests(SimpleTestCase):
         self.assertIn('#166534', css)      # noto'g'ri rang o'rniga standart olindi
 
     def test_text_is_readable_on_accent(self):
-        for color in ('#166534', '#1E3A8A', '#B91C1C', '#C2410C', '#FACC15'):
+        for color in ('#166534', '#1E3A8A', '#E53935', '#F97316', '#FACC15'):
             for mode in ('light', 'dark'):
                 p = theme.palette(color)[mode]
                 lum = theme._luminance(p['--accent'])
                 self.assertEqual(p['--on-accent'], '#FFFFFF' if lum < 0.5 else '#111111')
 
     def test_each_org_gets_a_different_palette(self):
-        accents = {theme.palette(c)['light']['--accent'] for c in ('#166534', '#1E3A8A', '#B91C1C', '#C2410C')}
+        accents = {theme.palette(c)['light']['--accent'] for c in ('#166534', '#1E3A8A', '#E53935', '#F97316')}
         self.assertEqual(len(accents), 4)
         self.assertNotEqual(theme.palette('#166534')['light']['--bg'], theme.palette('#1E3A8A')['light']['--bg'])
 
@@ -72,16 +72,16 @@ class ThemeViewsTests(TestCase):
     def test_child_page_uses_childs_organization_color(self):
         self.assertIn('--accent:#166534', self.page(self.k_med))
         self.assertIn('--accent:#1E3A8A', self.page(self.k_blue))
-        self.assertIn('--accent:#C2410C', self.page(self.k_kg))
+        self.assertIn('--accent:#F97316', self.page(self.k_kg))
         self.assertIn('<meta name="theme-color" content="#1E3A8A">', self.page(self.k_blue))
 
     def test_other_orgs_color_not_leaked_into_page_css(self):
         body = self.page(self.k_blue)
-        self.assertNotIn('--accent:#C2410C', body)
+        self.assertNotIn('--accent:#F97316', body)
 
     def test_switcher_shows_all_kids_with_org_dot(self):
         body = self.page(self.k_blue)
-        for color in ('#166534', '#1E3A8A', '#C2410C'):
+        for color in ('#166534', '#1E3A8A', '#F97316'):
             self.assertIn(f'background:{color}', body)
         for name in ('Ali', 'Vali', 'Gul'):
             self.assertIn(f'>{name}</a>', body.replace('</i>', ''))

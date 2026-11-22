@@ -6,9 +6,10 @@
 <meta name="theme-color" content="{{ org_theme.accent }}">
 <title>{% block title %}Spetion{% endblock %}</title>
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap');
-
   :root{
     --bg:#F4F8F4; --card:#FFFFFF; --line:#E3EBE4; --line-strong:#C3D2C7;
     --ink:#14201A; --dim:#66786B; --faint:#A9B8AD;
@@ -36,7 +37,11 @@
 
   /* ---------- yuqori panel ---------- */
   .topbar { position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:6px; height:54px; padding:0 12px calc(0px) 14px;
-    padding-top:env(safe-area-inset-top,0); background:var(--card); border-bottom:1px solid var(--line); }
+    padding-top:env(safe-area-inset-top,0); background:var(--accent); color:var(--on-accent); }
+  .topbar .icon-btn { color:var(--on-accent); } .topbar .icon-btn:active { background:rgba(255,255,255,.22); }
+  .topbar .avatar { background:rgba(255,255,255,.24); color:var(--on-accent); }
+  .topbar .belldot { border-color:var(--accent); }
+  .topbar svg.brand-logo path { fill:var(--on-accent); }
   .topbar .logo svg { height:22px; width:auto; display:block; }
   svg.brand-logo path { fill:var(--accent-deep); }  /* logotip mavzuga mos: yorug'da to'q yashil, qorong'ida och yashil */
   .tb-title { flex:1; font-weight:800; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-left:6px; }
@@ -99,7 +104,7 @@
   .tabbar button.on { color:var(--accent-deep); }
   .tabbar button.on .ic { stroke-width:2.4; }
   .tabbar .pill { padding:3px 16px; border-radius:99px; display:grid; place-items:center; }
-  .tabbar button.on .pill { background:var(--tint); }
+  .tabbar button.on .pill { background:var(--accent); color:var(--on-accent); }
 </style>
 <style id="org-theme">{{ org_theme.css }}</style>
 {% include 'ui/_glass.html' %}
@@ -151,6 +156,7 @@
   <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-meal" viewBox="0 0 24 24"><path d="M7 3v8a2 2 0 0 0 2 2v8M11 3v8M7 7h4"/><path d="M17 3c-2 1.5-3 4-3 7 0 1.5 1 2.500 3 3v8"/></symbol>
   <symbol id="i-next" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
 </svg>
 
