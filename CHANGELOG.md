@@ -2,6 +2,9 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Yangi filial avtomatik biriktiriladi (2026-11-23)
+- Founder yangi filial qo'shganda u tashkilotning **hamma filialiga biriktirilgan panel xodimlariga** (markaz direktori, hisobchi...) o'zi qo'shiladi. Bitta filialda ishlaydigan xodim (filial rahbari, reception) va ustozlarga qo'shilmaydi. Tashkilotda oldin bitta filial bo'lsa hech kim avtomatik qo'shilmaydi. Kimlarga qo'shilgani xabarda va jurnalda.
+
 ## Oylik: kiritish, avans va yakuniy hisob (2026-11-23, hisobchi fikri)
 - **Qo'shishda oylik:** «Ustoz qo'shish» va «Xodim qo'shish» formalarida «Oylik ish haqi» bloki — qat'iy oylik (so'm) yoki foiz (o'quvchilar to'lovidan), yoki «keyin kiritiladi». Faqat oylik ruxsati borlarga (founder, hisobchi) chiqadi; direktor ustoz qo'shsa blok o'rnida «oylikni hisobchi kiritadi» yoziladi. Bir nechta filial belgilansa: foiz — hammasiga, qat'iy oylik — birinchi filialga.
 - **Kartada «Oylik» bloki** (ustoz va xodim sahifasi, `payroll.view` bo'lsa): amaldagi oylik, shu oy avansi va yakuniy hisob holati; «Oylikni o'zgartirish» → bitta odamning oylik sahifasi (o'zgartirish «qaysi oydan» bilan, eski oylar o'zgarmaydi; tarix).

@@ -88,12 +88,31 @@ def branch_add(request):
     elif Branch.objects.filter(organization=org, name__iexact=name).exists():
         messages.error(request, f"«{name}» nomli filial bu tashkilotda allaqachon bor")
     else:
+        existing = set(Branch.objects.filter(organization=org, is_active=True).values_list('pk', flat=True))
         br = Branch.objects.create(organization=org, name=name, address=request.POST.get('address', '').strip()[:200],
                                    phone=request.POST.get('phone', '').strip()[:30],
                                    order=(org.branches.order_by('-order').values_list('order', flat=True).first() or 0) + 1)
-        audit.log(request, "Filial qo'shdi", br, label=str(br), target_type='branch')
-        messages.success(request, f"«{name}» filiali qo'shildi. Xodim va ustozlarni unga «Ish filiallari» orqali biriktiring.")
+        got = whole_org_staff(existing)
+        for u in got:
+            u.branches.add(br)
+        audit.log(request, "Filial qo'shdi", br, label=str(br), target_type='branch',
+                  details={'avtomatik biriktirildi': [u.get_full_name() or u.username for u in got]} if got else None)
+        auto = f" Tashkilotning hamma filialini ko'radigan xodimlarga avtomatik qo'shildi: {', '.join(u.get_full_name() or u.username for u in got)}." if got else ''
+        messages.success(request, f"«{name}» filiali qo'shildi.{auto} Boshqa xodim va ustozlarni «Ish filiallari» orqali biriktiring.")
     return _back(org)
+
+
+def whole_org_staff(branch_ids):
+    """Tashkilotning (yangi filialdan oldingi) HAMMA faol filialiga biriktirilgan panel xodimlari — masalan markaz direktori, hisobchi.
+    Yangi filial ularga avtomatik qo'shiladi. Ustozlar qo'shilmaydi (ular aniq filialda dars beradi). Tashkilotda bitta filial bo'lsa
+    hech kim avtomatik qo'shilmaydi — u yerda «hamma filial» bilan «shu filial» farqlanmaydi (masalan maktab ikkinchi binosini ochsa,
+    kim u yerda ishlashini founder o'zi belgilaydi)."""
+    from accounts.models import User
+    from django.db.models import Count
+    if len(branch_ids) < 2:
+        return []
+    return list(User.objects.filter(staff_profile__isnull=False, staff_profile__is_active=True, is_active=True, branches__in=branch_ids)
+                .annotate(n=Count('branches', distinct=True)).filter(n=len(branch_ids)))
 
 
 @panel_required('org.settings')

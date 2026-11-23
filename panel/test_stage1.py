@@ -240,3 +240,28 @@ class FounderOnlyTests(Base):
         body = self.client.get(reverse('panel:staff_detail', args=[clerk.staff_profile.pk])).content.decode()
         self.assertNotIn('Raximov', body)
         self.assertNotIn("Xodim ruxsatlarini o'zgartirdi", body)
+
+
+class NewBranchAutoAssignTests(Base):
+    """Yangi filial tashkilotning HAMMA filialini ko'radigan xodimlarga (markaz direktori, hisobchi) o'zi qo'shiladi."""
+
+    def test_whole_org_staff_get_new_branch(self):
+        director = self.staff('mdir', ['students.view'], self.c1, self.c2)
+        reception = self.staff('rec', ['students.view'], self.c1)                 # bitta filial — qo'shilmaydi
+        accountant = self.staff('acc', ['payroll.view'], self.c1, self.c2, self.b_school)
+        teacher = User.objects.create_user('t1', password='x', role='teacher')
+        teacher.branches.set([self.c1, self.c2])                                  # ustoz — qo'shilmaydi
+        self.client.force_login(self.owner)
+        r = self.client.post(reverse('panel:branch_add'), {'org': self.center.pk, 'name': 'Filial 9'}, follow=True)
+        new = Branch.objects.get(organization=self.center, name='Filial 9')
+        self.assertIn(new, director.branches.all())
+        self.assertIn(new, accountant.branches.all())
+        self.assertNotIn(new, reception.branches.all())
+        self.assertNotIn(new, teacher.branches.all())
+        self.assertContains(r, 'avtomatik qo')
+
+    def test_single_branch_org_assigns_nobody(self):
+        d = self.staff('sdir', ['students.view'], self.b_school)
+        self.client.force_login(self.owner)
+        self.client.post(reverse('panel:branch_add'), {'org': self.school.pk, 'name': 'Ikkinchi bino'})
+        self.assertEqual(list(d.branches.all()), [self.b_school])
