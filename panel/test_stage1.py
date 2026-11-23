@@ -193,11 +193,14 @@ class FounderOnlyTests(Base):
         self.assertNotIn('Raximov', body)
         self.assertEqual(self.client.get(reverse('panel:staff_detail', args=[self.founder.staff_profile.pk])).status_code, 404)
 
-    def test_founder_name_masked_in_audit(self):
+    def test_founder_actions_hidden_in_audit(self):
         self.client.force_login(self.dir)
         body = self.client.get(reverse('panel:audit')).content.decode()
         self.assertNotIn('Raximov', body)
-        self.assertIn('Rahbariyat', body)
+        self.assertNotIn('kimdir', body)                    # founder qilgan ish quyi xodimga umuman ko'rinmaydi
+        self.client.force_login(self.founder)
+        self.assertIn('kimdir', self.client.get(reverse('panel:audit')).content.decode())     # founderning o'ziga ko'rinadi
+        self.client.force_login(self.dir)
         self.assertNotIn('kimdir', self.client.get(reverse('panel:audit'), {'kim': 'Raximov'}).content.decode())
 
     def test_founder_sees_everyone(self):
@@ -227,3 +230,13 @@ class FounderOnlyTests(Base):
         self.assertIn('maydon', r['Location'])          # yangi tashkilot ish maydonida tanlanadi
         page = self.client.get(reverse('panel:org_settings'), {'org': org.pk}).content.decode()
         self.assertIn('Filiallar', page)
+
+    def test_founder_changes_hidden_on_staff_card(self):
+        from panel.models import AuditLog
+        clerk = self.staff('clerk2', ['students.view'], self.c1)
+        AuditLog.objects.create(actor=self.founder, actor_name='Raximov Bahodir', verb="Xodim ruxsatlarini o'zgartirdi",
+                                target_type='staff', target_id=clerk.staff_profile.pk, target_label='clerk2')
+        self.client.force_login(self.dir)
+        body = self.client.get(reverse('panel:staff_detail', args=[clerk.staff_profile.pk])).content.decode()
+        self.assertNotIn('Raximov', body)
+        self.assertNotIn("Xodim ruxsatlarini o'zgartirdi", body)

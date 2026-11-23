@@ -106,6 +106,15 @@ def staff_add(request):
                                                     'picker_error': picker_error})
 
 
+def _recent_changes(viewer, profile):
+    """Xodim kartasidagi oxirgi o'zgarishlar; founder qilgan o'zgarishlar quyi xodimlarga ko'rsatilmaydi."""
+    from org.scope import hidden_actor_ids
+    qs = AuditLog.objects.filter(target_type='staff', target_id=profile.pk)
+    if not is_owner(viewer):
+        qs = qs.exclude(actor_id__in=hidden_actor_ids())
+    return qs[:10]
+
+
 @panel_required('staff.view')
 def staff_detail(request, pk):
     me, granted = request.user, perms_of(request.user)
@@ -150,7 +159,7 @@ def staff_detail(request, pk):
     matrix = _matrix(profile.perms, allowed if allowed is not None else set(ALL_PERMS), locked=profile.is_owner)
     return render(request, 'panel/staff_detail.html', {
         'nav': 'staff', 'p': profile, 'editable': editable, 'is_self': is_self, 'positions': positions, 'matrix': matrix,
-        'recent': AuditLog.objects.filter(target_type='staff', target_id=profile.pk)[:10],
+        'recent': _recent_changes(me, profile),
         'branch_target': profile.user, 'branch_action': reverse('panel:staff_branches', args=[profile.pk]),
         'branch_groups': branch_choices(me, profile.user) if editable else None,
     })
