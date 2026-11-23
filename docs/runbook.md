@@ -103,6 +103,20 @@ Skriptlar `deploy/droplet/` da, serverda `/usr/local/bin/` ga o'rnatilgan (`setu
 **Ilova xatolari (500)** Telegramga: `/var/www/erp/.env` ga `ALERT_CHAT_ID=` (token bo'lmasa `BOT_TOKEN` ishlatiladi), keyin `systemctl restart erp`.
 Chat ID ni bilish: botga yozing va `https://api.telegram.org/bot<TOKEN>/getUpdates` dan `chat.id` ni oling.
 
-**Tashqi nusxa (tavsiya, majburiy emas lekin muhim):** `apt install rclone`, `rclone config` bilan `spetion-offsite` nomli remote yarating (DigitalOcean Spaces, Google Drive yoki boshqa server). Shundan keyin `spetion-backup` har kecha nusxani o'sha yerga ham yuboradi (`LAST_OFFSITE`).
+**Tashqi nusxa — Telegram (2026-11-23 dan yoqilgan):** `spetion-backup` tugagach `spetion-tg-backup` nusxalarni @spetion_robot orqali founder Telegramiga (`ALERT_CHAT_ID`) yuboradi.
+- Har kuni: ERP va exam bazalari; fayllar (rasmlar, cheklar) — yakshanba to'liq, boshqa kunlari oxirgi 2 kunda o'zgarganlari.
+- Fayllar **GPG (AES-256) bilan shifrlangan**: ichida bolalarning shaxsiy ma'lumoti va yuz rasmlari bor. Parol: serverdagi `/root/.spetion-secrets` → `BACKUP_PASSPHRASE`. **Uni server tashqarisida (parol menejerida) saqlang** — server yo'qolsa, parolsiz nusxani ochib bo'lmaydi. Parolni Telegramning o'sha chatiga yozmang.
+- 50 MB dan katta fayl 45 MB lik qismlarga bo'linadi (`.part01`, `.part02` ...).
+- Qidirish: Telegramda `#zaxira`, `#erp`, `#exam`, `#fayllar`, sana `#d2026_11_23`.
+- Healthcheck: Telegram nusxasi 26 soatdan eski bo'lsa ogohlantiradi.
+- Muqobil: rclone'da `spetion-offsite` remote sozlansa, u yerga ham ko'chiriladi.
+
+**Telegram nusxasidan tiklash:**
+```bash
+cat erp-2026-11-23.dump.gpg.part* > erp.dump.gpg        # qismlarga bo'lingan bo'lsa (aks holda bu qadam kerak emas)
+gpg -d erp.dump.gpg > erp.dump                           # parol so'raladi (BACKUP_PASSPHRASE)
+sudo -u postgres pg_restore -d erp --clean --no-owner erp.dump
+gpg -d files-2026-11-23.tgz.gpg | tar -xz -C /var/www    # fayllar: avval oxirgi to'liq, keyin undan keyingi «o'zgarganlar»
+```
 
 **Qo'lda tiklash:** `sudo -u postgres pg_restore -d erp --clean --no-owner /var/backups/spetion/erp-YYYY-MM-DD.dump`; fayllar: `tar -xzf files-YYYY-MM-DD.tgz -C /var/www`.

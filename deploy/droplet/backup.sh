@@ -12,7 +12,9 @@ tar -czf "$D/files-$T.tgz" -C /var/www erp/app/media exam/storage
 for f in "$D/erp-$T.dump" "$D/exam-$T.dump"; do [ -s "$f" ] && pg_restore -l "$f" >/dev/null; done
 find "$D" -type f -name '*-*.dump' -mtime +14 -delete
 find "$D" -type f -name 'files-*.tgz' -mtime +14 -delete
+date -Is > "$D/LAST_OK"
+# tashqi nusxa: Telegram (shifrlangan) va/yoki rclone remote "spetion-offsite"
+[ -x /usr/local/bin/spetion-tg-backup ] && /usr/local/bin/spetion-tg-backup
 if command -v rclone >/dev/null && rclone listremotes 2>/dev/null | grep -q '^spetion-offsite:'; then
   rclone copy "$D" spetion-offsite:spetion-backups --include "*-$T.*" && echo "offsite $(date -Is)" > "$D/LAST_OFFSITE"
 fi
-date -Is > "$D/LAST_OK"

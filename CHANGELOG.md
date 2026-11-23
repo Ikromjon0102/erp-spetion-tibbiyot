@@ -2,6 +2,11 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Tashqi zaxira: Telegram (2026-11-23)
+- `spetion-tg-backup`: har kecha zaxira @spetion_robot orqali founder Telegramiga yuboriladi — ERP va exam bazalari har kuni, fayllar yakshanba to'liq / boshqa kunlari o'zgarganlari. GPG (AES-256) bilan shifrlangan, 45 MB lik qismlarga bo'linadi, hashtaglar bilan (`#zaxira #erp #d2026_11_23`). Shifrlash → bo'lish → birlashtirish → ochish → `pg_restore` sinovi o'tdi.
+- Server ogohlantirishlari va 500 xatolar ham shu chatga keladi (droplet `.env` da `ALERT_BOT_TOKEN`, `ALERT_CHAT_ID`; asosiy `BOT_TOKEN` droplet'ga qo'yilmadi — med.spetion.uz bot webhook'iga tegmaslik uchun).
+- Healthcheck: Telegram nusxasi 26 soatdan eski bo'lsa ogohlantiradi.
+
 ## Ishonchlilik va ko'p tashkilot kamchiliklari (2026-11-23)
 - **Zaxira nusxa tuzatildi:** fayllar arxivi noto'g'ri papkani (`/var/www/erp/media`, bo'sh) olardi — taom/yuz rasmlari va cheklar zaxiraga tushmasdi. Endi `/var/www/erp/app/media` (+ exam storage). Har nusxa `pg_restore -l` bilan tekshiriladi; vaqt 02:30 Toshkent (21:30 UTC; avval 07:30 Toshkent — dars vaqtida edi). rclone'da `spetion-offsite` sozlansa, tashqariga ham nusxa ko'chiriladi.
 - **Haftalik tiklash sinovi** (`spetion-restore-test`, yakshanba): oxirgi ERP nusxasi vaqtinchalik bazaga tiklanadi, o'quvchi/foydalanuvchi/to'lov sanaladi, natija `RESTORE_TEST` ga. Birinchi sinov: OK (24 o'quvchi, 35 foydalanuvchi, 57 to'lov).

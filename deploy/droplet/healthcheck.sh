@@ -14,6 +14,10 @@ disk=$(df --output=pcent / | tail -1 | tr -dc '0-9'); [ "$disk" -lt 85 ] || prob
 avail=$(free -m | awk '/^Mem:/{print $7}'); [ "$avail" -gt 80 ] || problems+=("Xotira kam: ${avail} MB bo'sh")
 last=/var/backups/spetion/LAST_OK
 if [ ! -f "$last" ] || [ $(( $(date +%s) - $(stat -c %Y "$last") )) -gt $((26*3600)) ]; then problems+=("Zaxira nusxa 26 soatdan beri yozilmagan"); fi
+off=/var/backups/spetion/LAST_OFFSITE
+if [ -n "${ALERT_BOT_TOKEN:-}" ] && { [ ! -f "$off" ] || [ $(( $(date +%s) - $(stat -c %Y "$off") )) -gt $((26*3600)) ]; }; then
+  problems+=("Tashqi (Telegram) zaxira 26 soatdan beri yuborilmagan")
+fi
 rt=/var/backups/spetion/RESTORE_TEST
 [ -f "$rt" ] && grep -q '^FAIL' "$rt" && problems+=("Tiklash sinovi xato: $(cut -c1-120 "$rt")")
 

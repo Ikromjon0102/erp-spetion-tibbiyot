@@ -96,6 +96,7 @@ systemctl daemon-reload
 install -m 755 "$HERE/backup.sh" /usr/local/bin/spetion-backup
 install -m 755 "$HERE/restore_test.sh" /usr/local/bin/spetion-restore-test
 install -m 755 "$HERE/healthcheck.sh" /usr/local/bin/spetion-healthcheck
+install -m 755 "$HERE/tg_backup.sh" /usr/local/bin/spetion-tg-backup
 [ -f /root/.spetion-alert ] || { printf 'ALERT_BOT_TOKEN=
 ALERT_CHAT_ID=
 ERP_HOST=%s
