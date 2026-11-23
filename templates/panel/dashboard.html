@@ -35,6 +35,21 @@
   {% endif %}
 </div>
 
+{% if units %}
+<div class="card" style="margin-bottom:18px">
+  <h2>{% if units.level == 'branch' %}Filiallar bo'yicha{% else %}Tashkilotlar bo'yicha{% endif %} <small>bugun va shu oy · qatorni bosib tanlang</small></h2>
+  <div class="tbl-wrap"><table class="tbl units-tbl">
+    <thead><tr><th>{% if units.level == 'branch' %}Filial{% else %}Tashkilot{% endif %}</th><th class="n">O'quvchi</th>{% if units.monitoring %}<th class="n">Bugun kelgan</th>{% endif %}{% if units.income %}<th class="n">Tushum (oy)</th>{% endif %}{% if units.expense %}<th class="n">Xarajat (oy)</th>{% endif %}</tr></thead>
+    <tbody>{% for u in units.rows %}<tr>
+      <td><a href="{% url 'panel:set_scope' %}?s={{ u.scope }}&next=/panel/%3Fkunlik%3D1"><i class="wdot" style="background:{{ u.color }};margin-right:7px"></i><b>{{ u.name }}</b></a></td>
+      <td class="n">{{ u.students|money }}</td>{% if units.monitoring %}<td class="n">{{ u.arrived|default:0|money }}</td>{% endif %}
+      {% if units.income %}<td class="n">{{ u.income|mny }}</td>{% endif %}{% if units.expense %}<td class="n">{{ u.expense|mny }}</td>{% endif %}
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<style>.units-tbl td.n, .units-tbl th.n { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }</style>
+{% endif %}
+
 <div class="grid g2">
   {% if missing is not None %}
   <div class="card">

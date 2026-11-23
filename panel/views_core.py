@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.core.paginator import Paginator
-from django.db.models import F, Sum
+from django.db.models import Count, F, Sum
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -41,6 +41,31 @@ def missing_attendance(today, now, user=None):
     return [l for l in lessons if l.id not in taken]
 
 
+def _units_summary(request, granted, today):
+    """Bir nechta filial (yoki tashkilot) bilan ishlaydigan xodim uchun bosh sahifadagi jadval: har filial alohida —
+    o'quvchilar, bugun kelganlar, shu oy tushumi va (ruxsat bo'lsa) xarajati. Qator bosilsa o'sha filial tanlanadi."""
+    from .hubs import counts, hub_level
+    level = hub_level(getattr(request, 'scope', None))
+    if level is None:
+        return None
+    lv = level[0]
+    units = ([{'pk': o['org'].pk, 'name': o['org'].label, 'color': o['org'].brand_color, 'scope': f"org-{o['org'].pk}"} for o in level[1]]
+             if lv == 'org' else
+             [{'pk': b.pk, 'name': b.name, 'color': level[1]['org'].brand_color, 'scope': f'branch-{b.pk}'} for b in level[1]['branches']])
+    students = counts('students', request.user, lv)
+    arrived = {}
+    if 'monitoring.view' in granted:
+        key = 'student__branch' + ('__organization' if lv == 'org' else '')
+        events = scope_via_student(AccessEvent.objects.filter(direction='in', occurred_at__date=today, student__isnull=False), request.user)
+        arrived = {r[key]: r['n'] for r in events.values(key).annotate(n=Count('student', distinct=True)).order_by()}
+    income = counts('finance', request.user, lv) if 'payments.view' in granted else None
+    expense = counts('expenses', request.user, lv) if 'expenses.view' in granted else None
+    for u in units:
+        u.update(students=students.get(u['pk'], 0), arrived=arrived.get(u['pk']) if arrived or 'monitoring.view' in granted else None,
+                 income=income.get(u['pk'], 0) if income is not None else None, expense=expense.get(u['pk'], 0) if expense is not None else None)
+    return {'level': lv, 'rows': units, 'monitoring': 'monitoring.view' in granted, 'income': income is not None, 'expense': expense is not None}
+
+
 @panel_required()
 def dashboard(request):
     from .access import is_owner
@@ -65,6 +90,7 @@ def dashboard(request):
     if 'payments.view' in granted:
         from .views_finance import totals
         ctx.update(totals(request.user))
+    ctx['units'] = _units_summary(request, granted, today)
     if 'announcements.view' in granted:
         latest = scope_announcements(Announcement.objects.exclude(title__startswith='[Sinov]'), request.user).order_by('-created_at').first()
         if latest:

@@ -24,7 +24,11 @@ class Scope:
     def label(self):
         if self.kind == 'branch':
             return f'{self.org.label} · {self.branch.name}'
-        return self.org.label if self.kind == 'org' else 'Hammasi'
+        if self.kind == 'org':
+            return self.org.label
+        if len(self.tree) == 1:            # bitta tashkilot, bir nechta filial (masalan markaz direktori)
+            return f"{self.tree[0]['org'].label} · barcha filiallar"
+        return 'Hammasi'
 
     @property
     def selectable(self):

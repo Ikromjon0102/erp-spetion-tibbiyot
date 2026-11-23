@@ -2,6 +2,13 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Filial darajasidagi ko'rinish (2026-11-23)
+- **Filial kartalari:** ish maydoni bitta tashkilotni, lekin bir nechta filialni qamrasa (markaz direktori 3–5 filial bilan, yoki founder «Markaz»ni tanlaganda), har bo'lim avval **filial kartalarini** ko'rsatadi: o'quvchilar, ustozlar, xodimlar, ota-onalar, sinflar, dars jadvali, terminallar, to'lovlar (shu oy tushumi), xarajatlar va oyliklar (ruxsat bo'lsa), e'lonlar. Karta bosilsa o'sha filial tanlanadi. Bir nechta tashkilot bo'lsa — avvalgidek tashkilot kartalari (`panel/hubs.py`: `hub_level`, `counts`). Ikki filialda ishlaydigan odam «jami»da bir marta sanaladi.
+- **Bosh sahifada «Filiallar bo'yicha» jadvali** (bir nechta filial/tashkilot bilan ishlaydigan xodimlar uchun): o'quvchilar, bugun kelganlar, shu oy tushumi va (ruxsat bo'lsa) xarajati; qator bosilsa filial tanlanadi.
+- Ish maydoni nomi: bitta tashkilotli xodimda «Markaz · barcha filiallar».
+- Sinov ma'lumoti: `seed_mock_center` — markazga «Filial 2 (Chilonzor)», «Filial 3 (Yunusobod)» (guruh, o'quvchi, to'lov, ustoz, terminal, xarajat) va «Markaz direktori» (+998 90 111-00-07).
+- Lavozimlar (Direktor, Hisobchi...) — umumiy andoza (ruxsatlar to'plami); qaysi tashkilot/filialni ko'rishi xodimning ish filiallari bilan belgilanadi.
+
 ## Xodim va ustoz qo'shish: filial va parol (2026-11-23)
 - **Xato:** Tibbiyot uchun qo'shilgan direktor Bog'chaga ham tushib qolgan edi. Sabab: yangi xodim yaratuvchining joriy «Ish maydoni»ga (o'sha payt Bog'cha) biriktirilardi, ustiga avtomatik «asosiy filial» (Tibbiyot) qo'shilardi; formada filial tanlovi yo'q edi.
 - **Tuzatildi:** «Xodim qo'shish» va «Ustoz qo'shish» formalarida majburiy **«Ish filiallari»** (tashkilotlar bo'yicha katakchalar). Joriy ish maydoni oldindan belgilanadi, lekin ko'rinib turadi; tahrirlovchining bitta filiali bo'lsa — o'zi tanlanadi. Yangi odam faqat belgilangan filiallarga tushadi (avtomatik filial qo'shilmaydi). Yangi odam joriy ish maydonida ko'rinmasa, ish maydoni uning tashkilotiga o'tadi (aks holda saqlangach sahifa «topilmadi» bo'lardi).

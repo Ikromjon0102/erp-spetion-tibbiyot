@@ -133,3 +133,48 @@ class SectionHubTests(WorkspaceFixture, TestCase):
             r = self.client.get(reverse(f'panel:{name}'))
             self.assertEqual(r.status_code, 200, name)
             self.assertNotIn('hub-card', r.content.decode(), name)
+
+
+class BranchLevelHubTests(WorkspaceFixture, TestCase):
+    """Bitta tashkilot, bir nechta filial (markaz direktori yoki founder «Markaz»ni tanlaganda) — filial kartalari."""
+
+    def center_director(self):
+        pos = Position.objects.create(name='Markaz direktori X')
+        u = User.objects.create_user('mdir', password='x', role='staff')
+        StaffProfile.objects.create(user=u, position=pos, perms=['students.view', 'teachers.view', 'devices.view', 'payments.view', 'monitoring.view'])
+        u.branches.set([self.c1, self.c2])
+        return u
+
+    def test_center_director_sees_branch_cards(self):
+        self.client.force_login(self.center_director())
+        body = self.students_page()
+        self.assertIn('hub-card', body)
+        self.assertIn('Filial 1', body)
+        self.assertIn('Filial 2', body)
+        self.assertIn('filiali', body)
+        self.assertNotIn('Soliyev', body)                    # ro'yxat emas, kartalar
+        for name in ('teachers', 'devices', 'finance'):
+            self.assertIn('hub-card', self.client.get(reverse(f'panel:{name}')).content.decode(), name)
+
+    def test_branch_card_opens_branch_list(self):
+        self.client.force_login(self.center_director())
+        self.pick(f'branch-{self.c2.pk}')
+        body = self.students_page()
+        self.assertIn('Karimov', body)
+        self.assertNotIn('Soliyev', body)
+
+    def test_owner_choosing_center_gets_branch_cards(self):
+        self.pick(f'org-{self.center.pk}')
+        body = self.students_page()
+        self.assertIn('hub-card', body)
+        self.assertIn('branch-', body)
+
+    def test_dashboard_has_per_branch_table(self):
+        self.client.force_login(self.center_director())
+        body = self.client.get(reverse('panel:dashboard')).content.decode()
+        self.assertIn("Filiallar bo'yicha", body)
+        self.assertIn('units-tbl', body)
+
+    def test_single_branch_org_has_no_hub(self):
+        self.pick(f'org-{self.school.pk}')
+        self.assertNotIn('hub-card', self.students_page())
