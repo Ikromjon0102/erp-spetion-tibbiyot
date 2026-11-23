@@ -101,15 +101,21 @@ def dashboard(request):
 
 @panel_required('audit.view')
 def audit_list(request):
+    from org.scope import hidden_actor_ids
+    from .access import is_owner
     qs = scope_audit(AuditLog.objects.all(), request.user)
     who, verb = request.GET.get('kim', '').strip(), request.GET.get('amal', '').strip()
+    hidden = set() if is_owner(request.user) else hidden_actor_ids()     # founder ismi boshqa xodimlarga ko'rinmaydi
     if who:
-        qs = qs.filter(actor_name__icontains=who)
+        qs = qs.filter(actor_name__icontains=who).exclude(actor_id__in=hidden)
     if verb:
         qs = qs.filter(verb__icontains=verb)
     page = Paginator(qs, 40).get_page(request.GET.get('page'))
     for entry in page:
         entry.lines = audit_helpers.lines(entry.details)
+        if entry.actor_id in hidden:
+            entry.actor_name = 'Rahbariyat'
+
     params = request.GET.copy()
     params.pop('page', None)
     return render(request, 'panel/audit.html', {'nav': 'audit', 'page': page, 'who': who, 'verb': verb, 'qs': params.urlencode()})

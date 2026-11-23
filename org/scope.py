@@ -3,6 +3,8 @@
 Qoida: «maktab egasi» va superuser hamma filialni ko'radi; boshqa xodim va ustoz faqat `user.branches` dagi filiallarni.
 Ota-ona va o'quvchi bu yerdagi qoidalarga bo'ysunmaydi: ular faqat o'z farzandi/o'z ma'lumotini ko'radi.
 """
+from django.db import models
+
 from .models import Branch, Organization
 
 
@@ -84,9 +86,19 @@ def can_access_branch(user, branch_id):
 
 
 def scope_staff(qs, user):
-    """Panel xodimlari (StaffProfile): kamida bitta umumiy filiali bor xodimlar."""
+    """Panel xodimlari (StaffProfile): kamida bitta umumiy filiali bor xodimlar.
+    Founder («maktab egasi») va texnik admin boshqa xodimlarga ko'rinmaydi — faqat to'liq ruxsatlilar bir-birini ko'radi."""
+    from panel.access import is_owner
+    if not is_owner(user):
+        qs = qs.exclude(position__is_owner=True).exclude(user__is_superuser=True)
     ids = branch_ids(user)
     return qs if ids is None else qs.filter(user__branches__in=ids).distinct()
+
+
+def hidden_actor_ids():
+    """Founder va texnik adminlar (jurnalda boshqalarga ismi ko'rsatilmaydi)."""
+    from accounts.models import User
+    return set(User.objects.filter(models.Q(is_superuser=True) | models.Q(staff_profile__position__is_owner=True)).values_list('pk', flat=True))
 
 
 def scope_audit(qs, user):

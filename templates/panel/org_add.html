@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block title %}Yangi tashkilot{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:org_settings' %}" style="font-weight:600">Tashkilot va brend</a> <span class="muted">/</span> Yangi tashkilot{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:620px">{% csrf_token %}
+  {% include 'panel/_field.html' with f=form.name %}
+  {% include 'panel/_field.html' with f=form.short_name %}
+  {% include 'panel/_field.html' with f=form.kind %}
+  {% include 'panel/_field.html' with f=form.brand_color %}
+  {% include 'panel/_field.html' with f=form.meals_enabled %}
+  {% include 'panel/_field.html' with f=form.first_branch %}
+  <p class="hint">Saqlangach: tashkilot ish maydonida tanlanadi — keyin oylik narx (To'lovlar → Sozlamalar), filiallar va xodimlarni belgilaysiz.
+  Ota-ona ilovasi va panel shu tashkilot uchun tanlangan rangda bo'ladi.</p>
+  <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Tashkilot qo'shish</button>
+  <a class="btn" href="{% url 'panel:org_settings' %}">Bekor qilish</a>
+</form>
+{% endblock %}

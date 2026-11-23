@@ -53,7 +53,8 @@ def _perm_diff(old, new):
 def staff_list(request):
     profiles = list(scope_staff(StaffProfile.objects.select_related('user', 'position'), request.user).order_by('position__order', 'user__last_name'))
     profile_user_ids = {p.user_id for p in profiles}
-    technical = [u for u in User.objects.filter(is_superuser=True, is_active=True) if u.pk not in profile_user_ids]
+    technical = ([u for u in User.objects.filter(is_superuser=True, is_active=True) if u.pk not in profile_user_ids]
+                 if is_owner(request.user) else [])          # texnik admin faqat founderga ko'rinadi
     return render(request, 'panel/staff.html', {'nav': 'staff', 'profiles': profiles, 'technical': technical,
                                                 'can_manage': 'staff.manage' in perms_of(request.user)})
 

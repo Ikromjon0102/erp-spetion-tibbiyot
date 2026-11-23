@@ -171,3 +171,59 @@ class CreateWithBranchesTests(Base):
         t = User.objects.get(phone_digits='998901112255')
         self.assertEqual(set(t.branches.all()), {self.b_med, self.c1})
         self.assertTrue(t.check_password('2255'))
+
+
+class FounderOnlyTests(Base):
+    """Founder boshqalarga ko'rinmaydi; tashkilot va filial qo'shishni faqat founder qiladi (2026-11-23)."""
+
+    def setUp(self):
+        super().setUp()
+        from panel.models import AuditLog
+        self.founder_pos = Position.objects.create(name='Maktab egasi X', is_owner=True)
+        self.founder = User.objects.create_user('founder', password='x', role='staff', first_name='Bahodir', last_name='Raximov')
+        StaffProfile.objects.create(user=self.founder, position=self.founder_pos, perms=[])
+        self.founder.branches.set([self.b_school, self.c1, self.c2])
+        self.dir = self.staff('cdir', ['staff.view', 'staff.manage', 'audit.view', 'org.settings'], self.c1, self.c2)
+        AuditLog.objects.create(actor=self.founder, actor_name='Raximov Bahodir', verb="Xodim qo'shdi", target_label='kimdir')
+
+    def test_founder_hidden_from_other_staff(self):
+        self.client.force_login(self.dir)
+        self.client.get(reverse('panel:set_scope'), {'s': f'branch-{self.c1.pk}', 'next': '/panel/'})
+        body = self.client.get(reverse('panel:staff')).content.decode()
+        self.assertNotIn('Raximov', body)
+        self.assertEqual(self.client.get(reverse('panel:staff_detail', args=[self.founder.staff_profile.pk])).status_code, 404)
+
+    def test_founder_name_masked_in_audit(self):
+        self.client.force_login(self.dir)
+        body = self.client.get(reverse('panel:audit')).content.decode()
+        self.assertNotIn('Raximov', body)
+        self.assertIn('Rahbariyat', body)
+        self.assertNotIn('kimdir', self.client.get(reverse('panel:audit'), {'kim': 'Raximov'}).content.decode())
+
+    def test_founder_sees_everyone(self):
+        self.client.force_login(self.founder)
+        self.client.get(reverse('panel:set_scope'), {'s': f'branch-{self.c1.pk}', 'next': '/panel/'})
+        self.assertIn('Raximov', self.client.get(reverse('panel:staff')).content.decode())
+
+    def test_only_founder_adds_branch(self):
+        self.client.force_login(self.dir)
+        r = self.client.post(reverse('panel:branch_add'), {'org': self.center.pk, 'name': 'Filial 9'})
+        self.assertEqual(r.status_code, 403)
+        self.assertFalse(Branch.objects.filter(name='Filial 9').exists())
+        self.client.force_login(self.founder)
+        self.client.post(reverse('panel:branch_add'), {'org': self.center.pk, 'name': 'Filial 9'})
+        self.assertTrue(Branch.objects.filter(organization=self.center, name='Filial 9').exists())
+        self.client.post(reverse('panel:branch_add'), {'org': self.center.pk, 'name': 'filial 9'})      # takror — yo'q
+        self.assertEqual(Branch.objects.filter(organization=self.center, name__iexact='Filial 9').count(), 1)
+
+    def test_only_founder_adds_organization(self):
+        data = {'name': 'Yangi litsey', 'short_name': 'Litsey', 'kind': 'school', 'brand_color': '#7C3AED', 'first_branch': 'Asosiy'}
+        self.client.force_login(self.dir)
+        self.assertEqual(self.client.post(reverse('panel:org_add'), data).status_code, 403)
+        self.client.force_login(self.founder)
+        r = self.client.post(reverse('panel:org_add'), data)
+        org = Organization.objects.get(name='Yangi litsey')
+        self.assertEqual(list(org.branches.values_list('name', flat=True)), ['Asosiy'])
+        self.assertIn('maydon', r['Location'])          # yangi tashkilot ish maydonida tanlanadi
+        page = self.client.get(reverse('panel:org_settings'), {'org': org.pk}).content.decode()
+        self.assertIn('Filiallar', page)

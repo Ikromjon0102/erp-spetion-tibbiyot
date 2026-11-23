@@ -1,6 +1,7 @@
 {% extends 'panel/base.html' %}
 {% block title %}Tashkilot va brend{% endblock %}
 {% block heading %}Tashkilot va brend{% endblock %}
+{% block actions %}{% if owner %}<a class="btn primary" href="{% url 'panel:org_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi tashkilot</a>{% endif %}{% endblock %}
 {% block content %}
 {% if orgs|length > 1 %}
 <form method="get" class="card" style="max-width:620px;margin-bottom:12px">
@@ -23,4 +24,31 @@
   </div>
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
 </form>
+
+{% if owner %}
+<div class="card" style="max-width:620px">
+  <h2>Filiallar <small>{{ org.label }} · {{ branches|length }} ta</small></h2>
+  {% for b in branches %}
+  <form method="post" action="{% url 'panel:branch_edit' b.pk %}" class="br-row">{% csrf_token %}
+    <input type="text" name="name" value="{{ b.name }}" maxlength="100" aria-label="Filial nomi" required>
+    <input type="text" name="address" value="{{ b.address }}" maxlength="200" placeholder="Manzil" aria-label="Manzil">
+    <input type="text" name="phone" value="{{ b.phone }}" maxlength="30" placeholder="Telefon" aria-label="Telefon">
+    <button class="btn">Saqlash</button>
+  </form>
+  {% endfor %}
+  <form method="post" action="{% url 'panel:branch_add' %}" class="br-row new">{% csrf_token %}
+    <input type="hidden" name="org" value="{{ org.pk }}">
+    <input type="text" name="name" maxlength="100" placeholder="Yangi filial nomi, masalan «Filial 4 (Sergeli)»" aria-label="Yangi filial nomi" required>
+    <input type="text" name="address" maxlength="200" placeholder="Manzil" aria-label="Manzil">
+    <input type="text" name="phone" maxlength="30" placeholder="Telefon" aria-label="Telefon">
+    <button class="btn primary"><svg class="ic"><use href="#p-plus"/></svg>Qo'shish</button>
+  </form>
+  <p class="hint">Filial va tashkilotni faqat maktab egasi qo'shadi. Yangi filialga xodim va ustozlar ularning kartasidagi «Ish filiallari» orqali biriktiriladi.</p>
+</div>
+<style>
+  .br-row { display:grid; grid-template-columns:1.3fr 1.3fr 1fr auto; gap:8px; margin:0 0 8px; }
+  .br-row.new { padding-top:10px; border-top:1px solid var(--line); margin-top:6px; }
+  @media (max-width:700px){ .br-row { grid-template-columns:1fr; } }
+</style>
+{% endif %}
 {% endblock %}

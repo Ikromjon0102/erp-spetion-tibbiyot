@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Founder ko'rinmaydi; tashkilot va filial qo'shish — faqat founder (2026-11-23)
+- **Founder hech kimga ko'rinmaydi:** «maktab egasi» va texnik admin boshqa xodimlarning «Xodimlar» ro'yxatida, sonida va kartasida yo'q (kartasi 404); «Faoliyat jurnali»da ularning ismi o'rniga «Rahbariyat», ism bo'yicha qidiruvda chiqmaydi. Founderlar bir-birini ko'radi.
+- **Filial qo'shish** («Tashkilot va brend» → «Filiallar»): nomi, manzili, telefoni; mavjud filialni qayta nomlash. Tashkilot ichida nom takrorlanmaydi.
+- **Yangi tashkilot qo'shish** («Yangi tashkilot»): nomi, qisqa nomi, turi (maktab / bog'cha / o'quv markaz), rangi, taomnoma, birinchi filial. Saqlangach ish maydonida tanlanadi.
+- Ikkalasi **faqat founder** uchun (markaz direktori yoki «Tashkilot sozlamasi» ruxsati bor xodim ham qila olmaydi — 403). Jurnalga yoziladi.
+
 ## Filial darajasidagi ko'rinish (2026-11-23)
 - **Filial kartalari:** ish maydoni bitta tashkilotni, lekin bir nechta filialni qamrasa (markaz direktori 3–5 filial bilan, yoki founder «Markaz»ni tanlaganda), har bo'lim avval **filial kartalarini** ko'rsatadi: o'quvchilar, ustozlar, xodimlar, ota-onalar, sinflar, dars jadvali, terminallar, to'lovlar (shu oy tushumi), xarajatlar va oyliklar (ruxsat bo'lsa), e'lonlar. Karta bosilsa o'sha filial tanlanadi. Bir nechta tashkilot bo'lsa — avvalgidek tashkilot kartalari (`panel/hubs.py`: `hub_level`, `counts`). Ikki filialda ishlaydigan odam «jami»da bir marta sanaladi.
 - **Bosh sahifada «Filiallar bo'yicha» jadvali** (bir nechta filial/tashkilot bilan ishlaydigan xodimlar uchun): o'quvchilar, bugun kelganlar, shu oy tushumi va (ruxsat bo'lsa) xarajati; qator bosilsa filial tanlanadi.
