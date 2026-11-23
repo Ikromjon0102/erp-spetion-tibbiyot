@@ -348,7 +348,7 @@
   <div class="dd" id="settingsDd">
     <a href="#" class="item ddtrig {% if nav == 'devices' or nav == 'staff' or nav == 'positions' or nav == 'audit' %}on{% endif %}" id="settingsBtn" aria-haspopup="true" aria-expanded="false"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar<svg class="ic caret"><use href="#p-chev"/></svg></a>
     <div class="fly" role="menu">
-      {% if 'org.settings' in panel_can %}<a class="sub {% if nav == 'org' %}on{% endif %}" href="{% url 'panel:org_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Tashkilot va brend</a>{% endif %}
+      {% if panel_owner %}<a class="sub {% if nav == 'org' %}on{% endif %}" href="{% url 'panel:org_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Tashkilot va brend</a>{% endif %}
       {% if 'org.settings' in panel_can %}<a class="sub {% if nav == 'examlink' %}on{% endif %}" href="{% url 'panel:examlink' %}"><svg class="ic"><use href="#p-book"/></svg>Exam bilan bog'lash</a>{% endif %}
       {% if 'devices.view' in panel_can %}<a class="sub {% if nav == 'devices' %}on{% endif %}" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
       {% if 'staff.view' in panel_can %}<a class="sub {% if nav == 'staff' %}on{% endif %}" href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>

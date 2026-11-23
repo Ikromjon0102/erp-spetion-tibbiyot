@@ -7,6 +7,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - **Filial qo'shish** («Tashkilot va brend» → «Filiallar»): nomi, manzili, telefoni; mavjud filialni qayta nomlash. Tashkilot ichida nom takrorlanmaydi.
 - **Yangi tashkilot qo'shish** («Yangi tashkilot»): nomi, qisqa nomi, turi (maktab / bog'cha / o'quv markaz), rangi, taomnoma, birinchi filial. Saqlangach ish maydonida tanlanadi.
 - Ikkalasi **faqat founder** uchun (markaz direktori yoki «Tashkilot sozlamasi» ruxsati bor xodim ham qila olmaydi — 403). Jurnalga yoziladi.
+- **«Tashkilot va brend» sahifasi butunlay faqat founderda** (nomi, rangi, modullar, filiallar): boshqa xodimlarning menyusidan olib tashlandi, sahifa ularga 403. `org.settings` ruxsati endi faqat «Exam bilan bog'lash» uchun.
 
 ## Filial darajasidagi ko'rinish (2026-11-23)
 - **Filial kartalari:** ish maydoni bitta tashkilotni, lekin bir nechta filialni qamrasa (markaz direktori 3–5 filial bilan, yoki founder «Markaz»ni tanlaganda), har bo'lim avval **filial kartalarini** ko'rsatadi: o'quvchilar, ustozlar, xodimlar, ota-onalar, sinflar, dars jadvali, terminallar, to'lovlar (shu oy tushumi), xarajatlar va oyliklar (ruxsat bo'lsa), e'lonlar. Karta bosilsa o'sha filial tanlanadi. Bir nechta tashkilot bo'lsa — avvalgidek tashkilot kartalari (`panel/hubs.py`: `hub_level`, `counts`). Ikki filialda ishlaydigan odam «jami»da bir marta sanaladi.

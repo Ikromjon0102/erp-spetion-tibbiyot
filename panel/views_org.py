@@ -118,7 +118,8 @@ def branch_edit(request, pk):
 
 @panel_required('org.settings')
 def org_settings(request):
-    """Tashkilot nomi va brend rangi. Faqat o'z tashkilotini o'zgartira oladi; modullarni yoqish — faqat egasi."""
+    """Tashkilot nomi, brend rangi, modullar, filiallar — FAQAT founder (2026-11-23: bu o'zgarib turadigan narsa emas)."""
+    _owner_only(request)
     org = current_org(request)
     owner = is_owner(request.user)
     form = OrgForm(request.POST or None, instance=org, owner=owner)

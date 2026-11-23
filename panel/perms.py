@@ -69,7 +69,7 @@ CATALOG = [
         ('manage', "Menyu, taomlar rasmi va ovqatsiz kunlarni boshqarish"),
     ]),
     ('org', "Tashkilot", [
-        ('settings', "Tashkilot nomi va brend rangini o'zgartirish"),
+        ('settings', "Exam platformasi bilan bog'lash (tashkilot va brend sozlamasi — faqat maktab egasida)"),
     ]),
     ('audit', "Faoliyat jurnali", [
         ('view', "Ko'rish"),

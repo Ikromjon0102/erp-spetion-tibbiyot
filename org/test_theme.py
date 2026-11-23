@@ -119,12 +119,14 @@ class OrgSettingsPanelTests(TestCase):
         self.client.force_login(user)
         return self.client.post(reverse('panel:org_settings'), {'org': org.pk, 'name': org.name, **data})
 
-    def test_branch_admin_changes_own_org_color(self):
+    def test_only_owner_can_open_org_settings(self):
         org = self.blue.organization
-        r = self.post(self.blue_admin, org, brand_color='#0f766e')
-        self.assertEqual(r.status_code, 302)
+        self.client.force_login(self.blue_admin)
+        self.assertEqual(self.client.get(reverse('panel:org_settings')).status_code, 403)
+        self.assertEqual(self.post(self.blue_admin, org, brand_color='#0f766e').status_code, 403)
         org.refresh_from_db()
-        self.assertEqual(org.brand_color, '#0F766E')
+        self.assertEqual(org.brand_color, '#1E3A8A')
+        self.assertNotIn(reverse('panel:org_settings'), self.client.get(reverse('panel:dashboard')).content.decode())   # menyuda yo'q
 
     def test_branch_admin_cannot_change_other_org(self):
         med_org = self.med.organization
@@ -148,7 +150,7 @@ class OrgSettingsPanelTests(TestCase):
 
     def test_invalid_color_rejected(self):
         org = self.blue.organization
-        r = self.post(self.blue_admin, org, brand_color='red')
+        r = self.post(self.owner, org, brand_color='red')
         self.assertEqual(r.status_code, 200)
         org.refresh_from_db()
         self.assertEqual(org.brand_color, '#1E3A8A')
