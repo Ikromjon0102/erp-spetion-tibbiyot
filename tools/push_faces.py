@@ -101,19 +101,35 @@ def main():
     from access.models import Device
     from access.sync import eligible_users, sync_device
 
+    from org.models import Branch
     entries = resolve(json.loads(Path(a.config).read_text(encoding='utf-8')))
     devices = []
     for e in entries:
+        extra = {}
+        if e.get('branch'):      # terminals.json: "branch": "<filial id>" yoki "<tashkilot nomi>/<filial nomi>"
+            ref = str(e['branch'])
+            if ref.isdigit():
+                br = Branch.objects.filter(pk=int(ref)).first()
+            else:
+                org_name, _, br_name = ref.partition('/')
+                br = Branch.objects.filter(organization__name=org_name.strip(), name=(br_name or 'Asosiy').strip()).first()
+            if br is None:
+                print(f"{e['name']}: filial topilmadi ({ref}) — o'tkazib yuborildi")
+                continue
+            extra['branch'] = br
         dev, _ = Device.objects.update_or_create(
-            name=e['name'], defaults=dict(direction=e['direction'], host=e['host'], username='admin', password=password, is_active=True))
+            name=e['name'], defaults=dict(direction=e['direction'], host=e['host'], username='admin', password=password, is_active=True, **extra))
+        if not dev.branch_id:
+            print(f"OGOHLANTIRISH: {dev.name} filialga biriktirilmagan — unga HAMMA tashkilotdagi odamlar yuboriladi. "
+                  f"terminals.json da \"branch\" ni kiriting.")
         devices.append(dev)
 
-    people = eligible_users()
-    print(f'Yuboriladigan odamlar (rasm va Face ID bor): {len(people)}')
-    wanted = {u.device_id for u in people}
+    print(f"Yuboriladigan odamlar (rasm va Face ID bor), jami: {len(eligible_users())}")
 
     for dev in devices:
-        label = f'{dev.name} ({dev.host})'
+        label = f'{dev.name} ({dev.host}, {dev.branch or "filialsiz"})'
+        people = eligible_users(dev)              # faqat shu qurilma filialining o'quvchi, ustoz va xodimlari
+        wanted = {u.device_id for u in people}
         if a.mode == 'test':
             if dev is not devices[0] or not people:
                 continue

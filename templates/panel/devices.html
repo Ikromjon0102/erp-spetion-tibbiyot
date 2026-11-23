@@ -8,8 +8,8 @@
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-image"/></svg></span><div class="k">Ustozlar rasmi</div><div class="v">{{ stats.teachers_photo }}<small class="muted"> / {{ stats.teachers }}</small></div><div class="s">rasmi yuklangan</div></div>
   <div class="stat good"><span class="ico"><svg class="ic"><use href="#p-check"/></svg></span><div class="k">Qurilmaga tayyor</div><div class="v">{{ stats.ready }}</div><div class="s">rasm va Face ID bor</div></div>
 </div>
-<div class="card"><h2>Chiqish xabarlari</h2>
-  <p class="muted" style="margin:4px 0 10px">Ota-onaga «maktabdan chiqdi» xabari va «Uyga ketdi» holati shu vaqtdan keyin beriladi. Undan oldingi chiqish skanlari tanaffus hisoblanadi («Tashqarida»). Xabar kuniga bitta, takroriy skanlar xabar bermaydi. Barcha skanlar saqlanadi.</p>
+<div class="card"><h2>Chiqish xabarlari <small class="muted">{% if leave_org %}{{ leave_org.label }}{% else %}umumiy vaqt{% endif %}</small></h2>
+  <p class="muted" style="margin:4px 0 10px">Ota-onaga «maktabdan chiqdi» xabari va «Uyga ketdi» holati shu vaqtdan keyin beriladi. Undan oldingi chiqish skanlari tanaffus hisoblanadi («Tashqarida»). Xabar kuniga bitta, takroriy skanlar xabar bermaydi. Barcha skanlar saqlanadi.{% if not leave_org and scope and scope.multi_org %} Bu umumiy vaqt; tashkilotga alohida vaqt qo'yish uchun «Ish maydoni»dan tashkilotni tanlang.{% endif %}</p>
   {% if manage %}<form method="post" action="{% url 'panel:access_settings' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">{% csrf_token %}<input type="time" name="leave_from" value="{{ leave_from|time:'H:i' }}" required style="width:auto"> <button class="btn primary">Saqlash</button></form>
   {% else %}<b class="mono">{{ leave_from|time:'H:i' }}</b>{% endif %}
 </div>

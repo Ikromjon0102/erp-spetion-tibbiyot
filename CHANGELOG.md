@@ -2,6 +2,18 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Ishonchlilik va ko'p tashkilot kamchiliklari (2026-11-23)
+- **Zaxira nusxa tuzatildi:** fayllar arxivi noto'g'ri papkani (`/var/www/erp/media`, bo'sh) olardi — taom/yuz rasmlari va cheklar zaxiraga tushmasdi. Endi `/var/www/erp/app/media` (+ exam storage). Har nusxa `pg_restore -l` bilan tekshiriladi; vaqt 02:30 Toshkent (21:30 UTC; avval 07:30 Toshkent — dars vaqtida edi). rclone'da `spetion-offsite` sozlansa, tashqariga ham nusxa ko'chiriladi.
+- **Haftalik tiklash sinovi** (`spetion-restore-test`, yakshanba): oxirgi ERP nusxasi vaqtinchalik bazaga tiklanadi, o'quvchi/foydalanuvchi/to'lov sanaladi, natija `RESTORE_TEST` ga. Birinchi sinov: OK (24 o'quvchi, 35 foydalanuvchi, 57 to'lov).
+- **Monitoring** (`spetion-healthcheck`, har 5 daqiqa): ERP va exam javobi, disk, xotira, zaxira yangiligi (26 soat), tiklash sinovi. Holat o'zgarganda (muammo / tuzaldi) Telegramga xabar; qisqa uzilishlar (yangilanishda qayta ishga tushish) ikki tekshiruvda takrorlansagina hisoblanadi. Sozlama: `/root/.spetion-alert` (`ALERT_BOT_TOKEN`, `ALERT_CHAT_ID`).
+- **Xatolar jurnali va Telegram:** `LOGGING` sozlandi (journald), 500 xatolar Telegramga (`config/alerts.py`; bir xil xato 10 daqiqada bir marta, shaxsiy ma'lumotsiz). `.env`: `ALERT_CHAT_ID` (va ixtiyoriy `ALERT_BOT_TOKEN`).
+- **Xavfsizlik sarlavhalari:** HSTS (30 kun, subdomenlarsiz), `Referrer-Policy: same-origin`.
+- **Chiqish xabari vaqti tashkilot bo'yicha** (`Organization.leave_notify_from`; bo'sh bo'lsa umumiy). Panel «Qurilmalar»: ish maydonida tashkilot tanlangan bo'lsa — o'sha tashkilot vaqti. Holat («Tashqarida»/«Ketdi»), Telegram xabarlari va `send_leave_notices` shunga qaraydi.
+- **Yuz rasmlari filial bo'yicha:** `tools/push_faces.py` qurilmaga faqat o'z filialining odamlarini yuboradi (`terminals.json` da `"branch"`); filialsiz qurilma uchun ogohlantirish.
+- **Telegram xabarlarida tashkilot nomi** («✅ Madina 08:12 da keldi · Tibbiyot»); «maktabga» so'zi bog'cha/markaz uchun noto'g'ri edi.
+- **PWA nomi umumiy** «Spetion», o'rnatilgan ilova rangi foydalanuvchining tashkilotidan. Panel shrifti sahifani to'smaydi.
+- Deploy tekshiruvi to'g'ri Host bilan (`/login/` 200) va exam `health` ni kutadi.
+
 ## Audit 1-bosqichi (2026-11-23)
 Loyiha auditidan keyingi tez tuzatishlar (hisobot: claude.ai artifact «Spetion ERP auditi»).
 - **Telefonda ish maydoni** (Kritik): telefonda yon menyu yashirin bo'lgani uchun tashkilotni almashtirib bo'lmas edi. Endi sarlavha ostida rangli chip («● Hammasi ⌄») va «Ko'proq» ichida «Ish maydoni» bandi; bosilsa pastdan tashkilot/filiallar varag'i ochiladi.

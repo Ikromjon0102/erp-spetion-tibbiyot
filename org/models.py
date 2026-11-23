@@ -21,6 +21,8 @@ class Organization(models.Model):
     meals_enabled = models.BooleanField('Taomnoma moduli', default=False,
                                         help_text="Maktab va bog'chada yoqiladi, o'quv markazda kerak emas")
     expenses_enabled = models.BooleanField('Xarajatlar moduli', default=True)
+    leave_notify_from = models.TimeField("Chiqish xabarlari vaqti", null=True, blank=True,
+                                         help_text="Bo'sh bo'lsa umumiy sozlama (Qurilmalar sahifasi). Bog'cha va markazning ish soati boshqa bo'lishi mumkin")
     is_active = models.BooleanField('Faol', default=True)
     order = models.PositiveSmallIntegerField('Tartib', default=0)
 

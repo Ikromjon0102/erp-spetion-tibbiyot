@@ -73,12 +73,12 @@ def _filtered(request, granted):
     return qs
 
 
-def _presence_state(p, today, wait_label):
+def _presence_state(p, today, wait_label, org=None):
     """Bugungi holat: (nuqta klassi, matn). Yakshanba kuni kelmagan o'quvchi "kelmagan" emas — dam olish kuni."""
     if p and p['in'] and not p['out']:
         return 'in', 'Maktabda'
     if p and p['out']:
-        return 'out', 'Tashqarida' if is_break_time() else 'Ketdi'
+        return 'out', 'Tashqarida' if is_break_time(org=org) else 'Ketdi'
     if today.weekday() > 5:
         return 'off', 'Dam olish kuni'
     return 'wait', wait_label
@@ -100,7 +100,7 @@ def _presence_map(student_ids, today):
 @org_hub('students')
 def students(request):
     granted = perms_of(request.user)
-    page = Paginator(_filtered(request, granted), PAGE_SIZE).get_page(request.GET.get('page'))
+    page = Paginator(_filtered(request, granted).select_related('branch__organization'), PAGE_SIZE).get_page(request.GET.get('page'))
     ids = [s.pk for s in page]
     today = timezone.localdate()
     presence = _presence_map(ids, today) if 'monitoring.view' in granted else None
@@ -114,7 +114,7 @@ def students(request):
         p = presence.get(s.pk) if presence is not None else None
         state = None
         if presence is not None:
-            state = _presence_state(p, today, 'Kelmagan')
+            state = _presence_state(p, today, 'Kelmagan', s.branch.organization if s.branch_id else None)
         rows.append({'s': s, 'parent': parents[0] if parents else None, 'extra_parents': max(len(parents) - 1, 0),
                      'state': state, 'debt': (debts or {}).get(s.pk, 0) if debts is not None else None})
     params = request.GET.copy()
@@ -163,7 +163,7 @@ def student_detail(request, pk):
     if 'monitoring.view' in granted:
         ctx['access_days'] = day_summaries(student, days=14)
         p = _presence_map([student.pk], today).get(student.pk)
-        ctx['presence'] = _presence_state(p, today, 'Bugun kelmagan')
+        ctx['presence'] = _presence_state(p, today, 'Bugun kelmagan', student.branch.organization if student.branch_id else None)
     if 'sensitive.grades' in granted:
         by = defaultdict(list)
         for g in student.grades.select_related('teaching__subject').order_by('-date', '-id')[:200]:

@@ -25,7 +25,7 @@ def today_summary(student):
     return next((r for r in day_summaries(student, days=1) if r['date'] == today), None)
 
 
-def is_break_time(now=None):
+def is_break_time(now=None, org=None):
     """Hozir chiqish xabarlari boshlanadigan vaqtdan oldinmi (u holda chiqib ketgan o'quvchi «tashqarida» hisoblanadi)."""
     now = now or timezone.localtime()
-    return now.time() < leave_from()
+    return now.time() < leave_from(org)

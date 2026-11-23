@@ -43,7 +43,9 @@ sudo -u erp /var/www/exam/venv/bin/alembic upgrade head
 systemctl enable --now erp exam-api exam-sweep
 systemctl restart erp exam-api exam-sweep
 sleep 3; systemctl is-active erp exam-api exam-sweep
-curl -s -o /dev/null -w "ERP local: %{http_code}\n" http://127.0.0.1:8010/ || true
-curl -s -o /dev/null -w "Exam local: %{http_code}\n" http://127.0.0.1:8002/api/v1/auth/classes || true
+H=$(grep '^ALLOWED_HOSTS=' /var/www/erp/.env | cut -d= -f2 | cut -d, -f1)
+for i in 1 2 3 4 5 6 7 8 9 10; do curl -sf -o /dev/null http://127.0.0.1:8002/api/v1/health && break; sleep 1; done
+curl -s -o /dev/null -w "ERP local: %{http_code}\n" -H "Host: $H" http://127.0.0.1:8010/login/ || true
+curl -s -o /dev/null -w "Exam local: %{http_code}\n" http://127.0.0.1:8002/api/v1/health || true
 REMOTE
 echo "OK"

@@ -91,10 +91,19 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 systemctl daemon-reload
 
-# --- nightly Postgres backup (14 days) + recurring expenses cron
+# --- zaxira (har kecha, 14 kun), haftalik tiklash sinovi, 5 daqiqalik monitoring, takroriy xarajatlar
+# Vaqtlar UTC: 21:30 UTC = 02:30 Toshkent.
 install -m 755 "$HERE/backup.sh" /usr/local/bin/spetion-backup
+install -m 755 "$HERE/restore_test.sh" /usr/local/bin/spetion-restore-test
+install -m 755 "$HERE/healthcheck.sh" /usr/local/bin/spetion-healthcheck
+[ -f /root/.spetion-alert ] || { printf 'ALERT_BOT_TOKEN=
+ALERT_CHAT_ID=
+ERP_HOST=%s
+' "$ERP_DOMAIN" > /root/.spetion-alert; chmod 600 /root/.spetion-alert; }
 cat > /etc/cron.d/spetion <<'CRON'
-30 2 * * * root /usr/local/bin/spetion-backup
+30 21 * * * root /usr/local/bin/spetion-backup >> /var/log/spetion-backup.log 2>&1
+0 23 * * 0 root /usr/local/bin/spetion-restore-test >> /var/log/spetion-backup.log 2>&1
+*/5 * * * * root /usr/local/bin/spetion-healthcheck
 10 1 * * * erp cd /var/www/erp/app && /var/www/erp/venv/bin/python manage.py generate_recurring_expenses >> /var/www/erp/cron.log 2>&1
 CRON
 

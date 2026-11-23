@@ -177,7 +177,15 @@ def devices(request):
              'ready': len(ready)}
     errors = list(FaceSync.objects.filter(ok=False, device__in=devices_qs).select_related('user', 'device').order_by('-updated_at')[:15])
     return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted,
-                                                  'leave_from': AccessSettings.get().leave_notify_from})
+                                                  'leave_org': _leave_target(request)[0], 'leave_from': _leave_target(request)[1]})
+
+
+def _leave_target(request):
+    """Ish maydonida tashkilot tanlangan bo'lsa — o'sha tashkilotning chiqish vaqti, aks holda umumiy sozlama."""
+    from access.models import leave_from
+    scope = getattr(request, 'scope', None)
+    org = scope.org if scope is not None and not scope.is_all else None
+    return org, leave_from(org)
 
 
 @require_POST
@@ -189,13 +197,20 @@ def access_settings(request):
     except ValueError:
         messages.error(request, "Vaqtni SS:DD ko'rinishida kiriting (masalan 16:00)")
         return redirect('panel:devices')
-    obj = AccessSettings.get()
-    old = obj.leave_notify_from
-    obj.leave_notify_from = value
-    obj.save()
-    audit.log(request, "Chiqish xabari vaqtini o'zgartirdi", label='Kirish-chiqish sozlamasi', target_type='settings',
+    org, old = _leave_target(request)
+    if org is not None:            # tanlangan tashkilot uchun alohida vaqt
+        org.leave_notify_from = value
+        org.save(update_fields=['leave_notify_from'])
+        label = f'Chiqish xabari vaqti: {org.label}'
+    else:
+        obj = AccessSettings.get()
+        obj.leave_notify_from = value
+        obj.save()
+        label = 'Kirish-chiqish sozlamasi (umumiy)'
+    audit.log(request, "Chiqish xabari vaqtini o'zgartirdi", label=label, target_type='settings',
               details={'vaqt': audit.change(old.strftime('%H:%M'), value.strftime('%H:%M'))})
-    messages.success(request, f"Chiqish xabarlari {value:%H:%M} dan boshlab yuboriladi")
+    who = f'{org.label}: c' if org else 'C'
+    messages.success(request, f"{who}hiqish xabarlari {value:%H:%M} dan boshlab yuboriladi")
     return redirect('panel:devices')
 
 

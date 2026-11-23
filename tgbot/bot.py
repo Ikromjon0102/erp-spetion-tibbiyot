@@ -133,7 +133,7 @@ def today(chat_id, user):
         if row and row['arrived']:
             s = f"✅ keldi {row['arrived']:%H:%M}"
             if row['left']:
-                s += f", 🚶 tashqarida {row['left']:%H:%M} dan" if is_break_time() else f", 🚪 chiqdi {row['left']:%H:%M}"
+                s += f", 🚶 tashqarida {row['left']:%H:%M} dan" if is_break_time(org=k.branch.organization if k.branch_id else None) else f", 🚪 chiqdi {row['left']:%H:%M}"
         lines.append(f'<b>{esc(k.user.get_full_name())}</b>: {s}')
     send(chat_id, '\n'.join(lines) or 'Farzand topilmadi')
 

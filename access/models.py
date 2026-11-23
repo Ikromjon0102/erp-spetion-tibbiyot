@@ -114,13 +114,27 @@ class AccessSettings(models.Model):
         cache.delete(LEAVE_CACHE_KEY)
 
 
-def leave_from():
-    """Chiqish xabarlari boshlanadigan vaqt (datetime.time); 30 soniya keshlanadi."""
+def leave_from(org=None):
+    """Chiqish xabarlari boshlanadigan vaqt (datetime.time). Tashkilotda o'z vaqti bo'lsa — o'shasi, bo'lmasa umumiy (30 soniya keshlanadi)."""
+    if org is not None and getattr(org, 'leave_notify_from', None):
+        return org.leave_notify_from
     value = cache.get(LEAVE_CACHE_KEY)
     if value is None:
         value = AccessSettings.get().leave_notify_from
         cache.set(LEAVE_CACHE_KEY, value, 30)
     return value
+
+
+def org_of_student(student):
+    """O'quvchining tashkiloti (filial orqali) yoki None."""
+    return student.branch.organization if getattr(student, 'branch_id', None) else None
+
+
+def earliest_leave_from():
+    """Barcha tashkilotlar ichidagi eng erta chiqish vaqti (cron buyrug'i shundan oldin hech narsa qilmaydi)."""
+    from org.models import Organization
+    times = [t for t in Organization.objects.filter(is_active=True).values_list('leave_notify_from', flat=True) if t]
+    return min(times + [leave_from()])
 
 
 class PresenceNotice(models.Model):

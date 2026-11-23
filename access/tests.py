@@ -168,3 +168,31 @@ class PushFacesToolTests(TestCase):
             table = tool.arp_table()
         self.assertEqual(table['88:de:39:8e:19:83'], '192.168.68.108')
         self.assertEqual(table['88:de:39:8e:19:50'], '192.168.68.109')
+
+
+class DeviceBranchPeopleTests(TestCase):
+    """Qurilmaga faqat o'z filialining odamlari yuboriladi (bog'cha terminaliga markaz o'quvchilari tushmasin)."""
+
+    def test_eligible_users_filtered_by_device_branch(self):
+        from django.core.management import call_command
+        from academics.models import Group
+        from accounts.models import Student, User
+        from org.models import Branch, Organization
+        from .models import Device
+        from .sync import eligible_users
+        call_command('create_orgs', verbosity=0)
+        kg = Branch.objects.get(organization=Organization.objects.get(name="Bog'cha"))
+        c1 = Branch.objects.get(organization=Organization.objects.get(name="O'quv markaz"))
+
+        def kid(name, br, aid):
+            u = User.objects.create_user(name, password='x', role='student', photo='faces/x.jpg')
+            Student.objects.create(user=u, branch=br, group=Group.objects.create(name=f'g{aid}', branch=br), access_id=str(aid))
+            return u
+        a, b = kid('kgkid', kg, 101), kid('ckid', c1, 102)
+        t = User.objects.create_user('tch', password='x', role='teacher', photo='faces/t.jpg', access_id='7001')
+        t.branches.set([kg])
+        dev_kg = Device.objects.create(name='KG kirish', direction='in', branch=kg)
+        names = {u.username for u in eligible_users(dev_kg)}
+        self.assertEqual(names, {'kgkid', 'tch'})
+        self.assertNotIn(b.username, names)
+        self.assertEqual({u.username for u in eligible_users()}, {'kgkid', 'ckid', 'tch'})

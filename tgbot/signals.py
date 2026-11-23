@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from access.models import AccessEvent, PresenceNotice, leave_from
+from access.models import AccessEvent, PresenceNotice, leave_from, org_of_student
 from journal.models import Grade, Homework
 from notices.models import Announcement
 
@@ -19,9 +19,11 @@ def _parents(student):
 def access_text(student, kind, when):
     name = esc(student.user.get_full_name())
     t = timezone.localtime(when).strftime('%H:%M')
+    org = esc(student.branch.organization.label) if student.branch_id else ''
+    where = f' · {org}' if org else ''          # bir nechta tashkilotda farzandi bor ota-ona qaysidan ekanini bilsin
     if kind == 'in':
-        return f'✅ <b>{name}</b> {t} da maktabga keldi'
-    return f'🚪 <b>{name}</b> {t} da maktabdan chiqdi'
+        return f'✅ <b>{name}</b> {t} da keldi{where}'
+    return f'🚪 <b>{name}</b> {t} da chiqdi{where}'
 
 
 def notify_presence(student, kind, when, date):
@@ -41,7 +43,7 @@ def on_access(sender, instance, created, **kw):
     local = timezone.localtime(instance.occurred_at)
     if instance.direction == 'in':
         kind = 'in'
-    elif local.time() >= leave_from():
+    elif local.time() >= leave_from(org_of_student(instance.student)):
         kind = 'left'
     else:
         return

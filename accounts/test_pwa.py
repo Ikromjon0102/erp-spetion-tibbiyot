@@ -8,7 +8,7 @@ class PwaTests(TestCase):
         r = self.client.get('/manifest.webmanifest')
         self.assertEqual(r.status_code, 200)
         data = json.loads(r.content)
-        self.assertEqual(data['name'], 'Spetion Tibbiyot')
+        self.assertEqual(data['name'], 'Spetion')
         self.assertEqual(data['display'], 'standalone')
         self.assertTrue(any(i['purpose'] == 'maskable' for i in data['icons']))
 

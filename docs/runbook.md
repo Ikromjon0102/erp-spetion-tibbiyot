@@ -88,3 +88,21 @@ U «chiqdi» xabarlarini yuboradi (qoidalar: `docs/kirish-chiqish-qoidalari.md`)
 | Xabar bormayapti | `BOT_TOKEN`, `getWebhookInfo`, ota-ona botga ulanganmi (`TelegramLink`), `leave.log` |
 | Migratsiya xatosi | zaxiradan qaytaring: `cp data/db.sqlite3.before-<nom> data/db.sqlite3` va servisni qayta ishga tushiring |
 | Qo'lda tekshirish | `manage.py check`, `manage.py send_leave_notices` (xavfsiz, faqat kutilayotganini yuboradi) |
+
+## Yangi server (droplet: med-new / exam-new) — zaxira, tiklash sinovi, monitoring
+
+Skriptlar `deploy/droplet/` da, serverda `/usr/local/bin/` ga o'rnatilgan (`setup.sh` qiladi). Server soati **UTC** (Toshkent = UTC+5).
+
+| Nima | Qachon | Qayerda |
+|---|---|---|
+| `spetion-backup` — ikkala baza + fayllar (ERP media, exam storage), 14 kun | har kecha 02:30 (Toshkent) | `/var/backups/spetion/`, `LAST_OK` |
+| `spetion-restore-test` — oxirgi ERP nusxasini vaqtinchalik bazaga tiklab sanaydi | yakshanba 04:00 | `/var/backups/spetion/RESTORE_TEST` |
+| `spetion-healthcheck` — ERP/exam javobi, disk, xotira, zaxira yangiligi, tiklash sinovi | har 5 daqiqa | `/var/lib/spetion-health/log` |
+
+**Telegram ogohlantirish** (server holati): `/root/.spetion-alert` ga `ALERT_BOT_TOKEN=` va `ALERT_CHAT_ID=` yozing. Xabar faqat holat o'zgarganda keladi (muammo / tuzaldi).
+**Ilova xatolari (500)** Telegramga: `/var/www/erp/.env` ga `ALERT_CHAT_ID=` (token bo'lmasa `BOT_TOKEN` ishlatiladi), keyin `systemctl restart erp`.
+Chat ID ni bilish: botga yozing va `https://api.telegram.org/bot<TOKEN>/getUpdates` dan `chat.id` ni oling.
+
+**Tashqi nusxa (tavsiya, majburiy emas lekin muhim):** `apt install rclone`, `rclone config` bilan `spetion-offsite` nomli remote yarating (DigitalOcean Spaces, Google Drive yoki boshqa server). Shundan keyin `spetion-backup` har kecha nusxani o'sha yerga ham yuboradi (`LAST_OFFSITE`).
+
+**Qo'lda tiklash:** `sudo -u postgres pg_restore -d erp --clean --no-owner /var/backups/spetion/erp-YYYY-MM-DD.dump`; fayllar: `tar -xzf files-YYYY-MM-DD.tgz -C /var/www`.

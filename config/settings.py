@@ -171,6 +171,8 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('HSTS_SECONDS', 30 * 24 * 3600))   # brauzer faqat HTTPS orqali ochadi
+    SECURE_REFERRER_POLICY = 'same-origin'
 
 # Login urinishlari hisoblagichi ishlash jarayonlari va qayta yuklashlar orasida saqlansin (blokni `unlock_logins` bilan olish mumkin)
 CACHES = {
@@ -196,3 +198,19 @@ SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App man
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)
 EXAM_API_URL = os.environ.get('EXAM_API_URL', '')
 EXAM_API_KEY = os.environ.get('EXAM_API_KEY', '')
+
+
+# Jurnal: ogohlantirish va xatolar stderr'ga (serverda journald: `journalctl -u erp`), 500 xatolar Telegramga ham (config/alerts.py)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'plain': {'format': '%(asctime)s %(levelname)s %(name)s: %(message)s'}},
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'plain', 'level': 'WARNING'},
+        'telegram': {'class': 'config.alerts.TelegramErrorHandler', 'level': 'ERROR'},
+    },
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'django.request': {'handlers': ['console'] + ([] if DEBUG or 'test' in sys.argv else ['telegram']), 'level': 'ERROR', 'propagate': False},
+    },
+}
