@@ -35,6 +35,55 @@ def branch_choices(editor, target):
     return groups
 
 
+def picker_groups(editor, selected_ids):
+    """Yangi ustoz/xodim formasi uchun: [{'org', 'items': [{'branch', 'on'}]}]."""
+    groups, seen = [], {}
+    for b in editable_branches(editor):
+        if b.organization_id not in seen:
+            seen[b.organization_id] = {'org': b.organization, 'items': []}
+            groups.append(seen[b.organization_id])
+        seen[b.organization_id]['items'].append({'branch': b, 'on': b.pk in selected_ids})
+    return groups
+
+
+def default_selection(request):
+    """Formada oldindan belgilangan filiallar: ish maydonida tashkilot/filial tanlangan bo'lsa — o'shalar,
+    tahrirlovchining bitta filiali bo'lsa — o'sha; aks holda hech narsa (xodim o'zi aniq tanlaydi)."""
+    from org.workspace import scope_branch_ids
+    allowed = [b.pk for b in editable_branches(request.user)]
+    scope = getattr(request, 'scope', None)
+    ids = scope_branch_ids(scope) if scope is not None else None
+    if ids:
+        return [i for i in ids if i in allowed]
+    return allowed if len(allowed) == 1 else []
+
+
+def chosen_branches(request):
+    """POST dagi tanlangan filiallar (faqat tahrirlovchiga ruxsat berilganlari)."""
+    allowed = {b.pk for b in editable_branches(request.user)}
+    if 'branch' not in request.POST and len(allowed) == 1:      # tanlov yo'q — yagona filial
+        return sorted(allowed)
+    try:
+        return sorted({int(x) for x in request.POST.getlist('branch')} & allowed)
+    except ValueError:
+        return []
+
+
+def follow_to(request, branch_ids):
+    """Yangi qo'shilgan odam joriy ish maydonida ko'rinmasa (masalan ish maydoni Bog'cha, direktor Tibbiyot uchun),
+    ish maydoni uning tashkilotiga o'tkaziladi — aks holda saqlangandan keyingi sahifa «topilmadi» bo'lardi."""
+    from org import workspace
+    scope = getattr(request, 'scope', None)
+    ids = workspace.scope_branch_ids(scope) if scope is not None else None
+    if ids is None or set(ids) & set(branch_ids):
+        return
+    branch = Branch.objects.select_related('organization').filter(pk__in=branch_ids).first()
+    if branch is None:
+        return
+    request.session[workspace.SESSION_KEY] = f'org-{branch.organization_id}'
+    messages.info(request, f"Ish maydoni «{branch.organization.label}» ga o'tkazildi (yangi qo'shilgan shu tashkilotda).")
+
+
 def apply_branches(request, target, label, target_type):
     """POST dagi `branch` ro'yxatini qo'llaydi. True — saqlandi."""
     allowed = {b.pk for b in editable_branches(request.user)}

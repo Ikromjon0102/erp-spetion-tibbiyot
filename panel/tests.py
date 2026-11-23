@@ -436,14 +436,15 @@ class StaffTests(TestCase):
         self.assertEqual(self.client.get('/panel/xodimlar/yangi/').status_code, 403)
         self.assertEqual(self.client.get('/panel/xodimlar/').status_code, 403)
 
-    def test_add_new_staff_gets_temp_password_and_position_defaults(self):
+    def test_add_new_staff_gets_last4_password_and_position_defaults(self):
         self.client.login(username='egasi', password='x')
         r = self.add()
         user = User.objects.get(phone_digits='998905556677')
         profile = user.staff_profile
         self.assertEqual((user.role, profile.position.name, user.must_change_password), ('staff', 'Reception', True))
         self.assertEqual(profile.perms, normalize(pos('Reception').default_perms))
-        password = next(str(m) for m in r.context['messages']).split('bir martalik parol: ')[1].split()[0]
+        password = next(str(m) for m in r.context['messages']).split("boshlang'ich parol: ")[1].split()[0]
+        self.assertEqual(password, '6677')          # ustoz va ota-ona bilan bir xil qoida: telefonning oxirgi 4 raqami
         self.client.logout()
         self.assertEqual(self.client.post('/login/', {'username': '90-555-66-77', 'password': password}).status_code, 302)
         self.assertRedirects(self.client.get('/', follow=False), '/parol/', fetch_redirect_response=False)      # majburiy almashtirish
@@ -579,7 +580,7 @@ class StaffTests(TestCase):
         r = self.client.post(f'/panel/xodimlar/{pid}/parol/', follow=True)
         self.rec.refresh_from_db()
         self.assertTrue(self.rec.must_change_password)
-        self.assertIn('bir martalik parol:', ' '.join(str(m) for m in r.context['messages']))
+        self.assertIn("boshlang'ich parol:", ' '.join(str(m) for m in r.context['messages']))
         before = User.objects.get(pk=self.owner.pk).password
         self.client.post(f'/panel/xodimlar/{self.owner.staff_profile.pk}/parol/')          # o'zining parolini bu yerdan o'zgartira olmaydi
         self.assertEqual(User.objects.get(pk=self.owner.pk).password, before)

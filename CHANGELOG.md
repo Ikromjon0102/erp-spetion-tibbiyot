@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Xodim va ustoz qo'shish: filial va parol (2026-11-23)
+- **Xato:** Tibbiyot uchun qo'shilgan direktor Bog'chaga ham tushib qolgan edi. Sabab: yangi xodim yaratuvchining joriy «Ish maydoni»ga (o'sha payt Bog'cha) biriktirilardi, ustiga avtomatik «asosiy filial» (Tibbiyot) qo'shilardi; formada filial tanlovi yo'q edi.
+- **Tuzatildi:** «Xodim qo'shish» va «Ustoz qo'shish» formalarida majburiy **«Ish filiallari»** (tashkilotlar bo'yicha katakchalar). Joriy ish maydoni oldindan belgilanadi, lekin ko'rinib turadi; tahrirlovchining bitta filiali bo'lsa — o'zi tanlanadi. Yangi odam faqat belgilangan filiallarga tushadi (avtomatik filial qo'shilmaydi). Yangi odam joriy ish maydonida ko'rinmasa, ish maydoni uning tashkilotiga o'tadi (aks holda saqlangach sahifa «topilmadi» bo'lardi).
+- **Parol qoidasi hamma uchun bir xil:** login — telefon, boshlang'ich parol — telefonning oxirgi 4 raqami, birinchi kirishda yangi parol qo'yiladi. Endi xodimlar (direktor, hisobchi...) uchun ham (avval tasodifiy bir martalik parol edi); xodim sahifasidagi tugma — «Parolni tiklash (oxirgi 4 raqam)». Telefon kiritilmagan bo'lsa — bir martalik parol.
+- Sinov serveridagi yangi direktordan ortiqcha Bog'cha filiali olib tashlandi.
+
 ## Ustoz sahifasi: tashkilot bo'yicha (2026-11-23, founder fikrlari)
 - **Faqat o'z tashkilotlari:** ustoz sahifasi avval tizimdagi BARCHA darslarni yuklardi (markaz ustozi tibbiyot sinflarini ham ko'rardi). Endi faqat ustozning filiallari va dars beradigan guruhlari tashkilotlari (`journal/teacher_data.py`). Davomat holati API'si ham faqat o'z darslari bo'yicha.
 - **«Sinflar»:** maktab va bog'chada — o'z filialining barcha sinflari jadvali; o'quv markazda — faqat o'z guruhlari, «Guruhlarim» ko'rinishida: har guruh qaysi kunlari, soat nechadan nechagacha («Du, Ch, Ju · 08:00–10:00»; ketma-ket darslar bitta oraliq bo'lib birlashadi). Faqat markazda ishlaydigan ustozda tab nomi «Guruhlar».

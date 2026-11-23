@@ -12,7 +12,7 @@ from accounts.models import User
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username
 
-from org.scope import pick_branch, scope_groups, scope_teachers
+from org.scope import scope_groups, scope_teachers
 
 from . import audit
 from .hubs import org_hub
@@ -107,16 +107,19 @@ def teachers(request):
 
 @panel_required('teachers.add')
 def teacher_add(request):
+    from .branch_assign import chosen_branches, default_selection, follow_to, picker_groups
     form = TeacherForm(request.POST or None)
     upload = request.FILES.get('photo')
-    if request.method == 'POST' and form.is_valid() and photo_ok(form, upload):
+    selected = chosen_branches(request) if request.method == 'POST' else default_selection(request)
+    picker_error = "Kamida bitta filialni belgilang" if request.method == 'POST' and not selected else ''
+    if request.method == 'POST' and form.is_valid() and selected and photo_ok(form, upload):
         d = form.cleaned_data
         digits = to_digits(d['phone'])
         with transaction.atomic():
             user = User(username=_unique_username(digits), first_name=d['first_name'], last_name=d['last_name'], phone=d['phone'],
                         role=User.Role.TEACHER)
             user.save()      # bir xil raqamli ota-ona hisobi bo'lsa, o'zi birlashtiriladi
-            user.branches.set([pick_branch(request.user)])
+            user.branches.set(selected)          # faqat formada belgilangan filiallar
             password = _initial_password(user)
         audit.log(request, "Ustoz qo'shdi", user, label=user.get_full_name(), details={'telefon': d['phone']}, target_type='teacher')
         if not user.access_id:
@@ -126,8 +129,10 @@ def teacher_add(request):
             apply_photo(request, user, upload, user.get_full_name())
         _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · boshlang'ich parol: {password} (telefonning oxirgi 4 raqami; "
                          "birinchi kirishda yangi parol qo'yadi)")
+        follow_to(request, selected)
         return redirect('panel:teacher', pk=user.pk)
-    return render(request, 'panel/teacher_form.html', {'nav': 'teachers', 'form': form, 'title': "Ustoz qo'shish"})
+    return render(request, 'panel/teacher_form.html', {'nav': 'teachers', 'form': form, 'title': "Ustoz qo'shish",
+                                                       'picker': picker_groups(request.user, set(selected)), 'picker_error': picker_error})
 
 
 @panel_required('teachers.view')

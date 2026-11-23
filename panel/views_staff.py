@@ -6,15 +6,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
-from accounts.passwords import issue_temp_password
+from accounts.passwords import initial_password
 from accounts.phone import to_digits
 from accounts.student_import import _unique_username
 
-from org.scope import branch_ids, branches_for, pick_branch, scope_staff
+from org.scope import scope_staff
 
 from . import audit
 from .hubs import org_hub
-from .branch_assign import branch_choices
+from .branch_assign import branch_choices, chosen_branches, default_selection, follow_to, picker_groups
 from .access import is_owner, panel_required, perms_of
 from .forms import PositionForm, StaffCreateForm
 from .models import AuditLog, Position, StaffProfile
@@ -64,7 +64,11 @@ def staff_add(request):
     form = StaffCreateForm(request.POST or None)
     if not is_owner(me):
         form.fields['position'].queryset = Position.objects.filter(is_owner=False)
-    if request.method == 'POST' and form.is_valid():
+    selected = chosen_branches(request) if request.method == 'POST' else default_selection(request)
+    picker_error = ''
+    if request.method == 'POST' and not selected:
+        picker_error = "Kamida bitta filialni belgilang"
+    if request.method == 'POST' and form.is_valid() and selected:
         d = form.cleaned_data
         digits = to_digits(d['phone'])
         position = d['position']
@@ -81,21 +85,24 @@ def staff_add(request):
                                 first_name=d['first_name'], last_name=d['last_name'], phone=d['phone'], role=User.Role.STAFF)
                     user.set_unusable_password()
                     user.save()
+                    user.branches.set(selected)          # faqat formada belgilangan filiallar (avtomatik «asosiy filial» emas)
                 else:
                     user = existing
+                    user.branches.add(*selected)
                 profile = StaffProfile.objects.create(user=user, position=position, perms=perms)
-                user.branches.add(*(branches_for(me) if branch_ids(me) is not None else [pick_branch(me)]))
             audit.log(request, "Xodim qo'shdi", profile, label=f"{user.get_full_name() or user.username} — {position.name}",
                       details={'lavozim': position.name, 'ruxsatlar': [LABELS[p] for p in perms]}, target_type='staff')
             if created:
-                password = issue_temp_password(user)
-                _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · bir martalik parol: {password}  "
-                                 "(faqat hozir ko'rinadi; birinchi kirishda yangi parol qo'yadi)")
+                password = initial_password(user)        # ustoz va ota-ona bilan bir xil qoida
+                _secret(request, f"{user.get_full_name()} qo'shildi. Login: {d['phone']} · boshlang'ich parol: {password} "
+                                 "(telefonning oxirgi 4 raqami; birinchi kirishda yangi parol qo'yadi)")
             else:
                 messages.success(request, f"{user.get_full_name() or user.username} ({user.get_role_display()}) mavjud hisobga panel ruxsati berildi. "
                                           "Parol o'zgarmadi.")
+            follow_to(request, selected)
             return redirect('panel:staff_detail', pk=profile.pk)
-    return render(request, 'panel/staff_add.html', {'nav': 'staff', 'form': form})
+    return render(request, 'panel/staff_add.html', {'nav': 'staff', 'form': form, 'picker': picker_groups(me, set(selected)),
+                                                    'picker_error': picker_error})
 
 
 @panel_required('staff.view')
@@ -156,10 +163,11 @@ def staff_password(request, pk):
     if profile.user_id == me.id or (profile.is_owner and not is_owner(me)):
         messages.error(request, "Bu xodimning parolini bu yerdan o'zgartirib bo'lmaydi (o'zingiznikini 'Parolni o'zgartirish' orqali).")
     else:
-        password = issue_temp_password(profile.user)
-        audit.log(request, 'Bir martalik parol berdi', profile, label=profile.user.get_full_name() or profile.user.username, target_type='staff')
-        _secret(request, f"{profile.user.get_full_name()} — login: {profile.user.phone or profile.user.username} · bir martalik parol: {password}  "
-                         "(faqat hozir ko'rinadi)")
+        password = initial_password(profile.user)
+        audit.log(request, 'Parolni tikladi', profile, label=profile.user.get_full_name() or profile.user.username, target_type='staff')
+        how = "telefonning oxirgi 4 raqami" if (profile.user.phone_digits or '').endswith(password) else "bir martalik, telefon raqami kiritilmagan"
+        _secret(request, f"{profile.user.get_full_name()} — login: {profile.user.phone or profile.user.username} · boshlang'ich parol: {password} "
+                         f"({how}; kirgach yangi parol qo'yadi)")
     return redirect('panel:staff_detail', pk=profile.pk)
 
 

@@ -1,0 +1,18 @@
+{# Yangi ustoz/xodim formasida ish filiallarini tanlash (majburiy). picker — branch_assign.picker_groups #}
+<div class="field brs-pick{% if picker_error %} has-error{% endif %}">
+  <label>Ish filiallari <span class="muted" style="font-weight:500">— qaysi tashkilot va filialda ishlaydi</span></label>
+  {% for g in picker %}
+  <fieldset class="brs"><legend><i class="wdot" style="background:{{ g.org.brand_color }}"></i>{{ g.org.label }}</legend>
+    {% for it in g.items %}<label class="brs-item"><input type="checkbox" name="branch" value="{{ it.branch.pk }}" id="nb-{{ it.branch.pk }}" {% if it.on %}checked{% endif %}> {{ it.branch.name }}</label>{% endfor %}
+  </fieldset>
+  {% endfor %}
+  {% if picker_error %}<div class="err">{{ picker_error }}</div>{% endif %}
+  <div class="hint">Faqat belgilangan filiallarda ishlaydi va faqat ularning ma'lumotini ko'radi.</div>
+</div>
+<style>
+  .brs-pick .brs { border:1px solid var(--line); border-radius:12px; padding:8px 12px 10px; margin:0 0 8px; display:flex; flex-wrap:wrap; gap:6px 18px; }
+  .brs-pick .brs legend { font-weight:800; padding:0 6px; display:flex; align-items:center; gap:7px; }
+  .brs-pick .brs-item { display:inline-flex; align-items:center; gap:7px; font-weight:600; min-height:36px; }
+  .brs-pick .brs-item input { width:18px; height:18px; }
+  .brs-pick.has-error .brs { border-color:var(--bad); }
+</style>

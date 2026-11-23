@@ -46,7 +46,7 @@
     </dl>
     {% if editable %}
     <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <form method="post" action="{% url 'panel:staff_password' p.pk %}">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Bir martalik parol berish</button></form>
+      <form method="post" action="{% url 'panel:staff_password' p.pk %}">{% csrf_token %}<button class="btn small"><svg class="ic"><use href="#p-key"/></svg>Parolni tiklash (oxirgi 4 raqam)</button></form>
       <form method="post" action="{% url 'panel:staff_remove' p.pk %}" data-confirm="Xodimdan panel ruxsati olib tashlansinmi? U boshqaruv paneliga kira olmay qoladi." data-confirm-ok="Olib tashlash" data-confirm-danger>{% csrf_token %}<button class="btn small danger">Paneldan olib tashlash</button></form>
     </div>{% endif %}</div>
     {% include 'panel/_branches_card.html' %}

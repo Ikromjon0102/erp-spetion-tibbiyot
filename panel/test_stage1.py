@@ -130,3 +130,44 @@ class BranchAssignTests(Base):
         self.client.force_login(mgr)
         self.client.post(reverse('panel:staff_branches', args=[mgr.staff_profile.pk]), {'branch': [self.c1.pk]})
         self.assertEqual(set(mgr.branches.all()), {self.c1, self.c2})
+
+
+class CreateWithBranchesTests(Base):
+    """Yangi xodim/ustoz faqat formada belgilangan filialga tushadi (2026-11-23: direktor Tibbiyot uchun qo'shilib,
+    Bog'chaga ham tushib qolgan edi — ish maydoni + avtomatik «asosiy filial»)."""
+
+    def setUp(self):
+        super().setUp()
+        from panel.models import Position
+        self.med = Organization.objects.get(name='Tibbiyot maktabi')
+        self.b_med = Branch.objects.filter(organization=self.med).first()
+        self.kg = Branch.objects.get(organization=Organization.objects.get(name="Bog'cha"))
+        self.director = Position.objects.create(name='Direktor X')
+        self.client.force_login(self.owner)
+        self.client.get(reverse('panel:set_scope'), {'s': f'branch-{self.kg.pk}', 'next': '/panel/'})    # ish maydoni: Bog'cha
+
+    def test_director_gets_only_chosen_branch_and_last4_password(self):
+        r = self.client.post(reverse('panel:staff_add'), {'last_name': 'Aliyev', 'first_name': 'Vali', 'phone': '+998 90 111-22-33',
+                                                          'position': self.director.pk, 'branch': [self.b_med.pk]}, follow=True)
+        u = User.objects.get(phone_digits='998901112233')
+        self.assertEqual(set(u.branches.all()), {self.b_med})          # Bog'cha ham, avtomatik filial ham qo'shilmadi
+        self.assertTrue(u.check_password('2233') and u.must_change_password)
+        self.assertContains(r, 'oxirgi 4 raqami')
+
+    def test_branch_is_required_when_several_available(self):
+        r = self.client.post(reverse('panel:staff_add'), {'last_name': 'A', 'first_name': 'B', 'phone': '+998 90 111-22-44',
+                                                          'position': self.director.pk})
+        self.assertContains(r, 'Kamida bitta filialni belgilang')
+        self.assertFalse(User.objects.filter(phone_digits='998901112244').exists())
+
+    def test_form_preselects_current_workspace_visibly(self):
+        body = self.client.get(reverse('panel:staff_add')).content.decode()
+        self.assertIn(f'id="nb-{self.kg.pk}" checked', body)          # oldindan belgilangani ko'rinib turadi
+        self.assertNotIn(f'id="nb-{self.b_med.pk}" checked', body)
+
+    def test_teacher_gets_only_chosen_branches(self):
+        self.client.post(reverse('panel:teacher_add'), {'last_name': 'Karimova', 'first_name': 'Nilufar', 'phone': '+998 90 111-22-55',
+                                                        'branch': [self.b_med.pk, self.c1.pk]})
+        t = User.objects.get(phone_digits='998901112255')
+        self.assertEqual(set(t.branches.all()), {self.b_med, self.c1})
+        self.assertTrue(t.check_password('2255'))

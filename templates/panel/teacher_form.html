@@ -7,6 +7,7 @@
   {% include 'panel/_field.html' with f=form.last_name %}
   {% include 'panel/_field.html' with f=form.first_name %}
   {% include 'panel/_field.html' with f=form.phone %}
+  {% if picker %}{% include 'panel/_branch_picker.html' %}{% endif %}
   {% if u %}{% include 'panel/_field.html' with f=form.access_id %}{% endif %}
   {% if not u %}<div class="field "><label>Yuz rasmi <span class="muted" style="font-weight:500">(ixtiyoriy)</span></label><input type="file" name="photo" accept="image/jpeg,image/png"><div class="hint">JPG/PNG, yuz aniq ko'rinsin. Saqlangach qurilmalarga avtomatik yuboriladi. Keyin ham qo'shish mumkin.</div></div>{% endif %}
   {% if not u %}<div class="hint" style="margin-bottom:12px">Boshlang'ich parol — telefonning oxirgi 4 raqami. Ustoz birinchi kirishda yangi parol qo'yadi. Bir xil raqamli ota-ona hisobi bo'lsa, ular bitta hisobga birlashtiriladi.</div>{% endif %}
