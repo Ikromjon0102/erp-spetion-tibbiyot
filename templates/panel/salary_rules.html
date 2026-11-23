@@ -1,17 +1,20 @@
 {% extends 'panel/base.html' %}
-{% block title %}Oylik qoidalari{% endblock %}
-{% block heading %}<a class="muted" href="{% url 'panel:payroll' %}" style="font-weight:600">Oyliklar</a> <span class="muted">/</span> Qoidalar{% endblock %}
-{% block actions %}{% if can_manage %}<a class="btn primary" href="{% url 'panel:salary_rule_add' %}"><svg class="ic"><use href="#p-plus"/></svg>Yangi qoida</a>{% endif %}{% endblock %}
+{% block title %}Xodimlar oyligi{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:payroll' %}{% if branch %}?filial={{ branch.pk }}{% endif %}" style="font-weight:600">Oyliklar</a> <span class="muted">/</span> Xodimlar oyligi{% endblock %}
 {% block content %}
+<form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px">
+  {% if branches|length > 1 %}<select name="filial" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.pk }}"{% if branch and b.pk == branch.pk %} selected{% endif %}>{{ b.organization.label }} · {{ b.name }}</option>{% endfor %}</select>{% elif branch %}<span class="muted">{{ branch }}</span>{% endif %}
+  <input type="search" name="q" value="{{ q }}" placeholder="Ism yoki familiya…" style="flex:1;min-width:0">
+</form>
 <div class="card" style="padding:6px 10px">
-  <p class="muted" style="padding:6px 8px 0">Oylik o'zgarsa yangi qoida qo'shing: u ko'rsatilgan oydan boshlab amal qiladi, eski oylarning hisobi o'zgarmaydi. Foiz — xodimning o'quvchilari shu oy qilgan haqiqiy to'lovdan.</p>
-  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th>Filial</th><th>Qoida</th><th>Kuchga kiradi</th><th></th></tr></thead><tbody>
+  <p class="muted" style="padding:6px 8px 0">Har bir ustoz va xodim — amaldagi oyligi. {% if missing %}<b style="color:var(--late)">{{ missing }} kishiga belgilanmagan</b> (tepada). {% endif %}Oylik o'zgarsa — qaysi oydan ekanini ko'rsatib yangisini kiriting, eski oylar hisobi o'zgarmaydi.</p>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Ism</th><th>Lavozim</th><th>Oylik</th><th class="hm">Qaysi oydan</th><th></th></tr></thead><tbody>
   {% for x in rows %}<tr>
-    <td><b>{{ x.r.employee.last_name }} {{ x.r.employee.first_name }}</b></td><td class="muted">{{ x.r.branch }}</td>
-    <td>{{ x.r.get_kind_display }}: <b>{{ x.r.describe }}</b>{% if x.current %} <span class="badge">amalda</span>{% else %} <span class="badge gray">eski</span>{% endif %}</td>
-    <td>{{ x.r.effective_from|date:"m.Y" }}</td>
-    <td style="text-align:right">{% if can_manage %}<form method="post" action="{% url 'panel:salary_rule_delete' x.r.pk %}" style="display:inline" data-confirm="Qoida o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endif %}</td>
-  </tr>{% empty %}<tr><td colspan="5"><div class="empty">Qoida kiritilmagan</div></td></tr>{% endfor %}
+    <td><b>{{ x.u.last_name }} {{ x.u.first_name }}</b></td><td class="muted">{{ x.role }}</td>
+    <td>{% if x.rule %}<b>{{ x.rule.describe }}</b> <span class="muted">· {{ x.rule.get_kind_display|lower }}</span>{% else %}<span class="badge warn">belgilanmagan</span>{% endif %}</td>
+    <td class="hm">{% if x.rule %}{{ x.rule.effective_from|date:"m.Y" }}{% endif %}</td>
+    <td style="text-align:right"><a class="btn small{% if not x.rule and can_manage %} primary{% endif %}" href="{% url 'panel:employee_salary' x.u.pk %}?next={{ request.get_full_path|urlencode }}">{% if can_manage %}{% if x.rule %}O'zgartirish{% else %}Belgilash{% endif %}{% else %}Ko'rish{% endif %}</a></td>
+  </tr>{% empty %}<tr><td colspan="5"><div class="empty">Bu filialda ustoz yoki xodim yo'q</div></td></tr>{% endfor %}
   </tbody></table></div>
 </div>
 {% endblock %}

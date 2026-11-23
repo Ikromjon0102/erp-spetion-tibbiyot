@@ -48,6 +48,7 @@
   @media (max-width:960px){ .ow-3 { grid-template-columns:1fr; } .ow-kpi .v { font-size:25px; } }
 </style>
 
+{% include 'panel/_paydays.html' %}
 <div class="ow-bar">
   <div class="ow-month">
     <a href="?oy={{ r.prev|date:'Y-m' }}&davr={{ period }}" aria-label="Oldingi oy">‹</a><b>{{ month_label }}</b>

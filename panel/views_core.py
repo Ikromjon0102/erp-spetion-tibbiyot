@@ -91,6 +91,10 @@ def dashboard(request):
         from .views_finance import totals
         ctx.update(totals(request.user))
     ctx['units'] = _units_summary(request, granted, today)
+    if 'payroll.view' in granted:
+        from finance.salary import reminders
+        ctx['paydays'] = reminders(request.user, today)
+        ctx['paydays_multi'] = len({p['org'].pk for p in ctx['paydays']}) > 1
     if 'announcements.view' in granted:
         latest = scope_announcements(Announcement.objects.exclude(title__startswith='[Sinov]'), request.user).order_by('-created_at').first()
         if latest:

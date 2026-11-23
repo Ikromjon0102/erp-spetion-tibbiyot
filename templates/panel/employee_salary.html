@@ -1,0 +1,39 @@
+{% extends 'panel/base.html' %}
+{% load app_extras %}
+{% block title %}Oylik · {{ e.get_full_name }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:salary_rules' %}" style="font-weight:600">Xodimlar oyligi</a> <span class="muted">/</span> {{ e.last_name }} {{ e.first_name }}{% endblock %}
+{% block actions %}{% if back %}<a class="btn" href="{{ back }}"><svg class="ic"><use href="#p-x"/></svg>Orqaga</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid g2">
+  <div>
+    {% include 'panel/_salary_card.html' with salary=info %}
+    {% if form %}
+    <form method="post" class="card">{% csrf_token %}
+      <h2>Oylikni belgilash / o'zgartirish</h2>
+      <input type="hidden" name="next" value="{{ back }}">
+      {% if form.branch.field.queryset.count > 1 %}{% include 'panel/_field.html' with f=form.branch %}{% else %}<input type="hidden" name="branch" value="{{ form.branch.value }}">{% endif %}
+      {% include 'panel/_field.html' with f=form.salary_kind %}
+      <div data-sal="fixed">{% include 'panel/_field.html' with f=form.salary_amount %}</div>
+      <div data-sal="percent">{% include 'panel/_field.html' with f=form.salary_percent %}</div>
+      {% include 'panel/_field.html' with f=form.effective_from %}
+      <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button>
+    </form>
+    <script>
+    (function(){ var sel = document.querySelector('[name=salary_kind]'); if (!sel) return;
+      function sync(){ document.querySelectorAll('[data-sal]').forEach(function(el){ el.style.display = el.dataset.sal === sel.value ? '' : 'none'; }); }
+      sel.addEventListener('change', sync); sync(); })();
+    </script>
+    {% endif %}
+  </div>
+  <div class="card" style="padding:6px 10px">
+    <h2 style="padding:8px 8px 0">Tarix</h2>
+    <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Qaysi oydan</th><th>Oylik</th>{% if info.multi %}<th>Filial</th>{% endif %}<th></th></tr></thead><tbody>
+    {% for r in history %}<tr>
+      <td>{{ r.effective_from|date:"m.Y" }}</td><td><b>{{ r.describe }}</b> <span class="muted">· {{ r.get_kind_display|lower }}</span></td>
+      {% if info.multi %}<td class="muted">{{ r.branch.name }}</td>{% endif %}
+      <td style="text-align:right">{% if info.can_manage %}<form method="post" action="{% url 'panel:salary_rule_delete' r.pk %}" style="display:inline" data-confirm="Bu yozuv o'chirilsinmi? Shu oydan keyingi hisoblar oldingi oylikka qaytadi." data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn"><svg class="ic"><use href="#p-trash"/></svg></button></form>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="4"><div class="empty">Oylik hali kiritilmagan</div></td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+</div>
+{% endblock %}

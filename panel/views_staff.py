@@ -62,13 +62,16 @@ def staff_list(request):
 @panel_required('staff.manage')
 def staff_add(request):
     me = request.user
+    from . import salary
     form = StaffCreateForm(request.POST or None)
+    with_salary = salary.add_fields(form, me)
     if not is_owner(me):
         form.fields['position'].queryset = Position.objects.filter(is_owner=False)
     selected = chosen_branches(request) if request.method == 'POST' else default_selection(request)
     picker_error = ''
     if request.method == 'POST' and not selected:
         picker_error = "Kamida bitta filialni belgilang"
+    pay = salary.check(form) if request.method == 'POST' else None
     if request.method == 'POST' and form.is_valid() and selected:
         d = form.cleaned_data
         digits = to_digits(d['phone'])
@@ -91,6 +94,7 @@ def staff_add(request):
                     user = existing
                     user.branches.add(*selected)
                 profile = StaffProfile.objects.create(user=user, position=position, perms=perms)
+                salary.apply(request, user, selected, pay)
             audit.log(request, "Xodim qo'shdi", profile, label=f"{user.get_full_name() or user.username} — {position.name}",
                       details={'lavozim': position.name, 'ruxsatlar': [LABELS[p] for p in perms]}, target_type='staff')
             if created:
@@ -103,7 +107,7 @@ def staff_add(request):
             follow_to(request, selected)
             return redirect('panel:staff_detail', pk=profile.pk)
     return render(request, 'panel/staff_add.html', {'nav': 'staff', 'form': form, 'picker': picker_groups(me, set(selected)),
-                                                    'picker_error': picker_error})
+                                                    'picker_error': picker_error, 'with_salary': with_salary})
 
 
 def _recent_changes(viewer, profile):
@@ -160,6 +164,7 @@ def staff_detail(request, pk):
     return render(request, 'panel/staff_detail.html', {
         'nav': 'staff', 'p': profile, 'editable': editable, 'is_self': is_self, 'positions': positions, 'matrix': matrix,
         'recent': _recent_changes(me, profile),
+        'salary': None if profile.is_owner else __import__('panel.salary', fromlist=['card']).card(me, profile.user),
         'branch_target': profile.user, 'branch_action': reverse('panel:staff_branches', args=[profile.pk]),
         'branch_groups': branch_choices(me, profile.user) if editable else None,
     })

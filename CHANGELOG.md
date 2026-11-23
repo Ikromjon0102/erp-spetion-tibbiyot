@@ -2,6 +2,14 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Oylik: kiritish, avans va yakuniy hisob (2026-11-23, hisobchi fikri)
+- **Qo'shishda oylik:** «Ustoz qo'shish» va «Xodim qo'shish» formalarida «Oylik ish haqi» bloki — qat'iy oylik (so'm) yoki foiz (o'quvchilar to'lovidan), yoki «keyin kiritiladi». Faqat oylik ruxsati borlarga (founder, hisobchi) chiqadi; direktor ustoz qo'shsa blok o'rnida «oylikni hisobchi kiritadi» yoziladi. Bir nechta filial belgilansa: foiz — hammasiga, qat'iy oylik — birinchi filialga.
+- **Kartada «Oylik» bloki** (ustoz va xodim sahifasi, `payroll.view` bo'lsa): amaldagi oylik, shu oy avansi va yakuniy hisob holati; «Oylikni o'zgartirish» → bitta odamning oylik sahifasi (o'zgartirish «qaysi oydan» bilan, eski oylar o'zgarmaydi; tarix).
+- **«Xodimlar oyligi»** (avvalgi «Oylik qoidalari» o'rniga): filialdagi hamma ustoz va xodim, oyligi belgilanmaganlar tepada. Founder ro'yxatda yo'q.
+- **Avans va yakuniy hisob:** tashkilot bo'yicha sozlama — avans kuni (standart 15) va foizi (standart 50%, minggacha yaxlitlanadi); yakuniy hisob — oyning oxirgi kuni. Oyliklar sahifasida ikki karta: sana, «N kun qoldi / o'tdi», reja, to'langan, to'lanmagan. Jadvalda «Avans» ustuni va «Avans» tugmasi (summa va tur oldindan to'ldiriladi).
+- Joriy oy hisobi sahifa ochilganda o'zi yangilanadi («Qayta hisoblash» tugmasi qoldi). Oyligi belgilanmaganlar soni ogohlantirishda.
+- **Eslatma:** avansdan 3 kun oldin va oyning oxirgi 3 kunida (o'tgan oy qoldig'i — keyingi oyning 1–10 kunlari) bosh sahifada va founder «Raqamlar»ida: «Avans · 15-noyabr (2 kun qoldi) — 12 kishiga … so'm to'lanmagan».
+
 ## Founder ko'rinmaydi; tashkilot va filial qo'shish — faqat founder (2026-11-23)
 - **Founder hech kimga ko'rinmaydi:** «maktab egasi» va texnik admin boshqa xodimlarning «Xodimlar» ro'yxatida, sonida va kartasida yo'q (kartasi 404); ular qilgan ishlar «Faoliyat jurnali»da va xodim kartasidagi «Oxirgi o'zgarishlar»da quyi xodimlarga umuman ko'rsatilmaydi. Founderlar bir-birini va hamma yozuvni ko'radi.
 - **Filial qo'shish** («Tashkilot va brend» → «Filiallar»): nomi, manzili, telefoni; mavjud filialni qayta nomlash. Tashkilot ichida nom takrorlanmaydi.

@@ -15,7 +15,10 @@ def owner_home(request):
     suffix = 'y' if period == 'yil' else 'm'
     kpi = {'income': g[f'income_{suffix}'], 'expense': g[f'expense_{suffix}'], 'profit': g[f'profit_{suffix}']}
     month_label = f"{owner_stats.UZ_MONTHS[month.month]} {month.year}"
+    from finance.salary import reminders
+    paydays = reminders(request.user, today)
     return render(request, 'panel/owner.html', {
         'nav': 'dashboard', 'r': report, 'today': today, 'period': period, 'kpi': kpi, 'month_label': month_label,
+        'paydays': paydays, 'paydays_multi': len({p['org'].pk for p in paydays}) > 1,
         'period_label': "O'quv yili (1-sentabrdan)" if period == 'yil' else month_label,
     })

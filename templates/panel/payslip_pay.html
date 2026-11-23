@@ -4,6 +4,7 @@
 {% block content %}
 <div class="card" style="max-width:520px">
   <p style="margin:0 0 4px"><b>{{ slip.month|date:"F Y" }}</b> · jami <b>{{ slip.total|floatformat:0 }}</b> so'm · to'langan {{ slip.paid|floatformat:0 }} · qoldiq <b>{{ slip.remaining|floatformat:0 }}</b></p>
+  <p class="muted" style="margin:0">Avans ({{ adv_date|date:"j F" }}): {{ st.adv_plan|floatformat:0 }} so'm{% if st.adv_due %} — <b style="color:var(--late)">{{ st.adv_due|floatformat:0 }} to'lanmagan</b>{% else %} — berilgan{% endif %} · Yakuniy hisob: {{ end_date|date:"j F" }}</p>
 </div>
 <form method="post" class="card" style="max-width:520px">{% csrf_token %}
   {% include 'panel/_field.html' with f=form.amount %}

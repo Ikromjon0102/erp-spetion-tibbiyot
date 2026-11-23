@@ -108,10 +108,13 @@ def teachers(request):
 @panel_required('teachers.add')
 def teacher_add(request):
     from .branch_assign import chosen_branches, default_selection, follow_to, picker_groups
+    from . import salary
     form = TeacherForm(request.POST or None)
+    with_salary = salary.add_fields(form, request.user)
     upload = request.FILES.get('photo')
     selected = chosen_branches(request) if request.method == 'POST' else default_selection(request)
     picker_error = "Kamida bitta filialni belgilang" if request.method == 'POST' and not selected else ''
+    pay = salary.check(form) if request.method == 'POST' else None
     if request.method == 'POST' and form.is_valid() and selected and photo_ok(form, upload):
         d = form.cleaned_data
         digits = to_digits(d['phone'])
@@ -121,6 +124,7 @@ def teacher_add(request):
             user.save()      # bir xil raqamli ota-ona hisobi bo'lsa, o'zi birlashtiriladi
             user.branches.set(selected)          # faqat formada belgilangan filiallar
             password = _initial_password(user)
+            salary.apply(request, user, selected, pay)
         audit.log(request, "Ustoz qo'shdi", user, label=user.get_full_name(), details={'telefon': d['phone']}, target_type='teacher')
         if not user.access_id:
             user.access_id = next_teacher_id()
@@ -132,7 +136,8 @@ def teacher_add(request):
         follow_to(request, selected)
         return redirect('panel:teacher', pk=user.pk)
     return render(request, 'panel/teacher_form.html', {'nav': 'teachers', 'form': form, 'title': "Ustoz qo'shish",
-                                                       'picker': picker_groups(request.user, set(selected)), 'picker_error': picker_error})
+                                                       'picker': picker_groups(request.user, set(selected)), 'picker_error': picker_error,
+                                                       'with_salary': with_salary})
 
 
 @panel_required('teachers.view')
@@ -144,6 +149,8 @@ def teacher_detail(request, pk):
     ctx = {'nav': 'teachers', 'u': user, 'teachings': teachings, 'lessons': lessons, 'granted': granted,
            'children': list(user.children.select_related('user', 'group')) if user.has_children else [],
            'assign': AssignForm(user=request.user)}
+    from .salary import card
+    ctx['salary'] = card(request.user, user)
     from .branch_assign import branch_choices
     ctx.update({'branch_target': user, 'branch_action': reverse('panel:teacher_branches', args=[user.pk]),
                 'branch_groups': branch_choices(request.user, user) if 'teachers.change' in granted else None})

@@ -1,0 +1,33 @@
+{# Ustoz/xodim kartasidagi «Oylik» bloki. salary — panel.salary.card() natijasi. #}
+{% load app_extras %}
+{% if salary %}
+<div class="card sal-card">
+  <h2>Oylik <small class="muted">avans va yakuniy hisob</small></h2>
+  {% for r in salary.rows %}
+  <div class="sal-row">
+    {% if salary.multi %}<div class="muted sal-br">{{ r.branch.organization.label }} · {{ r.branch.name }}</div>{% endif %}
+    {% if r.rule %}
+      <div class="sal-amt"><b>{{ r.rule.describe }}</b> <span class="muted">· {{ r.rule.get_kind_display|lower }}, {{ r.rule.effective_from|date:"m.Y" }} dan</span></div>
+      {% if r.slip %}
+      <div class="sal-steps">
+        <span class="sal-step {% if r.st.adv_due %}due{% else %}ok{% endif %}">Avans · {{ r.adv_date|date:"j F" }}: {% if r.st.adv_due %}{{ r.st.adv_due|money }} to'lanmagan{% else %}to'langan{% endif %}</span>
+        <span class="sal-step {% if r.st.remaining %}due{% else %}ok{% endif %}">Yakuniy · {{ r.end_date|date:"j F" }}: {% if r.st.remaining %}qoldiq {{ r.st.remaining|money }}{% else %}to'langan{% endif %}</span>
+      </div>
+      {% endif %}
+    {% else %}
+      <div><span class="badge warn">oylik belgilanmagan</span></div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% if not salary.rows %}<p class="muted">Sizga ruxsatli filialda ishlamaydi.</p>{% endif %}
+  {% if salary.rows %}<a class="btn small" href="{% url 'panel:employee_salary' salary.employee.pk %}?next={{ request.path|urlencode }}">{% if salary.can_manage %}<svg class="ic"><use href="#p-edit"/></svg>Oylikni o'zgartirish{% else %}Batafsil{% endif %}</a>{% endif %}
+</div>
+<style>
+  .sal-row { padding:8px 0; border-bottom:1px solid var(--line); } .sal-row:last-of-type { border-bottom:0; }
+  .sal-br { font-size:12.5px; margin-bottom:2px; } .sal-amt b { font-size:17px; }
+  .sal-steps { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .sal-step { font-size:12.5px; padding:3px 9px; border-radius:999px; border:1px solid var(--line); }
+  .sal-step.ok { color:var(--ok); } .sal-step.due { color:var(--late); font-weight:700; }
+  .sal-card .btn { margin-top:10px; }
+</style>
+{% endif %}

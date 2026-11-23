@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django import forms
+from django.db import models
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -10,8 +11,9 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
-from finance import payroll
+from finance import payroll, salary
 from finance.models import Method, Payslip, SalaryPayment, SalaryRule
+from org.models import Organization
 from org.scope import branch_ids, branches_for, pick_branch, scope_by_branch
 
 from . import audit
@@ -34,7 +36,7 @@ def _current_branch(request):
 
 
 def _slip_or_404(request, pk):
-    return get_object_or_404(scope_by_branch(Payslip.objects.select_related('employee', 'branch'), request.user), pk=pk)
+    return get_object_or_404(scope_by_branch(Payslip.objects.select_related('employee', 'branch__organization'), request.user), pk=pk)
 
 
 @panel_required('payroll.view')
@@ -43,13 +45,47 @@ def payroll_page(request):
     granted = perms_of(request.user)
     month = parse_month(request.GET.get('oy'))
     branch, branches = _current_branch(request)
+    today = timezone.localdate()
+    if branch and month == today.replace(day=1):          # joriy oy hisobi doim yangi (yangi xodim, o'zgargan oylik, foizdagi to'lovlar)
+        payroll.ensure_payslips(branch, month)
     slips = list(Payslip.objects.filter(branch=branch, month=month).select_related('employee').prefetch_related('payments')) if branch else []
+    org = branch.organization if branch else None
+    for s in slips:
+        s.st = salary.slip_status(s, org.advance_percent)
     totals = {'total': sum((s.total for s in slips), Decimal(0)), 'paid': sum((s.paid for s in slips), Decimal(0))}
     totals['remaining'] = totals['total'] - totals['paid']
+    missing = salary.employees_qs(request.user).filter(branches=branch).exclude(salary_rules__branch=branch).count() if branch else 0
     return render(request, 'panel/payroll.html', {
         'nav': 'payroll', 'month': month, 'prev_month': shift_month(month, -1), 'next_month': shift_month(month, 1),
-        'branch': branch, 'branches': branches, 'slips': slips, 'totals': totals,
+        'branch': branch, 'branches': branches, 'slips': slips, 'totals': totals, 'org': org, 'missing': missing,
+        'sched': salary.schedule(org, month, slips, today) if org else None, 'settings_form': ScheduleForm(instance=org) if org else None,
         'can_manage': 'payroll.manage' in granted, 'has_rules': bool(branch and SalaryRule.objects.filter(branch=branch).exists())})
+
+
+class ScheduleForm(forms.ModelForm):
+    class Meta:
+        model = Organization
+        fields = ['advance_day', 'advance_percent']
+
+
+@require_POST
+@panel_required('payroll.manage')
+def payroll_settings(request):
+    """Avans kuni va foizi — tashkilot bo'yicha (shu sahifadagi filialning tashkiloti)."""
+    branch, _ = _current_branch(request)
+    if branch is None:
+        return redirect('panel:payroll')
+    org = branch.organization
+    before = {'Avans kuni': org.advance_day, 'Avans foizi': org.advance_percent}
+    form = ScheduleForm(request.POST, instance=org)
+    if form.is_valid():
+        form.save()
+        audit.log(request, "Avans jadvalini o'zgartirdi", org, label=org.label, target_type='payroll',
+                  details=audit.changes(before, {'Avans kuni': org.advance_day, 'Avans foizi': org.advance_percent}, {k: k for k in before}))
+        messages.success(request, f"Avans: har oyning {org.advance_day}-kuni, oylikning {org.advance_percent}%")
+    else:
+        messages.error(request, "Avans kuni 1–28, foiz 0–100 bo'lsin")
+    return redirect(f"{reverse('panel:payroll')}?oy={request.POST.get('oy', '')}&filial={branch.pk}")
 
 
 @require_POST
@@ -107,8 +143,11 @@ class PayForm(forms.Form):
 @panel_required('payroll.manage')
 def payslip_pay(request, pk):
     slip = _slip_or_404(request, pk)
-    form = PayForm(request.POST or None, initial={'amount': int(slip.remaining) if slip.remaining > 0 else None, 'paid_on': timezone.localdate(),
-                                                  'method': 'cash'})
+    st = salary.slip_status(slip, slip.branch.organization.advance_percent)
+    advance = request.GET.get('turi') == 'avans' and st['adv_due'] > 0
+    amount = st['adv_due'] if advance else slip.remaining
+    form = PayForm(request.POST or None, initial={'amount': int(amount) if amount > 0 else None, 'paid_on': timezone.localdate(),
+                                                  'method': 'cash', 'kind': 'advance' if advance else 'salary'})
     if request.method == 'POST' and form.is_valid():
         d = form.cleaned_data
         p = payroll.pay(slip, d['amount'], d['kind'], d['paid_on'], d['method'], request.user)
@@ -116,7 +155,9 @@ def payslip_pay(request, pk):
                   details={'summa': _money(p.amount), 'turi': p.get_kind_display()}, target_type='payroll')
         messages.success(request, f"{_money(p.amount)} so'm to'landi (xarajatlarga «Maosh» sifatida yozildi)")
         return redirect(f"{reverse('panel:payroll')}?oy={slip.month:%Y-%m}&filial={slip.branch_id}")
-    return render(request, 'panel/payslip_pay.html', {'nav': 'payroll', 'form': form, 'slip': slip, 'payments': slip.payments.all()})
+    return render(request, 'panel/payslip_pay.html', {'nav': 'payroll', 'form': form, 'slip': slip, 'payments': slip.payments.all(), 'st': st,
+                                                      'adv_date': salary.advance_date(slip.branch.organization, slip.month),
+                                                      'end_date': salary.month_end(slip.month)})
 
 
 @require_POST
@@ -134,12 +175,22 @@ def payment_delete(request, pk):
 
 @panel_required('payroll.view')
 def salary_rules(request):
-    rules = list(scope_by_branch(SalaryRule.objects.select_related('employee', 'branch'), request.user))
-    latest = {}
-    for r in rules:      # ro'yxat yangidan eskiga: har (xodim, filial) uchun birinchisi — amaldagi
-        latest.setdefault((r.employee_id, r.branch_id), r.pk)
-    rows = [{'r': r, 'current': latest[(r.employee_id, r.branch_id)] == r.pk} for r in rules]
-    return render(request, 'panel/salary_rules.html', {'nav': 'payroll', 'rows': rows, 'can_manage': 'payroll.manage' in perms_of(request.user)})
+    """Xodimlar oyligi: filialdagi har bir ustoz va xodim — amaldagi oyligi yoki «belgilanmagan»."""
+    branch, branches = _current_branch(request)
+    q = request.GET.get('q', '').strip()
+    people = salary.employees_qs(request.user).filter(branches=branch).select_related('staff_profile__position') if branch else User.objects.none()
+    if q:
+        people = people.filter(models.Q(first_name__icontains=q) | models.Q(last_name__icontains=q))
+    month = timezone.localdate().replace(day=1)
+    rows = []
+    for u in people:
+        prof = getattr(u, 'staff_profile', None)
+        rows.append({'u': u, 'rule': SalaryRule.current(u, branch, month),
+                     'role': 'Ustoz' if u.role == User.Role.TEACHER else (prof.position.name if prof else 'Xodim')})
+    rows.sort(key=lambda r: (r['rule'] is not None, r['u'].last_name, r['u'].first_name))     # belgilanmaganlar tepada
+    return render(request, 'panel/salary_rules.html', {'nav': 'payroll', 'rows': rows, 'branch': branch, 'branches': branches, 'q': q,
+                                                       'missing': sum(1 for r in rows if r['rule'] is None),
+                                                       'can_manage': 'payroll.manage' in perms_of(request.user)})
 
 
 class RuleForm(forms.ModelForm):
@@ -193,5 +244,6 @@ def salary_rule_delete(request, pk):
     r = get_object_or_404(scope_by_branch(SalaryRule.objects.all(), request.user), pk=pk)
     audit.log(request, "Oylik qoidasini o'chirdi", r, label=f'{r.employee.get_full_name()} — {r.describe()}', target_type='payroll')
     r.delete()
-    messages.success(request, "Qoida o'chirildi")
-    return redirect('panel:salary_rules')
+    messages.success(request, "Oylik yozuvi o'chirildi")
+    nxt = request.POST.get('next', '')
+    return redirect(nxt if nxt.startswith('/') and not nxt.startswith('//') else 'panel:salary_rules')

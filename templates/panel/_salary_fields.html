@@ -1,0 +1,23 @@
+{# Qo'shish formasidagi «Oylik» bloki (faqat payroll.manage bo'lsa). #}
+{% if with_salary %}
+<fieldset class="sal-fs">
+  <legend>Oylik ish haqi</legend>
+  <div class="formgrid">
+    {% include 'panel/_field.html' with f=form.salary_kind %}
+    <div data-sal="fixed">{% include 'panel/_field.html' with f=form.salary_amount %}</div>
+    <div data-sal="percent">{% include 'panel/_field.html' with f=form.salary_percent %}</div>
+  </div>
+  <p class="hint" style="margin:0">Shu oydan amal qiladi. Avans har oyning {{ request.scope.org.advance_day|default:15 }}-kuni, yakuniy hisob oyning oxirgi kuni (Oyliklar bo'limida).
+  Bir nechta filial belgilansa: foiz — hammasiga, qat'iy oylik — birinchi filialga yoziladi. Keyin kartadan o'zgartirasiz.</p>
+</fieldset>
+<style>.sal-fs { border:1px solid var(--line); border-radius:14px; padding:10px 14px 12px; margin:6px 0 14px; } .sal-fs legend { font-weight:800; padding:0 6px; }</style>
+<script>
+(function(){
+  var sel = document.querySelector('[name=salary_kind]'); if (!sel) return;
+  function sync(){ document.querySelectorAll('[data-sal]').forEach(function(el){ el.style.display = el.dataset.sal === sel.value ? '' : 'none'; }); }
+  sel.addEventListener('change', sync); sync();
+})();
+</script>
+{% else %}
+<p class="hint">Oylikni hisobchi «Oyliklar» bo'limida kiritadi (sizda oylik ruxsati yo'q).</p>
+{% endif %}

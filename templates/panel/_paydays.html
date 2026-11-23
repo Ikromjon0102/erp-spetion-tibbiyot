@@ -1,0 +1,16 @@
+{# Avans / yakuniy hisob eslatmasi (finance.salary.reminders). #}
+{% load panel_extras %}
+{% for p in paydays %}
+<a class="payday {{ p.state }}" href="{% url 'panel:payroll' %}?oy={{ p.month|date:'Y-m' }}{% if p.branch %}&filial={{ p.branch.pk }}{% endif %}">
+  <svg class="ic"><use href="#p-wallet"/></svg>
+  <span><b>{% if p.kind == 'advance' %}Avans{% else %}Yakuniy hisob{% endif %} · {{ p.date|date:"j F" }}</b> <span class="w">({{ p.when }})</span>{% if paydays_multi %} · {{ p.org.label }}{% endif %}<br>
+  <span class="s">{{ p.people }} kishiga {{ p.due|mny }} so'm to'lanmagan</span></span>
+  <span class="go">→</span>
+</a>
+{% endfor %}
+{% if paydays %}<style>
+  .payday { display:flex; align-items:center; gap:12px; padding:10px 14px; margin:0 0 10px; border-radius:14px; border:1px solid var(--line);
+            border-left:4px solid var(--late); background:var(--card, transparent); color:inherit; text-decoration:none; min-width:0; }
+  .payday.late { border-left-color:var(--bad); } .payday .w { color:var(--late); font-weight:700; } .payday.late .w { color:var(--bad); }
+  .payday .s { font-size:13px; color:var(--muted); } .payday .go { margin-left:auto; font-weight:800; }
+</style>{% endif %}

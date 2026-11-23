@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import branch_assign, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
+from . import branch_assign, salary, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
 
 app_name = 'panel'
 urlpatterns = [
@@ -110,6 +110,8 @@ urlpatterns = [
     path('oyliklar/<int:pk>/tolash/', views_payroll.payslip_pay, name='payslip_pay'),
     path('oyliklar/tolov/<int:pk>/bekor/', views_payroll.payment_delete, name='salary_payment_delete'),
     path('oyliklar/qoidalar/', views_payroll.salary_rules, name='salary_rules'),
+    path('oyliklar/jadval/', views_payroll.payroll_settings, name='payroll_settings'),
+    path('oyliklar/xodim/<int:pk>/', salary.employee_salary, name='employee_salary'),
     path('oyliklar/qoidalar/yangi/', views_payroll.salary_rule_add, name='salary_rule_add'),
     path('oyliklar/qoidalar/<int:pk>/ochirish/', views_payroll.salary_rule_delete, name='salary_rule_delete'),
     path('tolovlar/hisobotlar/', views_finance.reports_page, name='reports'),

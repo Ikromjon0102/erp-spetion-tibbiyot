@@ -50,6 +50,7 @@
       <form method="post" action="{% url 'panel:staff_remove' p.pk %}" data-confirm="Xodimdan panel ruxsati olib tashlansinmi? U boshqaruv paneliga kira olmay qoladi." data-confirm-ok="Olib tashlash" data-confirm-danger>{% csrf_token %}<button class="btn small danger">Paneldan olib tashlash</button></form>
     </div>{% endif %}</div>
     {% include 'panel/_branches_card.html' %}
+    {% include 'panel/_salary_card.html' %}
     <div class="card"><h2>Oxirgi o'zgarishlar</h2>
       {% for e in recent %}<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>{{ e.verb }}</b><div class="muted">{{ e.actor_name }} · {{ e.created_at|date:"d.m.Y H:i" }}</div></div>
       {% empty %}<div class="muted">Hali yozuv yo'q</div>{% endfor %}

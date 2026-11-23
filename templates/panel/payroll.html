@@ -1,9 +1,10 @@
 {% extends 'panel/base.html' %}
+{% load app_extras panel_extras %}
 {% block title %}Oyliklar{% endblock %}
 {% block heading %}Oyliklar{% endblock %}
 {% block actions %}
-<a class="btn" href="{% url 'panel:salary_rules' %}"><svg class="ic"><use href="#p-gear"/></svg>Oylik qoidalari</a>
-{% if can_manage and branch %}<form method="post" action="{% url 'panel:payroll_calculate' %}" style="display:inline">{% csrf_token %}<input type="hidden" name="oy" value="{{ month|date:'Y-m' }}"><input type="hidden" name="filial" value="{{ branch.pk }}"><button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Hisoblash</button></form>{% endif %}
+<a class="btn" href="{% url 'panel:salary_rules' %}{% if branch %}?filial={{ branch.pk }}{% endif %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar oyligi{% if missing %} <span class="badge warn">{{ missing }}</span>{% endif %}</a>
+{% if can_manage and branch %}<form method="post" action="{% url 'panel:payroll_calculate' %}" style="display:inline">{% csrf_token %}<input type="hidden" name="oy" value="{{ month|date:'Y-m' }}"><input type="hidden" name="filial" value="{{ branch.pk }}"><button class="btn"><svg class="ic"><use href="#p-refresh"/></svg>Qayta hisoblash</button></form>{% endif %}
 {% endblock %}
 {% block content %}
 <form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px">
@@ -11,27 +12,65 @@
   <b style="min-width:110px;text-align:center">{{ month|date:"F Y" }}</b>
   <a class="btn" href="?oy={{ next_month|date:'Y-m' }}{% if branch %}&filial={{ branch.pk }}{% endif %}" aria-label="Keyingi oy">›</a>
   <input type="hidden" name="oy" value="{{ month|date:'Y-m' }}">
-  {% if branches|length > 1 %}<select name="filial" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.pk }}"{% if branch and b.pk == branch.pk %} selected{% endif %}>{{ b }}</option>{% endfor %}</select>{% elif branch %}<span class="muted">{{ branch }}</span>{% endif %}
+  {% if branches|length > 1 %}<select name="filial" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.pk }}"{% if branch and b.pk == branch.pk %} selected{% endif %}>{{ b.organization.label }} · {{ b.name }}</option>{% endfor %}</select>{% elif branch %}<span class="muted">{{ branch }}</span>{% endif %}
 </form>
 
-<div class="card" style="display:flex;gap:18px;flex-wrap:wrap">
-  <div><div class="muted" style="font-size:12.5px">To'lanishi kerak</div><b style="font-size:20px">{{ totals.total|floatformat:0 }} so'm</b></div>
-  <div><div class="muted" style="font-size:12.5px">To'langan</div><b style="font-size:20px">{{ totals.paid|floatformat:0 }} so'm</b></div>
-  <div><div class="muted" style="font-size:12.5px">Qoldiq</div><b style="font-size:20px">{{ totals.remaining|floatformat:0 }} so'm</b></div>
+{% if missing %}<div class="msg warn" style="margin-bottom:12px">{{ missing }} ta ustoz/xodimga oylik belgilanmagan — ular hisobga kirmaydi. <a href="{% url 'panel:salary_rules' %}?filial={{ branch.pk }}"><b>Belgilash →</b></a></div>{% endif %}
+
+{% if sched %}
+<div class="pay-steps">
+  <div class="card pay-step {{ sched.advance.state }}{% if not sched.advance.due %} done{% endif %}">
+    <div class="k">1 · Avans <span class="muted">({{ sched.advance.percent }}%)</span></div>
+    <div class="d">{{ sched.advance.date|date:"j F" }} <span class="when">· {% if sched.advance.due %}{{ sched.advance.when }}{% else %}yopildi{% endif %}</span></div>
+    <div class="row"><span>Reja</span><b>{{ sched.advance.plan|mny }}</b></div>
+    <div class="row"><span>To'langan</span><b>{{ sched.advance.paid|mny }}</b></div>
+    <div class="row"><span>To'lanmagan</span><b class="{% if sched.advance.due %}due{% endif %}">{{ sched.advance.due|mny }}{% if sched.advance.people %} <small>· {{ sched.advance.people }} kishi</small>{% endif %}</b></div>
+  </div>
+  <div class="card pay-step {{ sched.final.state }}{% if not sched.final.due %} done{% endif %}">
+    <div class="k">2 · Yakuniy hisob</div>
+    <div class="d">{{ sched.final.date|date:"j F" }} <span class="when">· {% if sched.final.due %}{{ sched.final.when }}{% else %}yopildi{% endif %}</span></div>
+    <div class="row"><span>Jami oylik</span><b>{{ totals.total|mny }}</b></div>
+    <div class="row"><span>To'langan</span><b>{{ totals.paid|mny }}</b></div>
+    <div class="row"><span>Qoldiq</span><b class="{% if sched.final.due %}due{% endif %}">{{ sched.final.due|mny }}{% if sched.final.people %} <small>· {{ sched.final.people }} kishi</small>{% endif %}</b></div>
+  </div>
 </div>
+{% if can_manage %}
+<details class="card pay-set"><summary>Avans sozlamasi: har oyning <b>{{ org.advance_day }}</b>-kuni, oylikning <b>{{ org.advance_percent }}%</b> <span class="muted">· {{ org.label }}</span></summary>
+  <form method="post" action="{% url 'panel:payroll_settings' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px">{% csrf_token %}
+    <input type="hidden" name="filial" value="{{ branch.pk }}"><input type="hidden" name="oy" value="{{ month|date:'Y-m' }}">
+    <label>Avans kuni<br><input type="number" name="advance_day" min="1" max="28" value="{{ org.advance_day }}" style="width:90px"></label>
+    <label>Foiz (%)<br><input type="number" name="advance_percent" min="0" max="100" value="{{ org.advance_percent }}" style="width:90px"></label>
+    <button class="btn primary">Saqlash</button>
+  </form>
+  <p class="hint">Butun tashkilot uchun. Yakuniy hisob — har doim oyning oxirgi kuni.</p>
+</details>
+{% endif %}
+{% endif %}
 
 <div class="card" style="padding:6px 10px">
-  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th>Hisob</th><th style="text-align:right">Hisoblangan</th><th style="text-align:right">Mukofot / ushlanma</th><th style="text-align:right">Jami</th><th style="text-align:right">To'langan</th><th style="text-align:right">Qoldiq</th><th></th></tr></thead><tbody>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th class="hm">Hisob</th><th style="text-align:right">Jami</th><th style="text-align:right">Avans</th><th style="text-align:right">To'langan</th><th style="text-align:right">Qoldiq</th><th></th></tr></thead><tbody>
   {% for s in slips %}<tr>
-    <td><b>{{ s.employee.last_name }} {{ s.employee.first_name }}</b></td>
-    <td class="muted" style="font-size:12.5px">{{ s.calc_note }}{% if s.note %}<br>{{ s.note }}{% endif %}</td>
-    <td style="text-align:right">{{ s.base_amount|floatformat:0 }}</td>
-    <td style="text-align:right">{% if s.bonus %}+{{ s.bonus|floatformat:0 }}{% endif %}{% if s.deduction %} −{{ s.deduction|floatformat:0 }}{% endif %}{% if not s.bonus and not s.deduction %}—{% endif %}</td>
-    <td style="text-align:right"><b>{{ s.total|floatformat:0 }}</b></td>
-    <td style="text-align:right">{{ s.paid|floatformat:0 }}</td>
-    <td style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|floatformat:0 }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
-    <td style="text-align:right">{% if can_manage %}<a class="btn" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> <a class="btn" href="{% url 'panel:payslip_edit' s.pk %}"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
-  </tr>{% empty %}<tr><td colspan="8"><div class="empty">{% if has_rules %}Bu oy hisoblanmagan. «Hisoblash» tugmasini bosing.{% else %}Avval «Oylik qoidalari»da xodimlarga oylik belgilang.{% endif %}</div></td></tr>{% endfor %}
+    <td><a href="{% url 'panel:employee_salary' s.employee.pk %}?next={{ request.get_full_path|urlencode }}"><b>{{ s.employee.last_name }} {{ s.employee.first_name }}</b></a></td>
+    <td class="muted hm" style="font-size:12.5px">{{ s.calc_note }}{% if s.bonus %} · +{{ s.bonus|money }} mukofot{% endif %}{% if s.deduction %} · −{{ s.deduction|money }} ushlanma{% endif %}{% if s.note %}<br>{{ s.note }}{% endif %}</td>
+    <td style="text-align:right"><b>{{ s.total|mny }}</b></td>
+    <td style="text-align:right">{% if s.st.adv_due %}<span class="badge warn">{{ s.st.adv_due|mny }}</span>{% elif s.st.adv_plan %}<span class="badge gray">berildi</span>{% else %}—{% endif %}</td>
+    <td style="text-align:right">{{ s.paid|mny }}</td>
+    <td style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|mny }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
+    <td style="text-align:right;white-space:nowrap">{% if can_manage %}{% if s.st.adv_due %}<a class="btn small" href="{% url 'panel:payslip_pay' s.pk %}?turi=avans">Avans</a> {% endif %}{% if s.remaining > 0 %}<a class="btn small primary" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> {% endif %}<a class="btn small" href="{% url 'panel:payslip_edit' s.pk %}" title="Mukofot / ushlanma"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="7"><div class="empty">{% if has_rules %}Bu oy hisoblanmagan. «Qayta hisoblash» tugmasini bosing.{% else %}Avval «Xodimlar oyligi»da ustoz va xodimlarga oylik belgilang.{% endif %}</div></td></tr>{% endfor %}
   </tbody></table></div>
 </div>
+<style>
+  .pay-steps { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-bottom:12px; }
+  .pay-step { margin:0; border-left:4px solid var(--line); }
+  .pay-step .k { font-weight:800; } .pay-step .d { font-size:20px; font-weight:800; margin:2px 0 8px; }
+  .pay-step .when { font-size:13px; font-weight:600; color:var(--muted); }
+  .pay-step.soon, .pay-step.today { border-left-color:var(--late); } .pay-step.soon .when, .pay-step.today .when { color:var(--late); }
+  .pay-step.late { border-left-color:var(--bad); } .pay-step.late .when { color:var(--bad); }
+  .pay-step.done { border-left-color:var(--ok); } .pay-step.done .when { color:var(--ok); }
+  .pay-step .row { display:flex; justify-content:space-between; gap:8px; padding:3px 0; font-size:14px; }
+  .pay-step .row span { color:var(--muted); } .pay-step b.due { color:var(--late); }
+  .pay-set summary { cursor:pointer; } .pay-set { padding:10px 14px; }
+  @media (max-width:640px) { .pay-steps { grid-template-columns:minmax(0,1fr); } }
+</style>
 {% endblock %}
