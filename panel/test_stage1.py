@@ -265,3 +265,24 @@ class NewBranchAutoAssignTests(Base):
         self.client.force_login(self.owner)
         self.client.post(reverse('panel:branch_add'), {'org': self.school.pk, 'name': 'Ikkinchi bino'})
         self.assertEqual(list(d.branches.all()), [self.b_school])
+
+
+class BranchHeadTests(Base):
+    """«Filial rahbari»: o'z filialida kundalik boshqaruv; xodim, pul (xarajat/oylik), narx, jurnal — yo'q; faqat o'z filiali."""
+
+    def test_preset_and_scope(self):
+        from django.core.management import call_command
+        from panel.models import Position
+        from panel.perms import PRESETS
+        perms = next(p[2] for p in PRESETS if p[0] == 'Filial rahbari')
+        for code in ('students.add', 'teachers.add', 'payments.accept', 'monitoring.view', 'staff.view'):
+            self.assertIn(code, perms)
+        for code in ('staff.manage', 'expenses.view', 'payroll.view', 'payments.void', 'payments.settings', 'audit.view', 'org.settings'):
+            self.assertNotIn(code, perms)
+        self.assertTrue(Position.objects.filter(name='Filial rahbari').exists())
+        head = self.staff('head', perms, self.c1)
+        from org.scope import branch_ids
+        self.assertEqual(set(branch_ids(head)), {self.c1.pk})
+        self.client.force_login(head)
+        self.assertEqual(self.client.get(reverse('panel:payroll')).status_code, 403)
+        self.assertEqual(self.client.get(reverse('panel:students')).status_code, 200)

@@ -101,6 +101,10 @@ PRESETS = [
     ('Maktab egasi', True, ALL_PERMS),
     # Xarajat va oyliklar maxfiy: Direktorda ham yo'q, «Maktab egasi» (founder) kerakli odamga alohida beradi
     ('Direktor', False, _all_except('staff.manage', *[p for p in ALL_PERMS if p.startswith(('expenses.', 'payroll.'))])),
+    # Markaz filiali rahbari: o'z filialida direktor kabi kundalik boshqaruv. Narx, chegirma, to'lovni bekor qilish, jurnal va exam bog'lash —
+    # markazda (founder / markaz direktori). Qaysi filial — xodim kartasidagi «Ish filiallari» (bitta filial belgilanadi).
+    ('Filial rahbari', False, _all_except('staff.manage', 'org.settings', 'payments.settings', 'payments.discounts', 'payments.void', 'audit.view',
+                                          *[p for p in ALL_PERMS if p.startswith(('expenses.', 'payroll.'))])),
     ("Zam (o'quv ishlari)", False, ['students.view', 'students.change', 'teachers.view', 'teachers.change', 'schedule.view', 'schedule.change', 'parents.view', 'sensitive.grades', 'groups.view', 'groups.change',
                                     'monitoring.view', 'announcements.view', 'announcements.add', 'announcements.change']),
     ('Reception', False, ['students.view', 'teachers.view', 'parents.view', 'parents.add', 'parents.change', 'schedule.view', 'students.add', 'students.change', 'sensitive.phones', 'groups.view',

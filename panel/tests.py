@@ -57,7 +57,7 @@ class AccessTests(TestCase):
 
     def test_seeded_positions_exist(self):
         self.assertEqual(set(Position.objects.values_list('name', flat=True)),
-                         {'Maktab egasi', 'Direktor', "Zam (o'quv ishlari)", 'Reception', 'Hisobchi', 'Zavxoz'})
+                         {'Maktab egasi', 'Direktor', 'Filial rahbari', "Zam (o'quv ishlari)", 'Reception', 'Hisobchi', 'Zavxoz'})
         self.assertTrue(pos('Maktab egasi').is_owner)
 
     def test_perms_by_user_kind(self):

@@ -2,6 +2,11 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## «Filial rahbari» lavozimi (2026-11-23)
+- Yangi lavozim andozasi (migratsiya `panel.0008`): o'z filialida kundalik boshqaruv — o'quvchi, ustoz, ota-ona, sinf, jadval, to'lov qabul qilish, qarzdorlar, kunlik nazorat, terminallar, e'lonlar, taomnoma, xodimlar ro'yxatini ko'rish. **Yo'q:** xodim qo'shish/ruxsat, xarajat va oyliklar, narx va chegirmalar, to'lovni bekor qilish, faoliyat jurnali, exam bog'lash.
+- Qaysi filial — xodim qo'shishda «Ish filiallari»da bitta filial belgilanadi; boshqa filiallar unga ko'rinmaydi, yangi filial ham avtomatik qo'shilmaydi.
+- Sinov serverida: «Filial rahbari» (Markaz · Apteka) — +998 90 111-00-08.
+
 ## Yangi filial avtomatik biriktiriladi (2026-11-23)
 - Founder yangi filial qo'shganda u tashkilotning **hamma filialiga biriktirilgan panel xodimlariga** (markaz direktori, hisobchi...) o'zi qo'shiladi. Bitta filialda ishlaydigan xodim (filial rahbari, reception) va ustozlarga qo'shilmaydi. Tashkilotda oldin bitta filial bo'lsa hech kim avtomatik qo'shilmaydi. Kimlarga qo'shilgani xabarda va jurnalda.
 
