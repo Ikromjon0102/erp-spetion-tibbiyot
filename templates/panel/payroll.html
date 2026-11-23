@@ -48,14 +48,14 @@
 {% endif %}
 
 <div class="card" style="padding:6px 10px">
-  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Xodim</th><th class="hm">Hisob</th><th style="text-align:right">Jami</th><th style="text-align:right">Avans</th><th style="text-align:right">To'langan</th><th style="text-align:right">Qoldiq</th><th></th></tr></thead><tbody>
+  <div class="tbl-wrap"><table class="tbl stack pay-tbl"><thead><tr><th>Xodim</th><th class="hm">Hisob</th><th style="text-align:right">Jami</th><th style="text-align:right">Avans</th><th style="text-align:right">To'langan</th><th style="text-align:right">Qoldiq</th><th></th></tr></thead><tbody>
   {% for s in slips %}<tr>
     <td><a href="{% url 'panel:employee_salary' s.employee.pk %}?next={{ request.get_full_path|urlencode }}"><b>{{ s.employee.last_name }} {{ s.employee.first_name }}</b></a></td>
     <td class="muted hm" style="font-size:12.5px">{{ s.calc_note }}{% if s.bonus %} · +{{ s.bonus|money }} mukofot{% endif %}{% if s.deduction %} · −{{ s.deduction|money }} ushlanma{% endif %}{% if s.note %}<br>{{ s.note }}{% endif %}</td>
-    <td style="text-align:right"><b>{{ s.total|mny }}</b></td>
-    <td style="text-align:right">{% if s.st.adv_due %}<span class="badge warn">{{ s.st.adv_due|mny }}</span>{% elif s.st.adv_plan %}<span class="badge gray">berildi</span>{% else %}—{% endif %}</td>
-    <td style="text-align:right">{{ s.paid|mny }}</td>
-    <td style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|mny }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
+    <td data-l="Jami" style="text-align:right"><b>{{ s.total|mny }}</b></td>
+    <td data-l="Avans" style="text-align:right">{% if s.st.adv_due %}<span class="badge warn">{{ s.st.adv_due|mny }}</span>{% elif s.st.adv_plan %}<span class="badge gray">berildi</span>{% else %}—{% endif %}</td>
+    <td data-l="To'langan" style="text-align:right">{{ s.paid|mny }}</td>
+    <td data-l="Qoldiq" style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|mny }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
     <td style="text-align:right;white-space:nowrap">{% if can_manage %}{% if s.st.adv_due %}<a class="btn small" href="{% url 'panel:payslip_pay' s.pk %}?turi=avans">Avans</a> {% endif %}{% if s.remaining > 0 %}<a class="btn small primary" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> {% endif %}<a class="btn small" href="{% url 'panel:payslip_edit' s.pk %}" title="Mukofot / ushlanma"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
   </tr>{% empty %}<tr><td colspan="7"><div class="empty">{% if has_rules %}Bu oy hisoblanmagan. «Qayta hisoblash» tugmasini bosing.{% else %}Avval «Xodimlar oyligi»da ustoz va xodimlarga oylik belgilang.{% endif %}</div></td></tr>{% endfor %}
   </tbody></table></div>
@@ -71,6 +71,11 @@
   .pay-step .row { display:flex; justify-content:space-between; gap:8px; padding:3px 0; font-size:14px; }
   .pay-step .row span { color:var(--muted); } .pay-step b.due { color:var(--late); }
   .pay-set summary { cursor:pointer; } .pay-set { padding:10px 14px; }
-  @media (max-width:640px) { .pay-steps { grid-template-columns:minmax(0,1fr); } }
+  @media (max-width:640px) {
+    .pay-steps { grid-template-columns:minmax(0,1fr); }
+    .pay-tbl td[data-l] { display:flex !important; justify-content:space-between; align-items:center; gap:10px; }
+    .pay-tbl td[data-l]::before { content:attr(data-l); color:var(--muted); font-size:13px; font-weight:600; }
+    .pay-tbl td:last-child { padding-top:8px; }
+  }
 </style>
 {% endblock %}
