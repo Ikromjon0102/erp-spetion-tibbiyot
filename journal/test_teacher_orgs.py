@@ -88,9 +88,15 @@ class TeacherOrgTests(TestCase):
         plan.save()
         services.set_entry(org, 1, MealType.objects.get(organization=org, name='Tushlik'), ['Osh', 'Non'])
         p = self.payload()
-        self.assertEqual(len(p['meals']), 1)
-        self.assertEqual([d['name'] for d in p['meals'][0]['meals'][0]['dishes']], ['Osh', 'Non'])
-        self.assertTrue(timezone.localdate())
+        week = p['menus'][str(org.pk)] if str(org.pk) in p['menus'] else p['menus'][org.pk]
+        day = next(iter(week.values()))
+        self.assertEqual(day[0]['type'], 'Tushlik')
+        self.assertEqual([d['name'] for d in day[0]['dishes']], ['Osh', 'Non'])
+        self.assertEqual(day[0]['start'], '12:30')
+        self.assertIn(str(org.pk), {str(k) for k in p['themes']})                 # tanlanganda sahifa rangi uchun
+        self.client.force_login(self.t)
+        r = self.client.get('/ustoz/api/taomnoma/?date=' + timezone.localdate().isoformat()).json()
+        self.assertTrue(r['menus'])
 
     def test_teacher_page_renders_theme_toggle_and_photo_slot(self):
         self.client.force_login(self.t)

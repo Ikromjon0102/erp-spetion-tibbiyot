@@ -41,7 +41,7 @@ def teacher_home(request):
     """Ustoz sahifasi: jadval ma'lumotlari sahifaga joylanadi. O'quvchilar ismi va baholari alohida API orqali olinadi."""
     request.session['mode'] = 'teacher'
     user = request.user
-    from .teacher_data import lesson_item, lessons_for, meals_today, orgs_payload, teacher_branches
+    from .teacher_data import display_monday, lesson_item, lessons_for, org_themes, orgs_payload, teacher_branches, week_menus
     branches = teacher_branches(user)          # faqat o'z tashkilotlari: boshqa tashkilot darslari yuklanmaydi
     orgs = orgs_payload(branches)
     center_orgs = {o['id'] for o in orgs if o['center']}
@@ -66,7 +66,8 @@ def teacher_home(request):
         'orgs': orgs,
         'classes': classes,
         'lessons': data,
-        'meals': meals_today(branches),
+        'themes': org_themes(branches),
+        'menus': week_menus(branches, display_monday(timezone.localdate())),   # boshqa haftalar — /ustoz/api/taomnoma/
         'days': DAY_CODES,
         'dayNames': dict(zip(DAY_CODES, DAY_NAMES)),
         'periods': [{'period': p, 'start': s, 'end': e} for p, s, e in PERIODS],
@@ -76,6 +77,14 @@ def teacher_home(request):
 
 
 # ---------------------------------------------------------------- davomat va baho API (kirgan ustoz uchun)
+
+@teacher_required_json
+def api_menus(request):
+    """Tanlangan sana haftasi (Du–Sha) taomnomasi — ustozning taomnoma yoqilgan tashkilotlari uchun."""
+    from .teacher_data import display_monday, teacher_branches, week_menus
+    day = _parse_date(request.GET.get('date'))
+    return JsonResponse({'menus': week_menus(teacher_branches(request.user), display_monday(day))})
+
 
 @teacher_required_json
 def api_status(request):

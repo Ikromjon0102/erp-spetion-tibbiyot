@@ -6,6 +6,7 @@ app_name = 'journal'
 urlpatterns = [
     path('', views.teacher_home, name='teacher_home'),
     path('api/status/', views.api_status, name='api_status'),
+    path('api/taomnoma/', views.api_menus, name='api_menus'),
     path('api/elonlar/', views.api_news, name='api_news'),
     path('api/dars/<int:pk>/', views.api_lesson, name='api_lesson'),
     path('api/dars/<int:pk>/saqlash/', views.api_lesson_save, name='api_lesson_save'),

@@ -44,27 +44,53 @@ def orgs_payload(branches):
         o = b.organization
         if o.pk not in seen:
             seen.add(o.pk)
-            out.append({'id': o.pk, 'label': o.label, 'color': o.brand_color, 'center': o.kind == CENTER, 'kind': o.kind})
+            out.append({'id': o.pk, 'label': o.label, 'color': o.brand_color, 'center': o.kind == CENTER, 'kind': o.kind, 'meals': o.meals_enabled})
     return out
 
 
-def meals_today(branches, today=None):
-    """Bugungi taomnoma (taomnoma yoqilgan tashkilotlar uchun): [{org, color, meals: [{type, time, dishes: [{name, photo}]}]}]."""
+def display_monday(day):
+    """Jadval ko'rsatadigan haftaning dushanbasi (yakshanba kuni — keyingi hafta, sahifadagi kabi)."""
+    return day - timedelta(days=day.weekday()) if day.weekday() < 6 else day + timedelta(days=1)
+
+
+def week_menus(branches, monday):
+    """Hafta (Du–Sha) taomnomasi, taomnoma yoqilgan tashkilotlar uchun: {org_id: {'YYYY-MM-DD': [ovqat]}}.
+    Ovqat: {key, type, start, end, dishes: [{name, photo}]} — dars jadvalida o'z soatida qisqa qator, bosilsa batafsil."""
+    from datetime import datetime
     from meals.services import menu_for_date
-    today = today or timezone.localdate()
-    out, seen = [], set()
+    out, seen = {}, set()
     for b in branches:
         org = b.organization
         if org.pk in seen or not org.meals_enabled:
             continue
         seen.add(org.pk)
-        menu = menu_for_date(org, today)
-        if not menu['served']:
-            continue
-        out.append({'org': org.label, 'color': org.brand_color, 'meals': [
-            {'type': m['type'].name, 'time': f"{m['type'].start_time():%H:%M}",
-             'dishes': [{'name': d.name, 'photo': reverse('dish_photo', args=[d.pk]) if d.photo else ''} for d in m['dishes']]}
-            for m in menu['meals'] if m['served']]})
+        per = {}
+        for i in range(6):
+            d = monday + timedelta(days=i)
+            rows = []
+            for m in menu_for_date(org, d)['meals']:
+                if not m['served']:
+                    continue
+                start = m['type'].start_time()
+                end = (datetime.combine(d, start) + timedelta(minutes=30)).time()
+                rows.append({'key': f'{org.pk}-{d.isoformat()}-{m["type"].pk}', 'type': m['type'].name,
+                             'start': f'{start:%H:%M}', 'end': f'{end:%H:%M}',
+                             'dishes': [{'name': x.name, 'photo': reverse('dish_photo', args=[x.pk]) if x.photo else ''} for x in m['dishes']]})
+            if rows:
+                per[d.isoformat()] = rows
+        out[org.pk] = per
+    return out
+
+
+def org_themes(branches):
+    """Har tashkilot uchun sahifa ranglari (CSS o'zgaruvchilari): tashkilot tanlanganda butun sahifa shu rangga o'tadi."""
+    from org import theme
+    out = {}
+    for b in branches:
+        o = b.organization
+        if o.pk not in out:
+            color = o.brand_color if theme.is_valid(o.brand_color) else theme.DEFAULT_COLOR
+            out[o.pk] = {'css': str(theme.css(color)), 'accent': color.upper()}
     return out
 
 

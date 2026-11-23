@@ -179,17 +179,22 @@
   .me-av { width:48px; height:48px; border-radius:16px; overflow:hidden; flex-shrink:0; background:var(--tint); display:grid; place-items:center; font-weight:800; color:var(--accent-deep); }
   .me-av img { width:100%; height:100%; object-fit:cover; display:block; }
   .hello .txt { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .mealcard { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px; margin:12px 0; box-shadow:var(--shadow); }
-  .mealcard .mt { font:700 11px 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--accent-deep); margin:8px 0 6px; }
-  .mealcard .mt:first-of-type { margin-top:2px; }
-  .dishes { display:flex; flex-wrap:wrap; gap:8px; }
-  .dish { display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:12px; padding:4px 10px 4px 4px; font-size:13.5px; font-weight:600; }
-  .dish img, .dish .noimg { width:38px; height:38px; border-radius:9px; object-fit:cover; background:var(--tint); flex-shrink:0; }
+  /* ovqat qatori dars jadvali ichida: qisqa, bosilsa batafsil */
+  .row.meal { border-style:dashed; border-color:var(--tint-line); background:var(--tint); width:100%; text-align:left; }
+  .row.meal .mi { width:32px; height:32px; border-radius:10px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; flex-shrink:0; }
+  .row.meal .mi .ic { width:18px; height:18px; }
+  .row.meal .info small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mchip { font:700 10.5px 'Space Mono',monospace; text-transform:uppercase; background:var(--card); color:var(--accent-deep); padding:4px 8px; border-radius:8px; flex-shrink:0; }
+  .mdish { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); font-weight:700; font-size:16px; }
+  .mdish:first-child { border-top:0; }
+  .mdish img, .mdish .noimg { width:64px; height:64px; border-radius:14px; object-fit:cover; background:var(--tint); flex-shrink:0; }
+  #orgBar { margin:0 0 12px; }
   body.sheet-open .toast { bottom:calc(90px + env(safe-area-inset-bottom,0)); }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="ochips" id="orgBar" hidden></div>
 <!-- ============ BUGUN ============ -->
 <section class="pane" id="pane-today"></section>
 
@@ -218,6 +223,15 @@
   <div id="newsBox"></div>
 </section>
 
+<!-- ovqat: batafsil -->
+<div class="ov" id="mealOv"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mealTitle">
+  <div class="grab"></div>
+  <div class="sh-head">
+    <div class="grow"><div class="meta" id="mealMeta"></div><div class="title" id="mealTitle"></div></div>
+    <button class="xbtn" id="mealClose" aria-label="Yopish"><svg class="ic"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="sh-body" id="mealBody"></div>
+</div></div>
 <!-- davomat / baho varag'i -->
 <div class="ov" id="sheetOv"><div class="sheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
@@ -287,7 +301,18 @@ const WEEK_MIN = -8, WEEK_MAX = 4;
 // ---------- holat ----------
 const ORG = Object.fromEntries(S.orgs.map(o => [o.id, o]));
 const MULTI = S.orgs.length > 1;                         // ustoz bir nechta tashkilotda ishlaydi
-let selOrg = +store.get('spetion_org'); if (!ORG[selOrg]) selOrg = S.orgs.length ? S.orgs[0].id : null;
+// Tanlangan tashkilot (null — «Hammasi»). Tanlansa butun sahifa o'sha tashkilot rangiga o'tadi.
+let selOrg = MULTI ? (+store.get('spetion_org') || null) : (S.orgs.length ? S.orgs[0].id : null); if (selOrg && !ORG[selOrg]) selOrg = null;
+const themeEl = document.getElementById('org-theme'), metaColor = document.querySelector('meta[name="theme-color"]');
+const BASE_THEME = {css: themeEl ? themeEl.textContent : '', accent: metaColor ? metaColor.content : ''};
+function applyTheme(){
+  const t = (selOrg && S.themes[selOrg]) || BASE_THEME;
+  if (themeEl) themeEl.textContent = t.css;
+  if (metaColor && t.accent) metaColor.content = t.accent;
+  document.documentElement.dataset.org = selOrg || '';
+}
+function pickOrg(id){ selOrg = id || null; store.set('spetion_org', selOrg || ''); selClass = null; applyTheme(); renderAll(); vib(); }
+const classOrg = () => selOrg || (S.orgs.length ? S.orgs[0].id : null);   // «Sinflar»da doim bitta tashkilot
 let selClass = store.get('spetion_class'); if (!S.classes.some(c => c.key === selClass)) selClass = null;
 const orgTag = id => { const o = ORG[id]; return o ? `<span class="otag"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</span>` : ''; };
 let weekDay = todayIdx !== null ? todayIdx : 0, classDay = weekDay, weekOff = 0;
@@ -322,7 +347,7 @@ function overlay(id, open){
 
 // ---------- darslar ----------
 const lessonsOf = (day, pred) => S.lessons.filter(l => l.day === DAYS[day] && pred(l)).sort((a, b) => mins(a.start) - mins(b.start) || a.period - b.period);
-const mine = day => lessonsOf(day, l => String(l.teacherId) === meId);
+const mine = day => lessonsOf(day, l => String(l.teacherId) === meId && (!selOrg || l.org === selOrg));
 const state = l => nowMin >= mins(l.end) ? 'past' : nowMin >= mins(l.start) ? 'now' : 'next';
 
 async function loadMarks(date){
@@ -346,20 +371,34 @@ function rowHTML(l, date, asClass){
     ${asClass ? '' : tagFor(l, date)}${now_ ? '<span class="tag now">HOZIR</span>' : ''}`;
   return asClass ? `<div class="row">${inner}</div>` : `<button class="row ${now_ ? 'now' : ''}" data-lid="${l.id}" data-date="${date}">${inner}</button>`;
 }
-function plainList(ls, date, asClass){
+// Taomnoma (ota-ona sahifasidagidek): tushlik va yengil tushlik dars jadvalida o'z soatida qisqa qator, bosilsa batafsil
+const MEALS = {};                                       // kalit -> ovqat (oyna uchun)
+const mealsFor = (orgId, date) => ((S.menus[orgId] || {})[date] || []);
+function mealRow(m, date){
+  MEALS[m.key] = Object.assign({date}, m);
+  const now_ = date === todayStr() && nowMin >= mins(m.start) && nowMin < mins(m.end);
+  return `<button class="row meal ${now_ ? 'now' : ''}" data-meal="${esc(m.key)}"><span class="mi"><svg class="ic"><use href="#i-meal"/></svg></span>
+    <div class="time">${m.start}<small>${m.end}</small></div><div class="info"><b>${esc(m.type)}</b><small>${esc(m.dishes.map(d => d.name).join(', '))}</small></div><span class="mchip">Menyu</span></button>`;
+}
+function plainList(ls, date, asClass, orgId){
+  const meals = orgId ? mealsFor(orgId, date) : [];
+  const items = ls.map(l => ({l, start: l.start, end: l.end})).concat(meals.map(m => ({m, start: m.start, end: m.end})))
+    .sort((a, b) => mins(a.start) - mins(b.start));
   let html = '', prev = null;
-  ls.forEach(l => {
-    if (prev && mins(l.start) - mins(prev.end) >= 20) html += `<div class="row gap">${asClass ? '🍲 Tushlik' : "Bo'sh vaqt"} · ${prev.end} – ${l.start}</div>`;
-    html += rowHTML(l, date, asClass); prev = l;
+  items.forEach(it => {
+    // haqiqiy taomnoma bo'lmasa (masalan markazda) — eski belgi: uzun tanaffus
+    if (!meals.length && it.l && prev && mins(it.start) - mins(prev.end) >= 20) html += `<div class="row gap">${asClass ? 'Tanaffus' : "Bo'sh vaqt"} · ${prev.end} – ${it.start}</div>`;
+    html += it.m ? mealRow(it.m, date) : rowHTML(it.l, date, asClass); prev = it;
   });
   return html;
 }
 // Bir nechta tashkilotda ishlaydigan ustoz: darslar tashkilot bo'yicha alohida bloklarda
-function listHTML(ls, date, asClass){
-  if (!MULTI || asClass) return plainList(ls, date, asClass);
-  return S.orgs.map(o => {
+function listHTML(ls, date, asClass, orgId){
+  if (asClass) return plainList(ls, date, true, orgId);
+  if (!MULTI || selOrg) return plainList(ls, date, false, selOrg || (S.orgs[0] && S.orgs[0].id));
+  return S.orgs.map(o => {                              // «Hammasi»: har tashkilot alohida blokda
     const part = ls.filter(l => l.org === o.id);
-    return part.length ? `<div class="ohead"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</div>${plainList(part, date, false)}` : '';
+    return part.length ? `<div class="ohead"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</div>${plainList(part, date, false, o.id)}` : '';
   }).join('');
 }
 
@@ -396,12 +435,7 @@ function renderToday(){
   const ini = S.me.name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
   const av = `<div class="me-av">${S.me.photo ? `<img src="${esc(S.me.photo)}" alt="">` : esc(ini)}</div>`;
   el.innerHTML = `<div class="hello">${av}<div class="txt"><b>Assalomu alaykum, ${esc(S.me.name)}</b><span>${dt}</span></div></div>${kidsHTML()}${hero}
-    ${ls.length ? `<h2 class="sec">Bugungi darslar <small>${ls.length} ta</small></h2><div class="list" id="todayRows">${listHTML(ls, date, false)}</div>` : ''}${mealsHTML()}`;
-}
-function mealsHTML(){
-  if (!S.meals || !S.meals.length) return '';
-  return `<h2 class="sec">Bugungi taomnoma</h2>` + S.meals.map(m => `<div class="mealcard">${MULTI || S.meals.length > 1 ? `<div class="ohead" style="margin:0 0 6px"><i style="background:${esc(m.color)}"></i>${esc(m.org)}</div>` : ''}
-    ${m.meals.map(x => `<div class="mt">${esc(x.type)} · ${esc(x.time)}</div><div class="dishes">${x.dishes.map(d => `<span class="dish">${d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}${esc(d.name)}</span>`).join('')}</div>`).join('')}</div>`).join('');
+    ${ls.length ? `<h2 class="sec">Bugungi darslar <small>${ls.length} ta</small></h2><div class="list" id="todayRows">${listHTML(ls, date, false)}</div>` : ''}`;
 }
 $('pane-today').onclick = e => {
   const a = e.target.closest('[data-act]');
@@ -426,7 +460,7 @@ function renderWeek(){
   const date = dateFor(weekDay, weekOff), ls = mine(weekDay);
   $('weekList').innerHTML = ls.length ? `<div class="list">${listHTML(ls, date, false)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
 }
-function setWeek(off){ weekOff = Math.max(WEEK_MIN, Math.min(WEEK_MAX, off)); loadMarks(dateFor(weekDay, weekOff)); renderWeek(); vib(); }
+function setWeek(off){ weekOff = Math.max(WEEK_MIN, Math.min(WEEK_MAX, off)); loadMarks(dateFor(weekDay, weekOff)); loadMenus(weekOff); renderWeek(); vib(); }
 $('wkPrev').onclick = () => setWeek(weekOff - 1); $('wkNext').onclick = () => setWeek(weekOff + 1);
 $('pane-week').addEventListener('click', e => { if (e.target.id === 'wkBack') setWeek(0); });
 $('weekList').onclick = e => { const r = e.target.closest('[data-lid]'); if (r){ const l = byId[r.dataset.lid]; openSheet(l, r.dataset.date, 'att'); } };
@@ -447,9 +481,9 @@ function groupsSummary(orgId){
   }).sort((a, b) => (a.slots[0] ? mins(a.slots[0][0]) : 9999) - (b.slots[0] ? mins(b.slots[0][0]) : 9999));
 }
 function renderClasses(){
-  $('orgChips').innerHTML = MULTI ? S.orgs.map(o => `<button data-o="${o.id}" class="${o.id === selOrg ? 'on' : ''}"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</button>`).join('') : '';
-  $('orgChips').onclick = e => { const b = e.target.closest('[data-o]'); if (b){ selOrg = +b.dataset.o; store.set('spetion_org', selOrg); selClass = null; renderClasses(); vib(); } };
-  const org = ORG[selOrg];
+  $('orgChips').innerHTML = MULTI ? S.orgs.map(o => `<button data-o="${o.id}" class="${o.id === classOrg() ? 'on' : ''}"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</button>`).join('') : '';
+  $('orgChips').onclick = e => { const b = e.target.closest('[data-o]'); if (b) pickOrg(+b.dataset.o); };
+  const org = ORG[classOrg()];
   if (org && org.center){                               // markaz: faqat o'z guruhlari
     $('classTitle').textContent = 'Guruhlarim';
     $('classChips').innerHTML = ''; $('classDays').innerHTML = '';
@@ -468,7 +502,7 @@ function renderClasses(){
   dayChips('classDays', classDay, i => { classDay = i; renderClasses(); });
   const ls = lessonsOf(classDay, l => l.classKey === selClass);
   $('classList').innerHTML = !list.length ? '<div class="empty">Sinflar topilmadi</div>'
-    : ls.length ? `<div class="list">${listHTML(ls, dateFor(classDay), true)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
+    : ls.length ? `<div class="list">${listHTML(ls, dateFor(classDay), true, org && org.id)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
 }
 
 // ---------- E'LONLAR ----------
@@ -506,9 +540,44 @@ function showTab(name){
   try { history.replaceState(null, '', '#' + name); } catch(e) {}
   if (name === 'week') loadMarks(dateFor(weekDay, weekOff));
   if (name === 'news'){ renderNews(); loadNews(); }
+  renderOrgBar();
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-function renderAll(){ renderToday(); renderWeek(); renderClasses(); if (tab === 'news') renderNews(); }
+function renderOrgBar(){
+  const bar = $('orgBar');
+  bar.hidden = !MULTI || !(tab === 'today' || tab === 'week');
+  if (bar.hidden) return;
+  bar.innerHTML = `<button data-o="" class="${selOrg ? '' : 'on'}">Hammasi</button>` +
+    S.orgs.map(o => `<button data-o="${o.id}" class="${o.id === selOrg ? 'on' : ''}"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</button>`).join('');
+}
+$('orgBar').onclick = e => { const b = e.target.closest('[data-o]'); if (b) pickOrg(+b.dataset.o || null); };
+function renderAll(){ renderOrgBar(); renderToday(); renderWeek(); renderClasses(); if (tab === 'news') renderNews(); }
+
+// ---------- ovqat oynasi ----------
+document.addEventListener('click', e => {
+  const r = e.target.closest('[data-meal]'); if (!r) return;
+  const m = MEALS[r.dataset.meal]; if (!m) return;
+  const d = new Date(m.date + 'T00:00:00');
+  $('mealMeta').textContent = `OVQAT · ${d.getDate()} ${MONTHS[d.getMonth()]} · ${m.start}`;
+  $('mealTitle').textContent = m.type;
+  $('mealBody').innerHTML = m.dishes.map(x => `<div class="mdish">${x.photo ? `<img src="${esc(x.photo)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}<span>${esc(x.name)}</span></div>`).join('');
+  overlay('mealOv', true);
+});
+$('mealClose').onclick = () => overlay('mealOv', false);
+$('mealOv').addEventListener('click', e => { if (e.target.id === 'mealOv') overlay('mealOv', false); });
+
+// boshqa haftaga o'tilganda o'sha hafta taomnomasi yuklanadi
+const menuWeeks = new Set([dateFor(0, 0)]);
+async function loadMenus(week){
+  const key = dateFor(0, week);
+  if (menuWeeks.has(key) || !S.orgs.some(o => o.meals)) return;
+  menuWeeks.add(key);
+  try {
+    const r = await api('/ustoz/api/taomnoma/?date=' + key);
+    Object.entries(r.menus || {}).forEach(([org, days]) => { S.menus[org] = Object.assign(S.menus[org] || {}, days); });
+    if (!document.querySelector('.ov.show')) renderAll();
+  } catch(e) { menuWeeks.delete(key); }
+}
 if (S.orgs.length && S.orgs.every(o => o.center)) $('classTab').textContent = 'Guruhlar';
 
 // ---------- davomat / baho varag'i ----------
@@ -762,6 +831,7 @@ setInterval(() => { tick(); if (!document.querySelector('.ov.show')) renderAll()
 setInterval(() => { if (!document.hidden && !document.querySelector('.ov.show')) loadMarks(todayStr()); }, 45000);
 const start = (location.hash || '#today').slice(1);
 renderAll(); loadMarks(todayStr()); loadNews(false);
+applyTheme();
 showTab(['today', 'week', 'classes', 'news'].includes(start) ? start : 'today');
 </script>
 {% endverbatim %}
