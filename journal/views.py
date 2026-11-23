@@ -40,31 +40,33 @@ def _natural_key(name):
 def teacher_home(request):
     """Ustoz sahifasi: jadval ma'lumotlari sahifaga joylanadi. O'quvchilar ismi va baholari alohida API orqali olinadi."""
     request.session['mode'] = 'teacher'
-    lessons = Lesson.objects.filter(active=True).select_related('teaching__subject', 'teaching__group',
-                                                                  'teaching__teacher')
-    data = [{
-        'id': l.id,
-        'day': DAY_CODES[l.weekday],
-        'period': l.period,
-        'start': f'{l.start:%H:%M}',
-        'end': f'{l.end:%H:%M}',
-        'class': l.teaching.group.name,
-        'subject': l.teaching.subject.name,
-        'teacherId': l.teaching.teacher_id,
-        'teacher': (l.teaching.teacher.get_full_name() or l.teaching.teacher.username) if l.teaching.teacher else '',
-    } for l in lessons if l.weekday < len(DAY_CODES)]
     user = request.user
+    from .teacher_data import lesson_item, lessons_for, meals_today, orgs_payload, teacher_branches
+    branches = teacher_branches(user)          # faqat o'z tashkilotlari: boshqa tashkilot darslari yuklanmaydi
+    orgs = orgs_payload(branches)
+    center_orgs = {o['id'] for o in orgs if o['center']}
+    data = [lesson_item(l) for l in lessons_for(user, branches) if l.weekday < len(DAY_CODES)]
+    # markazda faqat o'z guruhlari, maktab/bog'chada — filialdagi barcha sinflar
+    data = [d for d in data if d['org'] not in center_orgs or d['teacherId'] == user.id]
+    seen, classes = set(), []
+    for d in sorted(data, key=lambda d: _natural_key(d['class'])):
+        if d['classKey'] not in seen:
+            seen.add(d['classKey'])
+            classes.append({'key': d['classKey'], 'name': d['class'], 'org': d['org'], 'branch': d['branch']})
     # Ustoz o'zi ham ota-ona bo'lsa: farzandlarining bugungi holati bosh sahifada ko'rinadi
     kids = []
     for c in user.children.filter(user__is_active=True).select_related('user', 'group'):
         p = presence(c)
         kids.append({'name': f'{c.user.last_name} {c.user.first_name}'.strip(), 'group': c.group.name if c.group else '',
                      'state': p['state'], 'text': p['text'], 'url': reverse('student_detail', args=[c.pk])})
+    from accounts.templatetags.app_extras import photo_url
     school = {
-        'me': {'id': user.id, 'name': user.get_full_name() or user.username},
+        'me': {'id': user.id, 'name': user.get_full_name() or user.username, 'photo': photo_url(user)},
         'kids': kids,
-        'classes': sorted({d['class'] for d in data}, key=_natural_key),
+        'orgs': orgs,
+        'classes': classes,
         'lessons': data,
+        'meals': meals_today(branches),
         'days': DAY_CODES,
         'dayNames': dict(zip(DAY_CODES, DAY_NAMES)),
         'periods': [{'period': p, 'start': s, 'end': e} for p, s, e in PERIODS],
@@ -79,7 +81,7 @@ def teacher_home(request):
 def api_status(request):
     """Tanlangan kun uchun qaysi darslarda davomat olingan (faqat sonlar, ismlarsiz)."""
     day = _parse_date(request.GET.get('date'))
-    rows = (Attendance.objects.filter(date=day)
+    rows = (Attendance.objects.filter(date=day, lesson__teaching__teacher=request.user)     # faqat o'z darslari
             .values('lesson_id').annotate(absent=Count('id', filter=Q(status=Attendance.Status.ABSENT))))
     return JsonResponse({'marks': {r['lesson_id']: {'absent': r['absent']} for r in rows}})
 

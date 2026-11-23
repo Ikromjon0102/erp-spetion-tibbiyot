@@ -235,8 +235,14 @@
   }
   .mny .s { display:none; } @media (max-width:700px){ .mny .f { display:none; } .mny .s { display:inline; } .hm { display:none !important; } }
   /* ish maydoni: telefonda sarlavha ostidagi chip */
-  .wsp-m { display:none; }
+  .wsp-m, .wsp-row { display:none; }
   @media (max-width:960px){
+    /* telefonda ham sarlavha yonida: kun/tun tugmasi va profil (avval faqat «Ko'proq» ichida edi) */
+    .bar h1 { flex:1 1 0 !important; min-width:0; }
+    .bar .tools { display:flex !important; order:1; gap:8px; margin-left:0; }
+    .bar .tools .iconbtn, .bar .tools .avbtn { width:38px; height:38px; }
+    .wsp-row { display:block; order:2; flex:0 0 100%; }
+    .bar .acts { order:3; }
     .wsp-m { display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:7px 12px 7px 10px; border-radius:99px; border:1px solid var(--line-strong);
       background:var(--card); font:700 13.5px 'Inter',sans-serif; color:var(--ink); }
     .wsp-m span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .wsp-m .ic { width:16px; height:16px; transform:rotate(90deg); color:var(--dim); }
@@ -358,7 +364,7 @@
   <header class="bar">
     <button class="burger" id="burger" aria-label="Menyu"><svg class="ic"><use href="#p-menu"/></svg></button>
     <h1>{% block heading %}{% endblock %}</h1>
-    {% if scope and scope.selectable %}<button type="button" class="wsp-m" id="wspBtn" aria-haspopup="dialog"><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i><span>{{ scope.label }}</span><svg class="ic"><use href="#p-chev"/></svg></button>{% endif %}
+    {% if scope and scope.selectable %}<div class="wsp-row"><button type="button" class="wsp-m" id="wspBtn" aria-haspopup="dialog"><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i><span>{{ scope.label }}</span><svg class="ic"><use href="#p-chev"/></svg></button></div>{% endif %}
     <div class="acts">{% block actions %}{% endblock %}</div>
     <div class="tools">
       <button type="button" class="iconbtn" data-theme-toggle aria-label="Kun / tun rejimi" title="Kun / tun rejimi"><svg class="ic moon"><use href="#p-moon"/></svg><svg class="ic sun"><use href="#p-sun"/></svg></button>

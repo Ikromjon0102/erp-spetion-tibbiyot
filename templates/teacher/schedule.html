@@ -7,7 +7,7 @@
   .pane[hidden] { display:none; }
 
   /* ---------- hero ---------- */
-  .hero { color:#fff; border-radius:22px; padding:16px; margin-bottom:12px; background:linear-gradient(135deg,#14532D 0%,#166534 60%,#1B7F3B 100%); box-shadow:0 8px 22px rgba(22,101,52,.28); }
+  .hero { color:var(--on-accent); border-radius:22px; padding:16px; margin-bottom:12px; background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 70%,#000) 0%,var(--accent) 100%); box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 30%,transparent); }
   .hero.warn { background:linear-gradient(135deg,#8A4B00 0%,#B36205 100%); box-shadow:0 8px 22px rgba(179,98,5,.28); }
   .hero.calm { background:var(--card); color:var(--ink); border:1px solid var(--line); box-shadow:var(--shadow); }
   .hero .lbl { font:700 11px 'Space Mono',monospace; letter-spacing:.08em; text-transform:uppercase; opacity:.85; }
@@ -15,7 +15,7 @@
   .hero .sub { opacity:.9; font-size:15px; }
   .hero .acts { display:flex; gap:8px; margin-top:14px; }
   .hero .acts button { flex:1; padding:14px 10px; border-radius:14px; border:0; font-weight:800; font-size:15.5px; }
-  .hero .acts .p { background:#fff; color:#14532D; }
+  .hero .acts .p { background:#fff; color:color-mix(in srgb,var(--accent) 75%,#000); }
   .hero.warn .acts .p { color:#8A4B00; }
   .hero .acts .s { background:rgba(255,255,255,.18); color:#fff; flex:0 0 38%; }
   .hello { margin:2px 4px 12px; }
@@ -160,6 +160,31 @@
   .toast { white-space:nowrap; position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0)); z-index:90; background:var(--ink); color:var(--bg); padding:11px 16px; border-radius:14px; font-weight:700; font-size:14px; display:flex; gap:14px; align-items:center; max-width:92vw; box-shadow:0 8px 24px rgba(0,0,0,.3); }
   .toast button { background:none; border:0; color:#7FD49C; font-weight:800; font-size:14px; padding:0; }
   body.sheet-open { overflow:hidden; }
+
+  /* tashkilot bo'yicha ajratish (ustoz bir nechta tashkilotda ishlasa) */
+  .ohead { display:flex; align-items:center; gap:8px; font:800 13px 'Inter',sans-serif; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin:16px 4px 8px; }
+  .ohead:first-child { margin-top:4px; }
+  .ohead i, .otag i, .ochips i { width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .otag { display:inline-flex; align-items:center; gap:5px; }
+  .ochips { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
+  .ochips button { display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:99px; border:1.5px solid var(--line); background:var(--card); font-weight:700; font-size:14px; color:var(--dim); }
+  .ochips button.on { border-color:var(--accent); color:var(--ink); background:var(--tint); }
+  /* markaz: o'z guruhlari ro'yxati */
+  .gcard { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:13px 14px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .gcard b { font-size:16px; } .gcard .subj { color:var(--dim); font-size:13px; margin-left:6px; }
+  .gslot { display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:14px; }
+  .gslot .d { font-weight:700; } .gslot .t { font:700 13.5px 'Space Mono',monospace; white-space:nowrap; }
+  /* ustoz rasmi va bugungi taomnoma */
+  .hello { display:flex; align-items:center; gap:12px; }
+  .me-av { width:48px; height:48px; border-radius:16px; overflow:hidden; flex-shrink:0; background:var(--tint); display:grid; place-items:center; font-weight:800; color:var(--accent-deep); }
+  .me-av img { width:100%; height:100%; object-fit:cover; display:block; }
+  .hello .txt { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .mealcard { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px; margin:12px 0; box-shadow:var(--shadow); }
+  .mealcard .mt { font:700 11px 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--accent-deep); margin:8px 0 6px; }
+  .mealcard .mt:first-of-type { margin-top:2px; }
+  .dishes { display:flex; flex-wrap:wrap; gap:8px; }
+  .dish { display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:12px; padding:4px 10px 4px 4px; font-size:13.5px; font-weight:600; }
+  .dish img, .dish .noimg { width:38px; height:38px; border-radius:9px; object-fit:cover; background:var(--tint); flex-shrink:0; }
   body.sheet-open .toast { bottom:calc(90px + env(safe-area-inset-bottom,0)); }
 </style>
 {% endblock %}
@@ -180,7 +205,8 @@
 
 <!-- ============ SINFLAR ============ -->
 <section class="pane" id="pane-classes" hidden>
-  <h1 class="page">Sinflar jadvali</h1>
+  <h1 class="page" id="classTitle">Sinflar jadvali</h1>
+  <div class="ochips" id="orgChips"></div>
   <div class="hchips" id="classChips"></div>
   <div class="daychips" id="classDays"></div>
   <div id="classList"></div>
@@ -209,7 +235,7 @@
 <nav class="tabbar" aria-label="Bo'limlar"><div class="tabbar-in">
   <button data-tab="today"><span class="pill"><svg class="ic"><use href="#i-home"/></svg></span>Bugun</button>
   <button data-tab="week"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>Hafta</button>
-  <button data-tab="classes"><span class="pill"><svg class="ic"><use href="#i-users"/></svg></span>Sinflar</button>
+  <button data-tab="classes"><span class="pill"><svg class="ic"><use href="#i-users"/></svg></span><span id="classTab">Sinflar</span></button>
   <button data-tab="news"><span class="pill"><svg class="ic"><use href="#i-bell"/></svg></span>E'lonlar<i class="badge" id="newsBadge" hidden></i></button>
 </div></nav>
 {% endblock %}
@@ -259,7 +285,11 @@ const MONTHS = ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','s
 const WEEK_MIN = -8, WEEK_MAX = 4;
 
 // ---------- holat ----------
-let selClass = store.get('spetion_class'); if (!S.classes.includes(selClass)) selClass = S.classes[0] || null;
+const ORG = Object.fromEntries(S.orgs.map(o => [o.id, o]));
+const MULTI = S.orgs.length > 1;                         // ustoz bir nechta tashkilotda ishlaydi
+let selOrg = +store.get('spetion_org'); if (!ORG[selOrg]) selOrg = S.orgs.length ? S.orgs[0].id : null;
+let selClass = store.get('spetion_class'); if (!S.classes.some(c => c.key === selClass)) selClass = null;
+const orgTag = id => { const o = ORG[id]; return o ? `<span class="otag"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</span>` : ''; };
 let weekDay = todayIdx !== null ? todayIdx : 0, classDay = weekDay, weekOff = 0;
 let tab = 'today';
 const marks = {};           // sana -> {darsId: {absent}}
@@ -312,17 +342,25 @@ function rowHTML(l, date, asClass){
   const isToday = date === todayStr(), now_ = isToday && state(l) === 'now';
   const primary = asClass ? l.subject : l['class'], secondary = asClass ? (l.teacher || 'Ustoz biriktirilmagan') : l.subject;
   const inner = `<div class="time">${l.start}<small>${l.end}</small></div>
-    <div class="info"><b>${esc(primary)}</b><small>${esc(secondary)}</small></div>
+    <div class="info"><b>${esc(primary)}</b><small>${esc(secondary)}${l.branch && MULTI && !asClass ? ' · ' + esc(l.branch) : ''}</small></div>
     ${asClass ? '' : tagFor(l, date)}${now_ ? '<span class="tag now">HOZIR</span>' : ''}`;
   return asClass ? `<div class="row">${inner}</div>` : `<button class="row ${now_ ? 'now' : ''}" data-lid="${l.id}" data-date="${date}">${inner}</button>`;
 }
-function listHTML(ls, date, asClass){
+function plainList(ls, date, asClass){
   let html = '', prev = null;
   ls.forEach(l => {
     if (prev && mins(l.start) - mins(prev.end) >= 20) html += `<div class="row gap">${asClass ? '🍲 Tushlik' : "Bo'sh vaqt"} · ${prev.end} – ${l.start}</div>`;
     html += rowHTML(l, date, asClass); prev = l;
   });
   return html;
+}
+// Bir nechta tashkilotda ishlaydigan ustoz: darslar tashkilot bo'yicha alohida bloklarda
+function listHTML(ls, date, asClass){
+  if (!MULTI || asClass) return plainList(ls, date, asClass);
+  return S.orgs.map(o => {
+    const part = ls.filter(l => l.org === o.id);
+    return part.length ? `<div class="ohead"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</div>${plainList(part, date, false)}` : '';
+  }).join('');
 }
 
 // ---------- BUGUN ----------
@@ -342,7 +380,7 @@ function renderToday(){
   let hero;
   const acts = (l, primaryLabel) => `<div class="acts"><button class="p" data-act="att" data-lid="${l.id}">${primaryLabel}</button><button class="s" data-act="grade" data-lid="${l.id}">Baho</button></div>`;
   if (cur){
-    hero = `<div class="hero"><div class="lbl">Hozir · ${cur.period}-dars · ${cur.start}–${cur.end}</div><div class="big">${esc(cur['class'])}</div><div class="sub">${esc(cur.subject)}</div>${acts(cur, m[cur.id] ? "Davomatni ko'rish" : 'Davomat olish')}</div>`;
+    hero = `<div class="hero"><div class="lbl">Hozir · ${cur.period}-dars · ${cur.start}–${cur.end}${MULTI && ORG[cur.org] ? ' · ' + esc(ORG[cur.org].label) : ''}</div><div class="big">${esc(cur['class'])}</div><div class="sub">${esc(cur.subject)}</div>${acts(cur, m[cur.id] ? "Davomatni ko'rish" : 'Davomat olish')}</div>`;
   } else if (pending.length){
     const p = pending[0];
     hero = `<div class="hero warn"><div class="lbl">Davomat olinmagan · ${pending.length} ta dars</div><div class="big">${esc(p['class'])}</div><div class="sub">${esc(p.subject)} · ${p.start}–${p.end}</div>${acts(p, 'Davomat olish')}</div>`;
@@ -355,8 +393,15 @@ function renderToday(){
     hero = `<div class="hero calm"><div class="big">${todayIdx === null ? 'Dam olish kuni' : "Bugun dars yo'q"}</div><div class="sub" style="color:var(--dim)">Yaxshi dam oling</div></div>`;
   }
   const dt = now.getDate() + ' ' + ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'][now.getMonth()];
-  el.innerHTML = `<div class="hello"><b>Assalomu alaykum, ${esc(S.me.name)}</b><span>${dt}</span></div>${kidsHTML()}${hero}
-    ${ls.length ? `<h2 class="sec">Bugungi darslar <small>${ls.length} ta</small></h2><div class="list" id="todayRows">${listHTML(ls, date, false)}</div>` : ''}`;
+  const ini = S.me.name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+  const av = `<div class="me-av">${S.me.photo ? `<img src="${esc(S.me.photo)}" alt="">` : esc(ini)}</div>`;
+  el.innerHTML = `<div class="hello">${av}<div class="txt"><b>Assalomu alaykum, ${esc(S.me.name)}</b><span>${dt}</span></div></div>${kidsHTML()}${hero}
+    ${ls.length ? `<h2 class="sec">Bugungi darslar <small>${ls.length} ta</small></h2><div class="list" id="todayRows">${listHTML(ls, date, false)}</div>` : ''}${mealsHTML()}`;
+}
+function mealsHTML(){
+  if (!S.meals || !S.meals.length) return '';
+  return `<h2 class="sec">Bugungi taomnoma</h2>` + S.meals.map(m => `<div class="mealcard">${MULTI || S.meals.length > 1 ? `<div class="ohead" style="margin:0 0 6px"><i style="background:${esc(m.color)}"></i>${esc(m.org)}</div>` : ''}
+    ${m.meals.map(x => `<div class="mt">${esc(x.type)} · ${esc(x.time)}</div><div class="dishes">${x.dishes.map(d => `<span class="dish">${d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}${esc(d.name)}</span>`).join('')}</div>`).join('')}</div>`).join('');
 }
 $('pane-today').onclick = e => {
   const a = e.target.closest('[data-act]');
@@ -385,12 +430,45 @@ function setWeek(off){ weekOff = Math.max(WEEK_MIN, Math.min(WEEK_MAX, off)); lo
 $('wkPrev').onclick = () => setWeek(weekOff - 1); $('wkNext').onclick = () => setWeek(weekOff + 1);
 $('pane-week').addEventListener('click', e => { if (e.target.id === 'wkBack') setWeek(0); });
 $('weekList').onclick = e => { const r = e.target.closest('[data-lid]'); if (r){ const l = byId[r.dataset.lid]; openSheet(l, r.dataset.date, 'att'); } };
+// Markaz: ustozning o'z guruhlari — har guruhda qaysi kunlari, soat nechadan nechagacha (ketma-ket darslar bitta oraliq bo'lib birlashadi)
+function groupsSummary(orgId){
+  const own = S.lessons.filter(l => l.org === orgId && String(l.teacherId) === meId);
+  const groups = {};
+  own.forEach(l => { (groups[l.classKey] = groups[l.classKey] || {name: l['class'], subjects: new Set(), byDay: {}}); groups[l.classKey].subjects.add(l.subject);
+    (groups[l.classKey].byDay[l.day] = groups[l.classKey].byDay[l.day] || []).push(l); });
+  return Object.values(groups).map(g => {
+    const slots = {};                                   // "08:00–10:00" -> [kunlar]
+    DAYS.forEach(d => {
+      const ls = (g.byDay[d] || []).sort((a, b) => mins(a.start) - mins(b.start)); let cur = null;
+      ls.forEach(l => { if (cur && mins(l.start) - mins(cur.end) <= 15) cur.end = l.end; else { if (cur) (slots[cur.start + '–' + cur.end] = slots[cur.start + '–' + cur.end] || []).push(d); cur = {start: l.start, end: l.end}; } });
+      if (cur) (slots[cur.start + '–' + cur.end] = slots[cur.start + '–' + cur.end] || []).push(d);
+    });
+    return {name: g.name, subjects: [...g.subjects], slots: Object.entries(slots).sort((a, b) => mins(a[0].split('–')[0]) - mins(b[0].split('–')[0]))};
+  }).sort((a, b) => (a.slots[0] ? mins(a.slots[0][0]) : 9999) - (b.slots[0] ? mins(b.slots[0][0]) : 9999));
+}
 function renderClasses(){
-  $('classChips').innerHTML = S.classes.map(c => `<button data-c="${esc(c)}" class="${c === selClass ? 'on' : ''}">${esc(c)}</button>`).join('');
+  $('orgChips').innerHTML = MULTI ? S.orgs.map(o => `<button data-o="${o.id}" class="${o.id === selOrg ? 'on' : ''}"><i style="background:${esc(o.color)}"></i>${esc(o.label)}</button>`).join('') : '';
+  $('orgChips').onclick = e => { const b = e.target.closest('[data-o]'); if (b){ selOrg = +b.dataset.o; store.set('spetion_org', selOrg); selClass = null; renderClasses(); vib(); } };
+  const org = ORG[selOrg];
+  if (org && org.center){                               // markaz: faqat o'z guruhlari
+    $('classTitle').textContent = 'Guruhlarim';
+    $('classChips').innerHTML = ''; $('classDays').innerHTML = '';
+    const gs = groupsSummary(org.id);
+    $('classList').innerHTML = gs.length ? gs.map(g => `<div class="gcard"><b>${esc(g.name)}</b><span class="subj">${esc(g.subjects.join(', '))}</span>
+      ${g.slots.map(([t, ds]) => `<div class="gslot"><span class="d">${ds.map(d => esc(d)).join(', ')}</span><span class="t">${esc(t)}</span></div>`).join('')}</div>`).join('')
+      : '<div class="empty">Sizga hali guruh biriktirilmagan</div>';
+    return;
+  }
+  $('classTitle').textContent = 'Sinflar jadvali';
+  const list = S.classes.filter(c => !org || c.org === org.id);
+  if (!list.some(c => c.key === selClass)) selClass = list.length ? list[0].key : null;
+  const dup = name => list.filter(c => c.name === name).length > 1;   // turli filialda bir xil nom bo'lsa — filial ham ko'rsatiladi
+  $('classChips').innerHTML = list.map(c => `<button data-c="${esc(c.key)}" class="${c.key === selClass ? 'on' : ''}">${esc(c.name)}${dup(c.name) ? ' · ' + esc(c.branch) : ''}</button>`).join('');
   $('classChips').onclick = e => { const b = e.target.closest('[data-c]'); if (b){ selClass = b.dataset.c; store.set('spetion_class', selClass); renderClasses(); } };
   dayChips('classDays', classDay, i => { classDay = i; renderClasses(); });
-  const ls = lessonsOf(classDay, l => l['class'] === selClass);
-  $('classList').innerHTML = ls.length ? `<div class="list">${listHTML(ls, dateFor(classDay), true)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
+  const ls = lessonsOf(classDay, l => l.classKey === selClass);
+  $('classList').innerHTML = !list.length ? '<div class="empty">Sinflar topilmadi</div>'
+    : ls.length ? `<div class="list">${listHTML(ls, dateFor(classDay), true)}</div>` : '<div class="empty">Bu kuni dars yo\'q</div>';
 }
 
 // ---------- E'LONLAR ----------
@@ -431,6 +509,7 @@ function showTab(name){
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 function renderAll(){ renderToday(); renderWeek(); renderClasses(); if (tab === 'news') renderNews(); }
+if (S.orgs.length && S.orgs.every(o => o.center)) $('classTab').textContent = 'Guruhlar';
 
 // ---------- davomat / baho varag'i ----------
 let sh = null;

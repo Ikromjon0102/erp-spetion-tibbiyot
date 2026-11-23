@@ -2,6 +2,15 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Ustoz sahifasi: tashkilot bo'yicha (2026-11-23, founder fikrlari)
+- **Faqat o'z tashkilotlari:** ustoz sahifasi avval tizimdagi BARCHA darslarni yuklardi (markaz ustozi tibbiyot sinflarini ham ko'rardi). Endi faqat ustozning filiallari va dars beradigan guruhlari tashkilotlari (`journal/teacher_data.py`). Davomat holati API'si ham faqat o'z darslari bo'yicha.
+- **«Sinflar»:** maktab va bog'chada — o'z filialining barcha sinflari jadvali; o'quv markazda — faqat o'z guruhlari, «Guruhlarim» ko'rinishida: har guruh qaysi kunlari, soat nechadan nechagacha («Du, Ch, Ju · 08:00–10:00»; ketma-ket darslar bitta oraliq bo'lib birlashadi). Faqat markazda ishlaydigan ustozda tab nomi «Guruhlar».
+- **Bir nechta tashkilotda ishlasa:** «Bugun» va «Hafta»da darslar tashkilot bo'yicha alohida bloklarda (rangli nuqta bilan), «Hozir» kartasida tashkilot nomi, «Sinflar»da tashkilot tanlagichi; turli filialda bir xil nomli sinflar filial nomi bilan.
+- **Bugungi taomnoma** ustoz sahifasida (taomnoma yoqilgan tashkilotlar uchun, taom rasmlari bilan).
+- **Ustoz rasmi** (terminal uchun olingan yuz rasmi) salomlashuv qatorida va profil tugmasida; rasm yuklanmagan bo'lsa bosh harflar.
+- **Kun/tun tugmasi profil yonida** — barcha rollar: ota-ona, o'quvchi, ustoz (yuqori panel) va boshqaruv paneli (telefonda ham sarlavha yonida; avval faqat «Ko'proq» ichida edi). Profil tugmasida rasm bo'lsa — rasm.
+- Ustoz sahifasidagi qattiq yashil rang tashkilot rangiga o'tkazildi.
+
 ## Tashqi zaxira: Telegram (2026-11-23)
 - `spetion-tg-backup`: har kecha zaxira @spetion_robot orqali founder Telegramiga yuboriladi — ERP va exam bazalari har kuni, fayllar yakshanba to'liq / boshqa kunlari o'zgarganlari. GPG (AES-256) bilan shifrlangan, 45 MB lik qismlarga bo'linadi, hashtaglar bilan (`#zaxira #erp #d2026_11_23`). Shifrlash → bo'lish → birlashtirish → ochish → `pg_restore` sinovi o'tdi.
 - Server ogohlantirishlari va 500 xatolar ham shu chatga keladi (droplet `.env` da `ALERT_BOT_TOKEN`, `ALERT_CHAT_ID`; asosiy `BOT_TOKEN` droplet'ga qo'yilmadi — med.spetion.uz bot webhook'iga tegmaslik uchun).

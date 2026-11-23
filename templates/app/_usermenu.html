@@ -1,4 +1,5 @@
-{% load app_extras %}<button class="avatar" id="menuBtn" aria-label="Menyu" aria-expanded="false">{{ user|initials }}</button>
+{% load app_extras %}<button type="button" class="icon-btn themebtn" data-theme-toggle aria-label="Kun / tun rejimi" title="Kun / tun rejimi"><svg class="ic moon"><use href="#i-moon"/></svg><svg class="ic sun"><use href="#i-sun"/></svg></button>
+{% photo_url user as my_photo %}<button class="avatar{% if my_photo %} has-photo{% endif %}" id="menuBtn" aria-label="Menyu" aria-expanded="false">{% if my_photo %}<img src="{{ my_photo }}" alt="">{% else %}{{ user|initials }}{% endif %}</button>
 <div class="menu" id="menu" hidden>
   <div class="menu-name">{{ user.get_full_name|default:user.username }}<small>{{ user.get_role_display }}{% if user.has_children and user.is_teacher %} · ota-ona{% endif %}{% if panel_access %} · {{ panel_position|default:"xodim" }}{% endif %}</small></div>
   {% if user.is_teacher and user.has_children or panel_access and user.is_teacher or panel_access and user.has_children %}
@@ -8,7 +9,6 @@
       {% if panel_access %}<a href="{% url 'panel:dashboard' %}" class="{% if mode == 'panel' %}on{% endif %}">Boshqaruv paneli</a>{% endif %}
     </div>
   {% endif %}
-  <button type="button" data-theme-toggle>Kun / tun rejimi</button>
   <a href="{% url 'change_password' %}">Parolni o'zgartirish</a>
   <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="out">Chiqish</button></form>
 </div>
