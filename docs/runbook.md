@@ -103,7 +103,7 @@ Skriptlar `deploy/droplet/` da, serverda `/usr/local/bin/` ga o'rnatilgan (`setu
 **Ilova xatolari (500)** Telegramga: `/var/www/erp/.env` ga `ALERT_CHAT_ID=` (token bo'lmasa `BOT_TOKEN` ishlatiladi), keyin `systemctl restart erp`.
 Chat ID ni bilish: botga yozing va `https://api.telegram.org/bot<TOKEN>/getUpdates` dan `chat.id` ni oling.
 
-**Tashqi nusxa — Telegram (2026-11-23 dan yoqilgan):** `spetion-backup` tugagach `spetion-tg-backup` nusxalarni @spetion_robot orqali founder Telegramiga (`ALERT_CHAT_ID`) yuboradi.
+**Tashqi nusxa — Telegram (2026-11-23 dan yoqilgan):** `spetion-backup` tugagach `spetion-tg-backup` nusxalarni @spetion_robot orqali **«Spetion DB backup»** guruhiga (`BACKUP_CHAT_ID`) yuboradi. Server ogohlantirishlari va ilova xatolari — **«Spetion logs»** guruhiga (`ALERT_CHAT_ID`). Bot ikkala guruhda admin. Guruh ID si manfiy va `-100` bilan boshlanadi (supergroup); tekshirish: `getChat?chat_id=...`.
 - Har kuni: ERP va exam bazalari; fayllar (rasmlar, cheklar) — yakshanba to'liq, boshqa kunlari oxirgi 2 kunda o'zgarganlari.
 - Fayllar **GPG (AES-256) bilan shifrlangan**: ichida bolalarning shaxsiy ma'lumoti va yuz rasmlari bor. Parol: serverdagi `/root/.spetion-secrets` → `BACKUP_PASSPHRASE`. **Uni server tashqarisida (parol menejerida) saqlang** — server yo'qolsa, parolsiz nusxani ochib bo'lmaydi. Parolni Telegramning o'sha chatiga yozmang.
 - 50 MB dan katta fayl 45 MB lik qismlarga bo'linadi (`.part01`, `.part02` ...).

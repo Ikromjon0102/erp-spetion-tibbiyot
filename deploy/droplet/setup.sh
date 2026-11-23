@@ -99,6 +99,7 @@ install -m 755 "$HERE/healthcheck.sh" /usr/local/bin/spetion-healthcheck
 install -m 755 "$HERE/tg_backup.sh" /usr/local/bin/spetion-tg-backup
 [ -f /root/.spetion-alert ] || { printf 'ALERT_BOT_TOKEN=
 ALERT_CHAT_ID=
+BACKUP_CHAT_ID=
 ERP_HOST=%s
 ' "$ERP_DOMAIN" > /root/.spetion-alert; chmod 600 /root/.spetion-alert; }
 cat > /etc/cron.d/spetion <<'CRON'
