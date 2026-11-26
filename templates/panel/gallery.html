@@ -31,7 +31,7 @@
 </div>
 {% endif %}
 <style>
-  .gal-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; }
+  .gal-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap:12px; }
   .gal-alb { margin:0; padding:0; overflow:hidden; color:inherit; text-decoration:none; display:flex; flex-direction:column; min-width:0; }
   .gal-cover { aspect-ratio:4/3; background:var(--tint, #f3f3f3); display:grid; place-items:center; overflow:hidden; }
   .gal-cover img { width:100%; height:100%; object-fit:cover; display:block; }

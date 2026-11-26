@@ -523,7 +523,7 @@ document.querySelectorAll('form[data-live]').forEach(function(form){
       btn.onclick = function(){ inp.click(); };
       inp.addEventListener('change', function(){
         var f = inp.files && inp.files[0];
-        name.textContent = f ? f.name : 'tanlanmagan'; name.classList.toggle('has', !!f);
+        name.textContent = !f ? 'tanlanmagan' : inp.files.length > 1 ? inp.files.length + ' ta fayl tanlandi' : f.name; name.classList.toggle('has', !!f);
         if (f && image && /^image\//.test(f.type)){ img.src = URL.createObjectURL(f); img.hidden = false; } else { img.hidden = true; }
       });
     });

@@ -10,7 +10,7 @@
 <div class="card" style="display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center">
   <span><b>{{ album.group.name|default:"—" }}</b> · {{ album.branch.name }}</span>
   <span class="muted">{{ album.date|date:"j F Y" }} · {{ photos|length }} ta rasm</span>
-  {% if untagged %}<span class="badge warn">{{ untagged }} ta rasmda hech kim belgilanmagan — ota-onalar ko'rmaydi</span>{% elif photos %}<span class="badge gray">hamma rasm belgilangan</span>{% endif %}
+  {% if untagged %}<span class="badge warn" style="white-space:normal">{{ untagged }} ta rasm belgilanmagan — ota-onalar ko'rmaydi</span>{% elif photos %}<span class="badge gray">hamma rasm belgilangan</span>{% endif %}
 </div>
 
 {% if can_manage %}
@@ -53,7 +53,7 @@
 <div class="empty">Albomda rasm yo'q.</div>
 {% endif %}
 <style>
-  .ph-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+  .ph-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap:12px; }
   .ph { margin:0; padding:0; overflow:hidden; display:flex; flex-direction:column; min-width:0; }
   .ph.untagged { outline:2px solid var(--late); outline-offset:-2px; }
   .ph-img { display:block; aspect-ratio:4/3; background:var(--tint, #f3f3f3); }
