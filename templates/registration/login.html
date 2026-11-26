@@ -5,55 +5,147 @@
 
 {% block head %}
 <style>
-  main.app { max-width:none; padding:0; min-height:100vh; display:grid; place-items:center; }
-  .login-wrap { width:100%; max-width:420px; padding:28px 18px; }
-  .login-wrap > * { animation:rise .6s cubic-bezier(.2,.8,.2,1) both; }
-  .login .brand { display:grid; place-items:center; margin-bottom:22px; }
-  .login .brand svg { height:38px; width:auto; display:block; }
-  .login .brand svg path { fill:var(--accent-deep); }
-  .login h1 { text-align:center; font-size:28px; letter-spacing:-.03em; margin:0 0 6px; }
-  .login .lead { text-align:center; color:var(--dim); margin:0 0 22px; }
-  .glass-card { background:var(--card); -webkit-backdrop-filter:blur(30px) saturate(190%); backdrop-filter:blur(30px) saturate(190%);
-    border:1px solid var(--line-strong); border-radius:28px; padding:26px 22px 22px; box-shadow:var(--shadow-lift); position:relative; overflow:hidden; }
-  .glass-card::before { content:""; position:absolute; left:0; right:0; top:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent); }
-  .glass-card::after { content:""; position:absolute; width:220px; height:220px; right:-70px; top:-90px; border-radius:50%; background:radial-gradient(circle,rgba(var(--glow),.22),transparent 68%); pointer-events:none; }
-  .seal { width:58px; height:58px; margin:0 auto 14px; border-radius:20px; display:grid; place-items:center; color:#fff; background:var(--accent-grad);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 12px 26px rgba(22,101,52,.38); }
-  .seal .ic { width:28px; height:28px; stroke-width:2.2; }
-  .inp { position:relative; }
-  .inp > .ic { position:absolute; left:14px; top:50%; transform:translateY(-50%); width:20px; height:20px; color:var(--faint); pointer-events:none; transition:color .2s; }
-  .inp input { padding-left:46px !important; }
-  .inp:focus-within > .ic { color:var(--accent); }
-  .eye { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:40px; height:40px; border:0; background:none; color:var(--faint); border-radius:12px; display:grid; place-items:center; }
-  .eye:hover { color:var(--accent); } .inp.has-eye input { padding-right:48px !important; }
-  .alert { background:var(--bad-tint); color:var(--bad); border:1px solid rgba(198,40,40,.3); border-radius:14px; padding:11px 13px; font-weight:600; font-size:14px; margin-bottom:14px; display:flex; gap:10px; align-items:center; }
-  .alert .ic { width:18px; height:18px; }
-  .go { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px; }
+  /* Kirish sahifasi bitta tashkilotga bog'lanmaydi: neytral Spetion brendi, fonda tashkilotlar ranglari (aurora). */
+  :root { --lg-bg:#F5F6FA; --lg-ink:#0E1420; --lg-dim:#5B6577; --lg-faint:#9AA3B2; --lg-card:rgba(255,255,255,.72); --lg-line:rgba(14,20,32,.09);
+          --lg-field:rgba(255,255,255,.9); --lg-field-line:rgba(14,20,32,.14); --lg-btn:#0E1420; --lg-btn-ink:#fff; --lg-blob:.55; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+          --lg-bg:#070A10; --lg-ink:#EEF2F8; --lg-dim:#A3ADBD; --lg-faint:#677184; --lg-card:rgba(18,23,33,.62); --lg-line:rgba(255,255,255,.09);
+          --lg-field:rgba(255,255,255,.05); --lg-field-line:rgba(255,255,255,.13); --lg-btn:#F2F5FA; --lg-btn-ink:#0B0F16; --lg-blob:.42; } }
+  :root[data-theme="dark"] { --lg-bg:#070A10; --lg-ink:#EEF2F8; --lg-dim:#A3ADBD; --lg-faint:#677184; --lg-card:rgba(18,23,33,.62); --lg-line:rgba(255,255,255,.09);
+          --lg-field:rgba(255,255,255,.05); --lg-field-line:rgba(255,255,255,.13); --lg-btn:#F2F5FA; --lg-btn-ink:#0B0F16; --lg-blob:.42; }
+
+  body { background:var(--lg-bg) !important; color:var(--lg-ink); }
+  body::before, body::after { display:none !important; }            /* umumiy fon va «+» naqshi bu sahifada yo'q */
+  main.app { max-width:none; padding:0; min-height:100vh; min-height:100dvh; display:block; }
+
+  .aurora { position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
+  .aurora i { position:absolute; width:46vmax; height:46vmax; border-radius:50%; filter:blur(70px); opacity:var(--lg-blob); mix-blend-mode:normal;
+              animation:drift 24s ease-in-out infinite alternate; }
+  .aurora i:nth-child(1) { left:-12vmax; top:-14vmax; }
+  .aurora i:nth-child(2) { right:-14vmax; top:-6vmax; animation-duration:28s; animation-delay:-6s; }
+  .aurora i:nth-child(3) { left:8vmax; bottom:-20vmax; animation-duration:32s; animation-delay:-12s; }
+  .aurora i:nth-child(4) { right:-6vmax; bottom:-18vmax; animation-duration:26s; animation-delay:-3s; }
+  .aurora::after { content:""; position:absolute; inset:0;   /* nozik donadorlik — rang dog'lari «plastik» ko'rinmasin */
+    background-image:radial-gradient(rgba(127,127,127,.09) 1px, transparent 1px); background-size:3px 3px; opacity:.5; }
+  @keyframes drift { 0% { transform:translate(0,0) scale(1); } 50% { transform:translate(6vmax,4vmax) scale(1.12); } 100% { transform:translate(-4vmax,7vmax) scale(.94); } }
+
+  .lg { position:relative; z-index:1; min-height:100vh; min-height:100dvh; display:grid; grid-template-columns:minmax(0,1fr); align-items:center;
+        justify-items:center; align-content:center; gap:28px; padding:max(28px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); }
+  .lg-side { width:100%; max-width:420px; text-align:center; }
+  .logo svg { height:40px; width:auto; display:inline-block; }
+  .logo svg path { fill:var(--lg-ink); }
+  .tagline { display:none; }
+  .orgs { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:16px; }
+  .org { display:inline-flex; align-items:center; gap:7px; padding:6px 12px 6px 9px; border-radius:999px; font-size:12.5px; font-weight:600; color:var(--lg-dim);
+         background:var(--lg-card); border:1px solid var(--lg-line); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
+  .org b { width:9px; height:9px; border-radius:50%; background:var(--c); box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); }
+
+  .card-lg { width:100%; max-width:420px; background:var(--lg-card); border:1px solid var(--lg-line); border-radius:28px; padding:30px 24px 24px;
+             -webkit-backdrop-filter:blur(28px) saturate(160%); backdrop-filter:blur(28px) saturate(160%);
+             box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 30px 80px -20px rgba(8,12,24,.35); animation:rise .7s cubic-bezier(.2,.8,.2,1) both; }
+  .card-lg h1 { font-size:30px; line-height:1.1; letter-spacing:-.035em; margin:0 0 8px; color:var(--lg-ink); }
+  .card-lg .lead { color:var(--lg-dim); margin:0 0 24px; font-size:15px; }
+  .fl { margin-bottom:16px; }
+  .fl label { display:block; font-size:13px; font-weight:600; color:var(--lg-dim); margin:0 0 7px 2px; }
+  .box { position:relative; }
+  .box > .ic { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:19px; height:19px; color:var(--lg-faint); pointer-events:none; transition:color .2s; }
+  .box input { width:100%; box-sizing:border-box; font:500 16.5px 'Inter',system-ui,sans-serif; color:var(--lg-ink); background:var(--lg-field);
+               border:1.5px solid var(--lg-field-line); border-radius:16px; padding:15px 16px 15px 46px; outline:none;
+               transition:border-color .2s, box-shadow .2s, background .2s; }
+  .box input::placeholder { color:var(--lg-faint); font-weight:400; }
+  .box input:focus, .box input:focus-visible { outline:none !important; border-color:var(--lg-ink) !important; box-shadow:0 0 0 4px color-mix(in srgb, var(--lg-ink) 12%, transparent) !important; }
+  .lg :focus-visible { outline-color:var(--lg-ink); }
+  .box:focus-within > .ic { color:var(--lg-ink); }
+  .box.pw input { padding-right:52px; }
+  .eye { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border:0; background:none; color:var(--lg-faint);
+         border-radius:12px; display:grid; place-items:center; cursor:pointer; }
+  .eye:hover { color:var(--lg-ink); }
+  .eye .ic { width:20px; height:20px; }
+  .err { display:flex; gap:10px; align-items:center; padding:12px 14px; margin-bottom:16px; border-radius:14px; font-weight:600; font-size:14px;
+         color:#C62828; background:rgba(198,40,40,.08); border:1px solid rgba(198,40,40,.25); animation:shake .4s; }
+  .err .ic { width:18px; height:18px; flex-shrink:0; }
+  .go { position:relative; width:100%; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px; padding:16px; border:0; border-radius:16px;
+        background:var(--lg-btn); color:var(--lg-btn-ink); font:700 16.5px 'Inter',system-ui,sans-serif; cursor:pointer; overflow:hidden;
+        box-shadow:0 14px 30px -12px rgba(8,12,24,.55); transition:transform .15s, box-shadow .2s; }
+  .go:hover { transform:translateY(-1px); box-shadow:0 18px 36px -12px rgba(8,12,24,.6); }
+  .go:active { transform:translateY(0); }
   .go .ic { width:19px; height:19px; transition:transform .2s; } .go:hover .ic { transform:translateX(3px); }
-  .trust { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:18px; color:var(--dim); font-size:12.5px; }
-  .trust span { display:inline-flex; align-items:center; gap:6px; } .trust .ic { width:15px; height:15px; color:var(--accent); }
+  .go::after { content:""; position:absolute; inset:0; background:linear-gradient(110deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+               transform:translateX(-100%); animation:shine 3.6s 1.2s ease-in-out infinite; }
+  .go.busy { pointer-events:none; opacity:.85; } .go.busy::after { display:none; }
+  .spin { width:18px; height:18px; border-radius:50%; border:2.5px solid currentColor; border-right-color:transparent; animation:rot .7s linear infinite; }
+  .forgot { margin-top:18px; border-top:1px solid var(--lg-line); padding-top:14px; }
+  .forgot summary { list-style:none; cursor:pointer; color:var(--lg-dim); font-size:14px; font-weight:600; text-align:center; }
+  .forgot summary::-webkit-details-marker { display:none; }
+  .forgot summary:hover { color:var(--lg-ink); }
+  .forgot p { margin:10px 0 0; font-size:13.5px; line-height:1.55; color:var(--lg-dim); text-align:center; }
+  .foot { display:flex; align-items:center; justify-content:center; gap:7px; color:var(--lg-faint); font-size:12.5px; }
+  .foot .ic { width:14px; height:14px; }
+
+  @keyframes shine { 0%, 60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+  @keyframes rot { to { transform:rotate(360deg); } }
+  @keyframes shake { 0%,100% { transform:none; } 20% { transform:translateX(-6px); } 40% { transform:translateX(5px); } 60% { transform:translateX(-3px); } 80% { transform:translateX(2px); } }
+  @media (prefers-reduced-motion: reduce) { .aurora i, .go::after, .card-lg, .err { animation:none !important; } }
+
+  /* Katta ekran: chapda brend va tashkilotlar, o'ngda kirish kartasi */
+  @media (min-width: 920px) {
+    .lg { grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:64px; max-width:1120px; margin:0 auto; padding:40px 40px; }
+    .lg-side { text-align:left; max-width:500px; justify-self:start; }
+    .logo svg { height:46px; }
+    .tagline { display:block; font-size:44px; line-height:1.05; letter-spacing:-.04em; font-weight:800; margin:34px 0 14px; color:var(--lg-ink); }
+    .tagline span { background:linear-gradient(90deg, var(--g1), var(--g2), var(--g3), var(--g4)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    :root[data-theme="dark"] .tagline span { filter:brightness(1.6) saturate(1.1); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tagline span { filter:brightness(1.6) saturate(1.1); } }
+    .sub { display:block !important; color:var(--lg-dim); font-size:17px; line-height:1.55; margin:0 0 24px; max-width:440px; }
+    .orgs { justify-content:flex-start; }
+    .card-lg { justify-self:end; padding:38px 34px 28px; }
+    .foot { grid-column:1 / -1; }
+  }
+  .sub { display:none; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-wrap login">
-  <div class="brand">{% include 'teacher/_logo.svg' %}</div>
-  <div class="glass-card">
-    <div class="seal"><svg class="ic"><use href="#i-cross"/></svg></div>
+<div class="aurora" aria-hidden="true">
+  {% for o in orgs|slice:":4" %}<i style="background:{{ o.brand_color }}"></i>{% empty %}<i style="background:#166534"></i><i style="background:#1E3A8A"></i><i style="background:#F97316"></i><i style="background:#E53935"></i>{% endfor %}
+</div>
+
+<div class="lg" style="{% for o in orgs|slice:':4' %}--g{{ forloop.counter }}:{{ o.brand_color }};{% endfor %}">
+  <section class="lg-side">
+    <div class="logo">{% include 'teacher/_logo.svg' %}</div>
+    <h2 class="tagline">Butun ta'lim oilasi — <span>bitta ilovada</span></h2>
+    <p class="sub">Davomat, baholar, dars jadvali, to'lovlar va xabarlar. Ota-ona, ustoz va ma'muriyat uchun bitta joyda.</p>
+    {% if orgs %}<div class="orgs">{% for o in orgs %}<span class="org" style="--c:{{ o.brand_color }}"><b></b>{{ o.name }}</span>{% endfor %}</div>{% endif %}
+  </section>
+
+  <section class="card-lg">
     <h1>Xush kelibsiz</h1>
-    <p class="lead">Telefon raqamingiz va parol bilan kiring</p>
-    <form method="post">{% csrf_token %}
-      {% if blocked %}<div class="alert"><svg class="ic"><use href="#i-alert"/></svg>Juda ko'p xato urinish. 10 daqiqadan keyin qayta urinib ko'ring.</div>
-      {% elif form.errors %}<div class="alert"><svg class="ic"><use href="#i-alert"/></svg>Login yoki parol noto'g'ri.</div>{% endif %}
-      <div class="field"><label for="id_username">Telefon raqamingiz</label><div class="inp"><svg class="ic"><use href="#i-phone"/></svg>{{ form.username }}</div></div>
-      <div class="field"><label for="id_password">Parol</label><div class="inp has-eye"><svg class="ic"><use href="#i-lock"/></svg>{{ form.password }}
-        <button type="button" class="eye" id="eye" aria-label="Parolni ko'rsatish"><svg class="ic" id="eyeic"><use href="#i-eye"/></svg></button></div></div>
+    <p class="lead">Hisobingizga kiring</p>
+    <form method="post" id="lgForm" novalidate>{% csrf_token %}
+      {% if blocked %}<div class="err" role="alert"><svg class="ic"><use href="#i-alert"/></svg>Juda ko'p xato urinish. 10 daqiqadan keyin qayta urinib ko'ring.</div>
+      {% elif form.errors %}<div class="err" role="alert"><svg class="ic"><use href="#i-alert"/></svg>Telefon raqam (login) yoki parol noto'g'ri.</div>{% endif %}
+      <div class="fl">
+        <label for="id_username">Telefon raqam yoki login</label>
+        <div class="box"><svg class="ic"><use href="#i-user"/></svg>
+          <input type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" placeholder="90 123 45 67" autocomplete="username"
+                 autocapitalize="none" autocorrect="off" spellcheck="false" required{% if not form.username.value %} autofocus{% endif %}></div>
+      </div>
+      <div class="fl">
+        <label for="id_password">Parol</label>
+        <div class="box pw"><svg class="ic"><use href="#i-lock"/></svg>
+          <input type="password" name="password" id="id_password" placeholder="••••" autocomplete="current-password" required{% if form.username.value %} autofocus{% endif %}>
+          <button type="button" class="eye" id="eye" aria-label="Parolni ko'rsatish"><svg class="ic" id="eyeic"><use href="#i-eye"/></svg></button></div>
+      </div>
       <input type="hidden" name="next" value="{{ next }}">
-      <button class="btn go">Kirish <svg class="ic"><use href="#i-chev"/></svg></button>
+      <button class="go" id="go">Kirish <svg class="ic"><use href="#i-chev"/></svg></button>
     </form>
-  </div>
-  <div class="trust"><span><svg class="ic"><use href="#i-lock"/></svg>Himoyalangan kirish</span><span><svg class="ic"><use href="#i-cross"/></svg>Tibbiyot maktabi</span></div>
-  <p class="hint" style="text-align:center;margin-top:14px">Parolni unutdingizmi? Ota-onalar: maktabning Telegram botida «🔑 Parolni tiklash» ni bosing. Boshqalar maktab ma'muriyatiga murojaat qiladi.</p>
+    <details class="forgot">
+      <summary>Parolni unutdingizmi?</summary>
+      <p><b>Ota-onalar:</b> Telegram botda «🔑 Parolni tiklash» tugmasini bosing — yangi parol darhol keladi.<br><b>Ustoz va xodimlar:</b> ma'muriyatga murojaat qiling.</p>
+    </details>
+  </section>
+
+  <div class="foot"><svg class="ic"><use href="#i-lock"/></svg>Himoyalangan ulanish · Spetion</div>
 </div>
 {% endblock %}
 
@@ -61,10 +153,17 @@
 <script>
 (function(){
   var eye = document.getElementById('eye'), pw = document.getElementById('id_password'), use = document.querySelector('#eyeic use');
-  if(!eye || !pw) return;
-  eye.addEventListener('click', function(){
+  if (eye && pw) eye.addEventListener('click', function(){
     var show = pw.type === 'password'; pw.type = show ? 'text' : 'password';
     use.setAttribute('href', show ? '#i-eyeoff' : '#i-eye'); eye.setAttribute('aria-label', show ? 'Parolni yashirish' : "Parolni ko'rsatish");
+    pw.focus();
+  });
+  var f = document.getElementById('lgForm'), go = document.getElementById('go');
+  if (f) f.addEventListener('submit', function(e){
+    var u = document.getElementById('id_username');
+    if (!u.value.trim()) { e.preventDefault(); u.focus(); return; }
+    if (!pw.value) { e.preventDefault(); pw.focus(); return; }
+    go.classList.add('busy'); go.innerHTML = '<span class="spin"></span> Kirilmoqda…';
   });
 })();
 </script>

@@ -132,5 +132,5 @@ class ChildAppTests(TestCase):
         self.assertContains(page, '<div class="body">Juma kuni</div>')
         self.client.logout()
         r = self.client.get('/login/')
-        self.assertContains(r, 'Telefon raqamingiz')
+        self.assertContains(r, 'Telefon raqam yoki login')
         self.assertContains(r, 'autocapitalize')

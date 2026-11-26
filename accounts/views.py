@@ -47,14 +47,18 @@ class ThrottledLoginView(LoginView):
             cache.set(key, cache.get(key, 0) + 1, LOCKOUT_SECONDS)
         return super().form_invalid(form)
 
+    def get_context_data(self, **kwargs):
+        from org.models import Organization
+        ctx = super().get_context_data(**kwargs)
+        ctx['orgs'] = list(Organization.objects.filter(is_active=True).order_by('id').values('name', 'short_name', 'brand_color', 'kind'))
+        ctx['blocked'] = getattr(self, 'blocked', False)
+        return ctx
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         # Telefon klaviaturasi loginni bosh harf bilan boshlab yubormasligi uchun
         form.fields['username'].widget.attrs.update(autocapitalize='none', autocorrect='off', spellcheck='false')
         return form
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(blocked=getattr(self, 'blocked', False), **kwargs)
 
 
 class NewPasswordForm(SetPasswordForm):
