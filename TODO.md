@@ -26,3 +26,11 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] 7. Exam integratsiyasi (o'qish API + bog'lash ekrani + ota-ona dinamikasi) — bajarildi 2026-11-22. Qolgan: qo'lda juftlash (taklif topmaganlar uchun), exam'ni ko'p tashkilotli qilish (7a), serverda `ERP_API_KEY`/`EXAM_API_*` sozlash
 - [x] 7a. (asosi bajarildi 2026-11-22: exam'da maktab yaratish, sinf maktabga bog'lanadi; qolgan: ustoz/admin ko'rinishini maktab bo'yicha cheklash, ERP tashkiloti ↔ exam maktabi moslashtirish) Exam: ko'p tashkilotli (maktab/markaz), ERP o'quvchisi bilan bog'lash (sinf+ism, tasdiqlash ekrani), o'zlashtirish dinamikasi; chiqib ketganlarni founder o'zi o'chiradi
 - [ ] 8. (tayyorlov bajarildi 2026-11-22: `deploy/droplet/` setup.sh, push.sh, MIGRATE_DATA.md; serverda hali ishga tushirilmagan, droplet kerak) Deploy: hozir yangi DO droplet (vaqtincha), ota-ona/ustozlarga berishdan oldin founderning yakuniy serveriga ko'chish (pg_dump + media); boshqa loyihalar eski VPS'da qoladi; haftalik backup
+
+## Taqdimot takliflari (2026-11-26)
+
+- [x] O'quv markazda guruhdan-guruhga o'tkazish — faqat filial rahbari (`students.move`)
+- [x] Bog'cha galereyasi: ota-ona faqat o'z farzandi belgilangan rasmlarni ko'radi
+- [x] Avans summasi qo'lda (foiz olib tashlandi); ko'p filialli ustozda qat'iy oylik birinchi filialga — tasdiqlandi
+- [ ] Galereya: tarbiyachi o'z telefonidan (ustoz ilovasidan) rasm yuklashi — founder qarori kutilmoqda
+- [ ] Galereya: yangi rasm qo'shilganda ota-onaga Telegram xabari — founder qarori kutilmoqda
