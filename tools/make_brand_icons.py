@@ -33,6 +33,18 @@ def mark_svg(size_box=300, scale=0.80, rounded=True, bg=True):
             f'{rect}<g clip-path="url(#c)"><path transform="{t}" fill="url(#g)" fill-rule="evenodd" d="{d}"/></g></svg>')
 
 
+# Brauzer tabi uchun: fonsiz, 8 ta nur juft-juft 4 rangda (soat yo'nalishida: tepa — yashil, o'ng — ko'k, past — to'q sariq, chap — qizil).
+# Logotip yo'lidagi qism-yo'llar (subpath) tartibi: 18,17 tepa; 13,2 o'ng; 0,1 past; 3,12 chap.
+TAB_COLORS = {18: '#22C55E', 17: '#22C55E', 13: '#3B82F6', 2: '#3B82F6', 0: '#F97316', 1: '#F97316', 3: '#EF4444', 12: '#EF4444'}
+
+
+def tab_svg(colors=None):
+    parts = [x for x in re.split(r'(?=M )', d) if x.strip()]
+    colors = colors or TAB_COLORS
+    paths = ''.join(f'<path fill="{c}" d="{parts[i].strip()}"/>' for i, c in colors.items())
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="38 38 223 223">{paths}</svg>'
+
+
 def render(svg, w, h, html_extra=''):
     with tempfile.TemporaryDirectory() as tmp:
         page = Path(tmp) / 'p.html'
@@ -46,13 +58,15 @@ def render(svg, w, h, html_extra=''):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    fav = mark_svg(scale=0.86)
-    (OUT / 'favicon.svg').write_text(fav, encoding='utf-8')
+    fav = mark_svg(scale=0.86)            # ilova ikonkasi (telefon ekrani) — fon bilan
+    tab = tab_svg()                       # brauzer tabi — fonsiz, rangli nurlar
+    (OUT / 'favicon.svg').write_text(tab, encoding='utf-8')
+    (OUT / 'favicon-red.svg').write_text(tab_svg({k: '#DD1808' for k in TAB_COLORS}), encoding='utf-8')
     big = render(fav, 512, 512)
     big.save(OUT / 'icon-512.png')
     big.resize((192, 192), Image.LANCZOS).save(OUT / 'icon-192.png')
     sizes = [(s, s) for s in (16, 32, 48)]
-    render(mark_svg(scale=0.98), 256, 256).save(OUT / 'favicon.ico', sizes=sizes)       # kichkinada belgi kattaroq — aniq ko'rinsin
+    render(tab, 256, 256).save(OUT / 'favicon.ico', sizes=sizes)
     render(mark_svg(scale=0.62, rounded=False), 512, 512).save(OUT / 'icon-maskable-512.png')   # xavfsiz hudud 80%
     apple = render(mark_svg(scale=0.78, rounded=False), 180, 180)
     Image.alpha_composite(Image.new('RGBA', apple.size, BG), apple).convert('RGB').save(OUT / 'apple-touch-icon.png')
