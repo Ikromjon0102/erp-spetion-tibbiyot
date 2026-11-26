@@ -77,7 +77,7 @@ ichida turadi. Menyu nomi dasturiy ta'minot versiyasiga qarab biroz farq qilishi
 O'quvchi, ustoz va xodimlarning rasmi panelda yuklanadi. Rasm va Face ID avtomatik tayyorlanadi.
 Terminalga yuborish **maktab tarmog'idagi kompyuterdan** maxsus skript bilan qilinadi: server maktab ichki tarmog'iga yeta olmaydi.
 Buni dasturchi yoki texnik xodim `docs/terminallar.md` dagi tartib bo'yicha bajaradi.
-> Yangi server (my.spetion.uz) uchun bu skriptning nusxa olish qismi yangilanadi. Ko'chirishdan oldin tayyor bo'ladi.
+Skript (`tools/push_faces.py`) serverdan kerakli ro'yxat va rasmlarni o'zi oladi; natija panelda «Qurilmalar»da ko'rinadi.
 
 ### 6. Tekshiring
 **A** bo'limidagi tekshiruv kabi: bitta odam o'tsin → panelda «Oxirgi signal» va «Kunlik nazorat».

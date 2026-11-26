@@ -48,43 +48,47 @@ Rasm yuklanganda `accounts/photos.py` uni avtomatik tayyorlaydi: **JPEG, RGB, �
 Rasmda yuz aniq (old tomondan) bo'lmasa, terminal rad etadi; bunday odam skript natijasida «xato» sifatida ko'rinadi, boshqa rasm bilan qayta urinish mumkin.
 Faqat **rasmi va Face ID si bor faol** o'quvchi/ustoz/xodim yuboriladi (`access/sync.py: eligible_users`).
 
-## Rasmlarni terminallarga yuborish (qadamlar)
+## Rasmlarni terminallarga yuborish (qadamlar) — my.spetion.uz
 
-Maktab tarmog'iga ulangan kompyuterda, loyiha papkasida:
+Server maktabning ichki tarmog'iga yeta olmaydi, shuning uchun rasmlarni **maktab tarmog'idagi kompyuter** yuboradi:
+`tools/push_faces.py` serverdan API orqali «shu terminalda kim bo'lishi kerak» ro'yxati va rasmlarni oladi, terminallarga yuboradi
+va natijani serverga qaytaradi (panel → Qurilmalar: «hammasi yuborilgan / N ta xato» va oxirgi sync izohi shu bilan yangilanadi).
+Baza nusxasi kerak emas. Kompyuterda faqat Python 3 va `requests` bo'lsa yetadi (`pip install requests`), loyiha papkasi kerak.
 
-```bash
-# 1) VPS bazasi va rasmlarining NUSXASINI alohida papkaga oling (asl db.sqlite3 ga tegmang)
-mkdir -p ../prod-nusxa/media
-scp root@164.90.162.22:/var/www/med-spetion/data/db.sqlite3 ../prod-nusxa/
-scp -r root@164.90.162.22:/var/www/med-spetion/app/media/faces ../prod-nusxa/media/
+Tayyorgarlik (bir marta):
+- Panelda har bir terminal **Qurilmalar**da qo'shilgan bo'lsin (nomi va filiali to'g'ri). `tools/terminals.json` dagi nom panel
+  nomi bilan bir xil bo'lsin; bir xil nom bir nechta filialda bo'lsa yozuvga `"branch": <filial id>` qo'shing.
+- **API kaliti**: serverdagi `/var/www/erp/.env` da `FACE_AGENT_TOKEN`. Uni faqat shu kompyuterdagi xodimga bering, chatga yozmang.
 
-# 2) parolni muhit o'zgaruvchisiga qo'ying (tarixga yozilmasligi uchun)
-#    PowerShell:  $env:HIK_PASS = Read-Host "Terminal paroli"
-#    Bash:        read -s HIK_PASS && export HIK_PASS
+```powershell
+# parollar muhit o'zgaruvchisida (tarixga va faylga yozilmaydi)
+$env:HIK_PASS = Read-Host "Terminal paroli"
+$env:SPETION_AGENT_TOKEN = Read-Host "API kaliti"
 
-# 3) holat, so'ng sinov, so'ng hammasi
-python tools/push_faces.py ../prod-nusxa status     # terminallardagi son
-python tools/push_faces.py ../prod-nusxa test       # 1 kishi, 1 terminalga
-python tools/push_faces.py ../prod-nusxa sync       # hamma terminalga (o'zgarmaganlari o'tkazib yuboriladi)
-python tools/push_faces.py ../prod-nusxa status     # tekshiring: foydalanuvchi soni = yuz soni = kutilgan son
+python tools/push_faces.py status      # terminallardagi son
+python tools/push_faces.py test        # 1 kishi, 1-terminalga (sinov)
+python tools/push_faces.py sync        # hammasi (o'zgarmaganlari o'tkazib yuboriladi)
+python tools/push_faces.py status      # tekshiring: foydalanuvchi soni = yuz soni = kutilgan son
 ```
 
-Eslatmalar:
-- Nusxa bazasini har safar yangidan olsangiz, «oldin yuborilgan» yozuvlari (`FaceSync`) yo'qoladi va hamma qayta yuboriladi. Bu zararsiz (yozuv shu Face ID ustiga tushadi), faqat sekinroq (~1 daqiqa).
+- Rasmi yoki Face ID si o'zgargan odam qayta yuboriladi, o'zgarmaganlar o'tkazib yuboriladi (holat serverda saqlanadi).
+- Nofaol bo'lgan yoki rasmi olib tashlangan odam `sync` da terminaldan avtomatik o'chiriladi.
 - Ko'p so'rovdan keyin terminal vaqtincha 401 qaytarishi mumkin: `access/hikvision.py` yangi sessiya bilan 3 martagacha qayta urinadi.
-- Skript yo'nalishni va `Device` yozuvlarini nusxa bazada yaratadi (VPS dagi bazaga tegmaydi).
+- API: `/api/access/agent/{devices,manifest/<token>,photo/<id>,report/<token>}/` (`access/agent.py`), kalit `Authorization: Bearer`.
+
+**Eski server (med.spetion.uz, ko'chirishgacha):** `tools/push_faces_sqlite.py <baza nusxasi papkasi> sync` — avvalgi usul
+(sqlite nusxa + `media/faces`). Ko'chirishdan keyin ishlatilmaydi.
 
 ## Chiqqan o'quvchilarni terminaldan olib tashlash
 
-Panelda o'quvchi «Maktabdan chiqarilganda» u terminaldan **avtomatik olinmaydi** (VPS terminalga yeta olmaydi). Maktab tarmog'idan:
+`sync` nofaol odamlarni o'zi o'chiradi (agar ular oldin shu skript bilan yuborilgan bo'lsa). Terminalda panelga umuman
+bog'lanmagan eski odamlar qolgan bo'lsa:
 
-```bash
-# yangi nusxa oling (yuqoridagi 1-qadam), so'ng:
-python tools/push_faces.py ../prod-nusxa prune            # terminalda bor, lekin bo'lmasligi kerak odamlar RO'YXATI (hech narsa o'chirmaydi)
-python tools/push_faces.py ../prod-nusxa prune --apply    # ro'yxatni ko'rib chiqqach, shularni o'chiradi
+```powershell
+python tools/push_faces.py prune            # terminalda bor, lekin bo'lmasligi kerak odamlar RO'YXATI (hech narsa o'chirmaydi)
+python tools/push_faces.py prune --apply    # ro'yxatni ko'rib chiqqach, shularni o'chiradi
 ```
-`prune` terminaldagi hamma odamni tekshiradi; rasmi/Face ID si yo'q yoki nofaol bo'lganlarning hammasi ro'yxatga tushadi. Avval **ro'yxatni ko'zdan kechiring**, keyin `--apply`.
-Eslatma: bu buyruq so'nggi marta terminalda sinab ko'rilmagan (terminalsiz tekshirildi), birinchi ishlatganda faqat `prune` (o'chirishsiz) dan boshlang.
+Avval **ro'yxatni ko'zdan kechiring**, keyin `--apply`.
 
 ## Terminalga qo'lda murojaat (ISAPI)
 

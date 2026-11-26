@@ -202,6 +202,7 @@ GOOGLE_HTML_TOKEN = os.environ.get('GOOGLE_HTML_TOKEN', '')      # /google<token
 SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili (ota-onalarda shu; ko'chirish kuni .env da my.spetion.uz)
 
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)
+FACE_AGENT_TOKEN = os.environ.get('FACE_AGENT_TOKEN', '')      # tools/push_faces.py (maktab kompyuteri) uchun API kaliti
 EXAM_API_URL = os.environ.get('EXAM_API_URL', '')
 EXAM_API_KEY = os.environ.get('EXAM_API_KEY', '')
 

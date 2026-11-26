@@ -2,6 +2,10 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Terminallarga rasm yuborish — yangi server uchun (2026-11-26)
+- `tools/push_faces.py` qayta yozildi: baza nusxasi (sqlite) o'rniga **server API** bilan ishlaydi — kimni qaysi terminalga yuborish kerak, rasmlar, natija (`access/agent.py`: `/api/access/agent/devices|manifest|photo|report/`, kalit `FACE_AGENT_TOKEN`). Natija serverga yoziladi: panel «Qurilmalar»da «yuborilishi kerak» soni va oxirgi sync izohi endi to'g'ri. Nofaol/rasmi olingan odam `sync` da terminaldan o'chadi. Maktab kompyuterida faqat Python + `requests` kerak (Django shart emas).
+- Eski usul ko'chirishgacha `tools/push_faces_sqlite.py` da. `docs/terminallar.md` va yo'riqnoma yangilandi.
+
 ## spetion.uz landing — yangi dizayn (2026-11-26, founder tasdiqladi)
 - `landing/` (repoga olindi). Bo'limlar: hero (til markazidan — butun ta'lim oilasigacha), statistika, **Spetion oilasi** (til markazi, Spetion School, tibbiyot maktabi, bog'cha — har biri o'z rangida), tarix (4 bosqich), nega Spetion, **My Spetion** (ota-ona nimalarni ko'radi, telefon maketi, kirish tugmasi), asoschi, Instagram. Login va panel bilan bir uslub (aurora, shisha kartalar), yorug'/qorong'i, telefon. SEO: description, canonical, Open Graph, JSON-LD (EducationalOrganization).
 - Joylandi: https://spetion.uz/. Eski sahifa zaxirasi serverda `/root/backups/spetion-landing-index-before-redesign-20261126.html`.
