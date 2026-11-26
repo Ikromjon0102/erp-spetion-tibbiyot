@@ -4,7 +4,7 @@
 <a class="payday {{ p.state }}" href="{% url 'panel:payroll' %}?oy={{ p.month|date:'Y-m' }}{% if p.branch %}&filial={{ p.branch.pk }}{% endif %}">
   <svg class="ic"><use href="#p-wallet"/></svg>
   <span><b>{% if p.kind == 'advance' %}Avans{% else %}Yakuniy hisob{% endif %} · {{ p.date|date:"j F" }}</b> <span class="w">({{ p.when }})</span>{% if paydays_multi %} · {{ p.org.label }}{% endif %}<br>
-  <span class="s">{{ p.people }} kishiga {{ p.due|mny }} so'm to'lanmagan</span></span>
+  <span class="s">{% if p.kind == 'advance' %}{{ p.people }} kishi hali avans olmagan{% else %}{{ p.people }} kishiga {{ p.due|mny }} so'm to'lanmagan{% endif %}</span></span>
   <span class="go">→</span>
 </a>
 {% endfor %}

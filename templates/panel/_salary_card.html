@@ -10,7 +10,7 @@
       <div class="sal-amt"><b>{{ r.rule.describe }}</b> <span class="muted">· {{ r.rule.get_kind_display|lower }}, {{ r.rule.effective_from|date:"m.Y" }} dan</span></div>
       {% if r.slip %}
       <div class="sal-steps">
-        <span class="sal-step {% if r.st.adv_due %}due{% else %}ok{% endif %}">Avans · {{ r.adv_date|date:"j F" }}: {% if r.st.adv_due %}{{ r.st.adv_due|money }} to'lanmagan{% else %}to'langan{% endif %}</span>
+        <span class="sal-step {% if r.st.adv_waiting %}due{% else %}ok{% endif %}">Avans · {{ r.adv_date|date:"j F" }}: {% if r.st.adv_paid %}{{ r.st.adv_paid|money }} berilgan{% elif r.st.adv_waiting %}berilmagan{% else %}—{% endif %}</span>
         <span class="sal-step {% if r.st.remaining %}due{% else %}ok{% endif %}">Yakuniy · {{ r.end_date|date:"j F" }}: {% if r.st.remaining %}qoldiq {{ r.st.remaining|money }}{% else %}to'langan{% endif %}</span>
       </div>
       {% endif %}

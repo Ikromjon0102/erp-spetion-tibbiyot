@@ -233,7 +233,7 @@ def student_add(request):
 
 @panel_required('students.change')
 def student_edit(request, pk):
-    student = get_object_or_404(scope_students(Student.objects.select_related('user', 'group'), request.user), pk=pk)
+    student = get_object_or_404(scope_students(Student.objects.select_related('user', 'group', 'branch__organization'), request.user), pk=pk)
     form = StudentForm(request.POST or None, instance=student, user=request.user)
     if request.method == 'POST' and form.is_valid():
         before = _student_state(student)
@@ -243,9 +243,11 @@ def student_edit(request, pk):
             student.user.save()
             student.group, student.birth_date, student.access_id = d['group'], d['birth_date'], d['access_id']
             student.save()
-        diff = audit.changes(before, _student_state(student), _STUDENT_LABELS)
+        after = _student_state(student)
+        diff = audit.changes(before, after, _STUDENT_LABELS)
         if diff:
-            audit.log(request, "O'quvchini o'zgartirdi", student, label=student.user.get_full_name(), details=diff, target_type='student')
+            moved = before['group'] and before['group'] != after['group'] and len(diff) == 1
+            audit.log(request, "O'quvchini boshqa guruhga o'tkazdi" if moved else "O'quvchini o'zgartirdi", student, label=student.user.get_full_name(), details=diff, target_type='student')
         messages.success(request, "Saqlandi.")
         return redirect('panel:student', pk=student.pk)
     return render(request, 'panel/student_form.html', {'nav': 'students', 'form': form, 'student': student,

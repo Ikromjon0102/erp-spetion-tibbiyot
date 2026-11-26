@@ -83,7 +83,7 @@ def card(viewer, employee):
     rows = []
     for b, rule in salary.current_rules(employee, branches):
         s = slips.get(b.pk)
-        rows.append({'branch': b, 'rule': rule, 'slip': s, 'st': salary.slip_status(s, b.organization.advance_percent) if s else None,
+        rows.append({'branch': b, 'rule': rule, 'slip': s, 'st': salary.slip_status(s) if s else None,
                      'adv_date': salary.advance_date(b.organization, month), 'end_date': salary.month_end(month)})
     return {'rows': rows, 'can_manage': 'payroll.manage' in granted, 'employee': employee, 'multi': len(rows) > 1}
 

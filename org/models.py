@@ -25,7 +25,6 @@ class Organization(models.Model):
                                          help_text="Bo'sh bo'lsa umumiy sozlama (Qurilmalar sahifasi). Bog'cha va markazning ish soati boshqa bo'lishi mumkin")
     advance_day = models.PositiveSmallIntegerField('Avans kuni', default=15, validators=[MinValueValidator(1), MaxValueValidator(28)],
                                                    help_text="Har oyning shu kuni avans beriladi; yakuniy hisob — oyning oxirgi kuni")
-    advance_percent = models.PositiveSmallIntegerField('Avans (oylikning %)', default=50, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_active = models.BooleanField('Faol', default=True)
     order = models.PositiveSmallIntegerField('Tartib', default=0)
 

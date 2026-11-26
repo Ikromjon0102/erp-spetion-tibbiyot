@@ -1,7 +1,7 @@
 """Oylik: kimga qancha (qoida), qachon to'lanadi (avans va yakuniy hisob), nima qoldi.
 
-Jadval tashkilot bo'yicha: avans — har oyning `advance_day` kuni (odatda 15), oylikning `advance_percent` foizi (odatda 50%);
-yakuniy hisob — oyning oxirgi kuni, qolgan hamma summa. Avans summasi minggacha yaxlitlanadi.
+Jadval tashkilot bo'yicha: avans — har oyning `advance_day` kuni (odatda 15), summasini hisobchi yoki rahbar o'zi yozadi;
+yakuniy hisob — oyning oxirgi kuni, qolgan hamma summa.
 """
 from calendar import monthrange
 from datetime import timedelta
@@ -22,17 +22,13 @@ def advance_date(org, month):
     return month.replace(day=min(getattr(org, 'advance_day', 15) or 15, 28))
 
 
-def advance_plan(slip, percent):
-    """Avans rejasi: jami oylikning foizi, minggacha yaxlitlangan."""
-    v = Decimal(slip.total) * Decimal(percent) / 100
-    return (v / 1000).quantize(Decimal(1)) * 1000
-
-
-def slip_status(slip, percent):
-    """Avans va yakuniy hisob bo'yicha holat (sahifadagi ustunlar uchun)."""
-    plan = advance_plan(slip, percent)
-    covered = min(slip.paid, plan)            # avans sifatida yozilmagan bo'lsa ham, to'langan pul avansni yopadi
-    return {'adv_plan': plan, 'adv_paid': covered, 'adv_due': plan - covered, 'remaining': max(slip.remaining, ZERO)}
+def slip_status(slip):
+    """Avans va yakuniy hisob bo'yicha holat. Avans foiz bilan rejalanmaydi — hisobchi yoki rahbar summani o'zi yozadi
+    (2026-11-26). Shuning uchun avansda «qancha qoldi» yo'q, faqat «kimga berildi / kimga hali berilmagan»."""
+    pays = list(slip.payments.all())
+    adv = sum((p.amount for p in pays if p.kind == 'advance'), ZERO)
+    waiting = slip.total > 0 and not pays                # shu oy uchun hali hech narsa olmagan
+    return {'adv_paid': adv, 'adv_waiting': waiting, 'remaining': max(slip.remaining, ZERO)}
 
 
 def _days_word(target, today):
@@ -47,15 +43,12 @@ def _days_word(target, today):
 
 
 def schedule(org, month, slips, today):
-    """Oy uchun ikki muddat: avans va yakuniy hisob (sana, qancha kun qoldi, reja, to'langan, qoldiq)."""
-    pct = getattr(org, 'advance_percent', 50)
-    rows = [slip_status(s, pct) for s in slips]
-    adv_day, end_day = advance_date(org, month), month_end(month)
-    adv = {'date': adv_day, 'percent': pct, 'plan': sum((r['adv_plan'] for r in rows), ZERO),
-           'paid': sum((r['adv_paid'] for r in rows), ZERO),
-           'people': sum(1 for r in rows if r['adv_due'] > 0)}
-    adv['due'] = max(adv['plan'] - adv['paid'], ZERO)
-    fin = {'date': end_day, 'due': sum((r['remaining'] for r in rows), ZERO), 'people': sum(1 for r in rows if r['remaining'] > 0)}
+    """Oy uchun ikki muddat: avans (sana, berilgan summa, kimga hali berilmagan) va yakuniy hisob (sana, qoldiq)."""
+    rows = [slip_status(s) for s in slips]
+    adv = {'date': advance_date(org, month), 'paid': sum((r['adv_paid'] for r in rows), ZERO),
+           'given': sum(1 for r in rows if r['adv_paid'] > 0), 'people': sum(1 for r in rows if r['adv_waiting'])}
+    adv['due'] = adv['people']                           # «yopildi» belgisi: hamma biror nima olgan
+    fin = {'date': month_end(month), 'due': sum((r['remaining'] for r in rows), ZERO), 'people': sum(1 for r in rows if r['remaining'] > 0)}
     for item in (adv, fin):
         item['when'], item['state'] = _days_word(item['date'], today)
     return {'advance': adv, 'final': fin}

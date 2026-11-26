@@ -51,7 +51,7 @@ def payroll_page(request):
     slips = list(Payslip.objects.filter(branch=branch, month=month).select_related('employee').prefetch_related('payments')) if branch else []
     org = branch.organization if branch else None
     for s in slips:
-        s.st = salary.slip_status(s, org.advance_percent)
+        s.st = salary.slip_status(s)
     totals = {'total': sum((s.total for s in slips), Decimal(0)), 'paid': sum((s.paid for s in slips), Decimal(0))}
     totals['remaining'] = totals['total'] - totals['paid']
     missing = salary.employees_qs(request.user).filter(branches=branch).exclude(salary_rules__branch=branch).count() if branch else 0
@@ -65,26 +65,26 @@ def payroll_page(request):
 class ScheduleForm(forms.ModelForm):
     class Meta:
         model = Organization
-        fields = ['advance_day', 'advance_percent']
+        fields = ['advance_day']
 
 
 @require_POST
 @panel_required('payroll.manage')
 def payroll_settings(request):
-    """Avans kuni va foizi — tashkilot bo'yicha (shu sahifadagi filialning tashkiloti)."""
+    """Avans kuni — tashkilot bo'yicha (shu sahifadagi filialning tashkiloti)."""
     branch, _ = _current_branch(request)
     if branch is None:
         return redirect('panel:payroll')
     org = branch.organization
-    before = {'Avans kuni': org.advance_day, 'Avans foizi': org.advance_percent}
+    before = {'Avans kuni': org.advance_day}
     form = ScheduleForm(request.POST, instance=org)
     if form.is_valid():
         form.save()
         audit.log(request, "Avans jadvalini o'zgartirdi", org, label=org.label, target_type='payroll',
-                  details=audit.changes(before, {'Avans kuni': org.advance_day, 'Avans foizi': org.advance_percent}, {k: k for k in before}))
-        messages.success(request, f"Avans: har oyning {org.advance_day}-kuni, oylikning {org.advance_percent}%")
+                  details=audit.changes(before, {'Avans kuni': org.advance_day}, {k: k for k in before}))
+        messages.success(request, f"Avans kuni: har oyning {org.advance_day}-kuni")
     else:
-        messages.error(request, "Avans kuni 1–28, foiz 0–100 bo'lsin")
+        messages.error(request, "Avans kuni 1–28 oralig'ida bo'lsin")
     return redirect(f"{reverse('panel:payroll')}?oy={request.POST.get('oy', '')}&filial={branch.pk}")
 
 
@@ -143,10 +143,10 @@ class PayForm(forms.Form):
 @panel_required('payroll.manage')
 def payslip_pay(request, pk):
     slip = _slip_or_404(request, pk)
-    st = salary.slip_status(slip, slip.branch.organization.advance_percent)
-    advance = request.GET.get('turi') == 'avans' and st['adv_due'] > 0
-    amount = st['adv_due'] if advance else slip.remaining
-    form = PayForm(request.POST or None, initial={'amount': int(amount) if amount > 0 else None, 'paid_on': timezone.localdate(),
+    st = salary.slip_status(slip)
+    advance = request.GET.get('turi') == 'avans'
+    amount = None if advance else slip.remaining          # avans summasini hisobchi o'zi yozadi
+    form = PayForm(request.POST or None, initial={'amount': int(amount) if amount and amount > 0 else None, 'paid_on': timezone.localdate(),
                                                   'method': 'cash', 'kind': 'advance' if advance else 'salary'})
     if request.method == 'POST' and form.is_valid():
         d = form.cleaned_data

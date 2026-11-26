@@ -286,3 +286,54 @@ class BranchHeadTests(Base):
         self.client.force_login(head)
         self.assertEqual(self.client.get(reverse('panel:payroll')).status_code, 403)
         self.assertEqual(self.client.get(reverse('panel:students')).status_code, 200)
+
+
+class MoveBetweenGroupsTests(Base):
+    """O'quv markazda guruhdan-guruhga o'tkazish — faqat filial rahbari (students.move); maktabda sinf o'zgartirish oddiy tahrir."""
+
+    def setUp(self):
+        super().setUp()
+        from accounts.models import Student
+        self.g1 = Group.objects.create(name='Ingliz A', branch=self.c1)
+        self.g2 = Group.objects.create(name='Ingliz B', branch=self.c1)
+        u = User.objects.create_user('st1', password='x', role='student', first_name='Ali', last_name='Valiyev')
+        self.st = Student.objects.create(user=u, group=self.g1)
+
+    def post(self, user, group):
+        self.client.force_login(user)
+        return self.client.post(reverse('panel:student_edit', args=[self.st.pk]),
+                                {'last_name': 'Valiyev', 'first_name': 'Ali', 'group': group.pk})
+
+    def test_director_cannot_move_in_center(self):
+        from panel.perms import PRESETS
+        perms = next(p[2] for p in PRESETS if p[0] == 'Direktor')
+        self.assertNotIn('students.move', perms)
+        d = self.staff('dir', perms, self.c1)
+        self.post(d, self.g2)
+        self.st.refresh_from_db()
+        self.assertEqual(self.st.group, self.g1)            # disabled maydon — o'zgarmadi
+        self.client.force_login(d)
+        self.assertContains(self.client.get(reverse('panel:student_edit', args=[self.st.pk])), 'faqat filial rahbari')
+
+    def test_branch_head_moves_and_audit(self):
+        from panel.models import AuditLog
+        from panel.perms import PRESETS
+        perms = next(p[2] for p in PRESETS if p[0] == 'Filial rahbari')
+        self.assertIn('students.move', perms)
+        head = self.staff('head', perms, self.c1)
+        self.post(head, self.g2)
+        self.st.refresh_from_db()
+        self.assertEqual(self.st.group, self.g2)
+        self.assertTrue(AuditLog.objects.filter(verb="O'quvchini boshqa guruhga o'tkazdi").exists())
+
+    def test_school_class_change_unrestricted(self):
+        from accounts.models import Student
+        a = Group.objects.create(name='5-A', branch=self.b_school)
+        b = Group.objects.create(name='5-B', branch=self.b_school)
+        u = User.objects.create_user('st2', password='x', role='student', first_name='B', last_name='C')
+        s = Student.objects.create(user=u, group=a)
+        d = self.staff('dir2', ['students.view', 'students.change'], self.b_school)
+        self.client.force_login(d)
+        self.client.post(reverse('panel:student_edit', args=[s.pk]), {'last_name': 'C', 'first_name': 'B', 'group': b.pk})
+        s.refresh_from_db()
+        self.assertEqual(s.group, b)

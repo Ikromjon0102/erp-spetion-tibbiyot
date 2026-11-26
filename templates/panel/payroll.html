@@ -20,11 +20,11 @@
 {% if sched %}
 <div class="pay-steps">
   <div class="card pay-step {{ sched.advance.state }}{% if not sched.advance.due %} done{% endif %}">
-    <div class="k">1 · Avans <span class="muted">({{ sched.advance.percent }}%)</span></div>
+    <div class="k">1 · Avans</div>
     <div class="d">{{ sched.advance.date|date:"j F" }} <span class="when">· {% if sched.advance.due %}{{ sched.advance.when }}{% else %}yopildi{% endif %}</span></div>
-    <div class="row"><span>Reja</span><b>{{ sched.advance.plan|mny }}</b></div>
-    <div class="row"><span>To'langan</span><b>{{ sched.advance.paid|mny }}</b></div>
-    <div class="row"><span>To'lanmagan</span><b class="{% if sched.advance.due %}due{% endif %}">{{ sched.advance.due|mny }}{% if sched.advance.people %} <small>· {{ sched.advance.people }} kishi</small>{% endif %}</b></div>
+    <div class="row"><span>Berilgan avans</span><b>{{ sched.advance.paid|mny }}{% if sched.advance.given %} <small>· {{ sched.advance.given }} kishi</small>{% endif %}</b></div>
+    <div class="row"><span>Hali olmagan</span><b class="{% if sched.advance.people %}due{% endif %}">{{ sched.advance.people }} kishi</b></div>
+    <div class="row"><span>Summa</span><span class="muted" style="font-size:13px">har kishiga o'zingiz yozasiz</span></div>
   </div>
   <div class="card pay-step {{ sched.final.state }}{% if not sched.final.due %} done{% endif %}">
     <div class="k">2 · Yakuniy hisob</div>
@@ -35,11 +35,10 @@
   </div>
 </div>
 {% if can_manage %}
-<details class="card pay-set"><summary>Avans sozlamasi: har oyning <b>{{ org.advance_day }}</b>-kuni, oylikning <b>{{ org.advance_percent }}%</b> <span class="muted">· {{ org.label }}</span></summary>
+<details class="card pay-set"><summary>Avans kuni: har oyning <b>{{ org.advance_day }}</b>-kuni <span class="muted">· {{ org.label }}</span></summary>
   <form method="post" action="{% url 'panel:payroll_settings' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px">{% csrf_token %}
     <input type="hidden" name="filial" value="{{ branch.pk }}"><input type="hidden" name="oy" value="{{ month|date:'Y-m' }}">
     <label>Avans kuni<br><input type="number" name="advance_day" min="1" max="28" value="{{ org.advance_day }}" style="width:90px"></label>
-    <label>Foiz (%)<br><input type="number" name="advance_percent" min="0" max="100" value="{{ org.advance_percent }}" style="width:90px"></label>
     <button class="btn primary">Saqlash</button>
   </form>
   <p class="hint">Butun tashkilot uchun. Yakuniy hisob — har doim oyning oxirgi kuni.</p>
@@ -53,10 +52,10 @@
     <td><a href="{% url 'panel:employee_salary' s.employee.pk %}?next={{ request.get_full_path|urlencode }}"><b>{{ s.employee.last_name }} {{ s.employee.first_name }}</b></a></td>
     <td class="muted hm" style="font-size:12.5px">{{ s.calc_note }}{% if s.bonus %} · +{{ s.bonus|money }} mukofot{% endif %}{% if s.deduction %} · −{{ s.deduction|money }} ushlanma{% endif %}{% if s.note %}<br>{{ s.note }}{% endif %}</td>
     <td data-l="Jami" style="text-align:right"><b>{{ s.total|mny }}</b></td>
-    <td data-l="Avans" style="text-align:right">{% if s.st.adv_due %}<span class="badge warn">{{ s.st.adv_due|mny }}</span>{% elif s.st.adv_plan %}<span class="badge gray">berildi</span>{% else %}—{% endif %}</td>
+    <td data-l="Avans" style="text-align:right">{% if s.st.adv_paid %}{{ s.st.adv_paid|mny }}{% elif s.st.adv_waiting %}<span class="badge warn">berilmagan</span>{% else %}—{% endif %}</td>
     <td data-l="To'langan" style="text-align:right">{{ s.paid|mny }}</td>
     <td data-l="Qoldiq" style="text-align:right">{% if s.remaining > 0 %}<span class="badge">{{ s.remaining|mny }}</span>{% else %}<span class="badge gray">to'langan</span>{% endif %}</td>
-    <td style="text-align:right;white-space:nowrap">{% if can_manage %}{% if s.st.adv_due %}<a class="btn small" href="{% url 'panel:payslip_pay' s.pk %}?turi=avans">Avans</a> {% endif %}{% if s.remaining > 0 %}<a class="btn small primary" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> {% endif %}<a class="btn small" href="{% url 'panel:payslip_edit' s.pk %}" title="Mukofot / ushlanma"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
+    <td style="text-align:right;white-space:nowrap">{% if can_manage %}{% if s.remaining > 0 %}<a class="btn small" href="{% url 'panel:payslip_pay' s.pk %}?turi=avans">Avans</a> {% endif %}{% if s.remaining > 0 %}<a class="btn small primary" href="{% url 'panel:payslip_pay' s.pk %}">To'lash</a> {% endif %}<a class="btn small" href="{% url 'panel:payslip_edit' s.pk %}" title="Mukofot / ushlanma"><svg class="ic"><use href="#p-edit"/></svg></a>{% endif %}</td>
   </tr>{% empty %}<tr><td colspan="7"><div class="empty">{% if has_rules %}Bu oy hisoblanmagan. «Qayta hisoblash» tugmasini bosing.{% else %}Avval «Xodimlar oyligi»da ustoz va xodimlarga oylik belgilang.{% endif %}</div></td></tr>{% endfor %}
   </tbody></table></div>
 </div>

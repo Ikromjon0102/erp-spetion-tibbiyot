@@ -24,6 +24,18 @@ class PhoneField(forms.CharField):
         return phone
 
 
+def can_move_group(user, student):
+    """O'quv markazda o'quvchini guruhdan-guruhga o'tkazish — faqat `students.move` ruxsati bilan (filial rahbari, founder).
+    Maktab va bog'chada sinf o'zgartirish oddiy tahrir. Guruhsiz o'quvchini birinchi marta guruhga qo'shish hammaga ochiq."""
+    from panel.access import perms_of
+    if not student.group_id or not student.branch_id:
+        return True
+    from org.models import Organization
+    if student.branch.organization.kind != Organization.Kind.CENTER:
+        return True
+    return 'students.move' in perms_of(user)
+
+
 class StudentForm(forms.Form):
     last_name = forms.CharField(label='Familiya', max_length=150)
     first_name = forms.CharField(label='Ism', max_length=150)
@@ -46,6 +58,10 @@ class StudentForm(forms.Form):
             self.fields['group'].queryset = scope_groups(Group.objects.all(), user)
         if instance is not None:                 # tahrirda ota-onalar kartaning "Ota-onalar" yorlig'ida boshqariladi
             del self.fields['parent_phone'], self.fields['parent_name']
+            if user is not None and not can_move_group(user, instance):
+                f = self.fields['group']
+                f.disabled = True
+                f.help_text = "Boshqa guruhga o'tkazishni faqat filial rahbari qiladi"
 
     def clean(self):
         d = super().clean()

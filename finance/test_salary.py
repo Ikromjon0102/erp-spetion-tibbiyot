@@ -1,4 +1,4 @@
-"""Oylik: qo'shishda kiritish, kartadagi blok, xodimlar oyligi ro'yxati, avans (15-kun, 50%) va yakuniy hisob, eslatma."""
+"""Oylik: qo'shishda kiritish, kartadagi blok, xodimlar oyligi ro'yxati, avans (15-kun, summa qo'lda) va yakuniy hisob, eslatma."""
 from datetime import date, timedelta
 from decimal import Decimal
 from unittest import mock
@@ -133,14 +133,17 @@ class ScheduleTests(SalaryBase):
         self.t = self.teacher('ust1', self.c1)
         SalaryRule.objects.create(employee=self.t, branch=self.c1, effective_from=self.month, amount=3000000)
 
-    def test_advance_is_half_rounded(self):
+    def test_advance_is_entered_amount(self):
         payroll.ensure_payslips(self.c1, self.month)
         slip = Payslip.objects.get(employee=self.t)
-        st = salary.slip_status(slip, 50)
-        self.assertEqual((st['adv_plan'], st['adv_due'], st['remaining']), (Decimal(1500000), Decimal(1500000), Decimal(3000000)))
-        payroll.pay(slip, 1500000, 'advance', timezone.localdate(), 'cash', self.acc)
-        st = salary.slip_status(slip, 50)
-        self.assertEqual((st['adv_due'], st['remaining']), (0, Decimal(1500000)))
+        st = salary.slip_status(slip)
+        self.assertEqual((st['adv_paid'], st['adv_waiting'], st['remaining']), (0, True, Decimal(3000000)))
+        payroll.pay(slip, 700000, 'advance', timezone.localdate(), 'cash', self.acc)     # hisobchi istalgan summani yozadi
+        slip = Payslip.objects.prefetch_related('payments').get(pk=slip.pk)
+        st = salary.slip_status(slip)
+        self.assertEqual((st['adv_paid'], st['adv_waiting'], st['remaining']), (Decimal(700000), False, Decimal(2300000)))
+        sch = salary.schedule(self.center, self.month, [slip], timezone.localdate())['advance']
+        self.assertEqual((sch['paid'], sch['given'], sch['people']), (Decimal(700000), 1, 0))
 
     def test_payroll_page_autocalculates_and_shows_both_dates(self):
         self.client.force_login(self.acc)
@@ -150,13 +153,14 @@ class ScheduleTests(SalaryBase):
         self.assertTrue(Payslip.objects.filter(employee=self.t, month=self.month).exists())
         slip = Payslip.objects.get(employee=self.t)
         r = self.client.get(reverse('panel:payslip_pay', args=[slip.pk]), {'turi': 'avans'})
-        self.assertContains(r, 'value="1 500 000"') if b'1 500 000' in r.content else self.assertContains(r, 'value="1500000"')
+        self.assertNotContains(r, '1 500 000')                       # avans summasi oldindan to'ldirilmaydi
+        self.assertContains(r, 'hali berilmagan')
 
     def test_settings_change_advance(self):
         self.client.force_login(self.acc)
-        self.client.post(reverse('panel:payroll_settings'), {'filial': self.c1.pk, 'advance_day': 16, 'advance_percent': 40})
+        self.client.post(reverse('panel:payroll_settings'), {'filial': self.c1.pk, 'advance_day': 16})
         self.center.refresh_from_db()
-        self.assertEqual((self.center.advance_day, self.center.advance_percent), (16, 40))
+        self.assertEqual(self.center.advance_day, 16)
 
     def test_reminder_window(self):
         def at(day):
@@ -164,7 +168,7 @@ class ScheduleTests(SalaryBase):
         self.assertTrue(any(p['kind'] == 'advance' for p in salary.reminders(self.acc, at(13))))     # 2 kun qoldi
         self.assertFalse(any(p['kind'] == 'advance' for p in salary.reminders(self.acc, at(5))))     # hali erta
         slip = Payslip.objects.get(employee=self.t, month=self.month)
-        payroll.pay(slip, 1500000, 'advance', at(1), 'cash', self.acc)
+        payroll.pay(slip, 500000, 'advance', at(1), 'cash', self.acc)
         self.assertFalse(any(p['kind'] == 'advance' for p in salary.reminders(self.acc, at(15))))    # avans berilgan
         end = salary.month_end(self.month)
         self.assertTrue(any(p['kind'] == 'final' for p in salary.reminders(self.acc, end)))

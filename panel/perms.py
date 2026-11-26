@@ -7,6 +7,7 @@ CATALOG = [
         ('add', "O'quvchi qo'shish"),
         ('change', "Tahrirlash va ota-ona biriktirish"),
         ('import', "Excel'dan yuklash"),
+        ('move', "O'quv markazda o'quvchini guruhdan-guruhga o'tkazish"),
     ]),
     ('teachers', "Ustozlar", [
         ('view', "Ro'yxat va ustoz kartasini ko'rish"),
@@ -100,7 +101,7 @@ def _all_except(*excluded):
 PRESETS = [
     ('Maktab egasi', True, ALL_PERMS),
     # Xarajat va oyliklar maxfiy: Direktorda ham yo'q, «Maktab egasi» (founder) kerakli odamga alohida beradi
-    ('Direktor', False, _all_except('staff.manage', *[p for p in ALL_PERMS if p.startswith(('expenses.', 'payroll.'))])),
+    ('Direktor', False, _all_except('staff.manage', 'students.move', *[p for p in ALL_PERMS if p.startswith(('expenses.', 'payroll.'))])),
     # Markaz filiali rahbari: o'z filialida direktor kabi kundalik boshqaruv. Narx, chegirma, to'lovni bekor qilish, jurnal va exam bog'lash —
     # markazda (founder / markaz direktori). Qaysi filial — xodim kartasidagi «Ish filiallari» (bitta filial belgilanadi).
     ('Filial rahbari', False, _all_except('staff.manage', 'org.settings', 'payments.settings', 'payments.discounts', 'payments.void', 'audit.view',
