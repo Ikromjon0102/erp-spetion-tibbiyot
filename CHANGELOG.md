@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Founder paneli: «Rahbariyat» rejimi va rahbariyatga xabar (2026-11-26)
+- **Ixcham menyu** (founder, «Hammasi» tanlanganda): Raqamlar, Rahbariyatga xabar, **Tashkilotlar** (har biri — bosilsa shu tashkilot ichiga kiradi), Moliya (xarajat, oylik), Sozlamalar (tashkilot va brend, xodimlar, lavozimlar, jurnal). O'quvchilar, ota-onalar, jadval, sinflar, to'lovlar, e'lonlar, taomnoma, galereya, qurilmalar, exam bog'lash — faqat tashkilot ichida; u yerda tepada «‹ Rahbariyat» qaytish. Telefonda: Raqamlar · Xabarlar · Tashkilotlar · Xarajatlar · Ko'proq.
+- **Rahbariyatga xabar** (`/panel/xabarlar/`): founder bir yoki bir nechta rahbarni lavozim bo'yicha guruhlangan ro'yxatdan tanlab yozadi (qidiruv, butun lavozimni belgilash). Xabar panelda va Telegram'da; a'zolar javob yozadi (yozishma); founder kim qachon o'qiganini ko'radi. Founder quyi xodimlarga ismi bilan emas, «Rahbariyat» bo'lib ko'rinadi. Faqat a'zolar ko'radi; yozishmani faqat founder ochadi. Menyuda o'qilmaganlar soni.
+- **Xodimlar ham Telegram botga ulanadi** (telefon raqami orqali) — rahbariyat xabarlari kelishi uchun. Avval faqat ota-onalar ulanardi.
+- Founder raqamlar sahifasida «Kundalik ish paneli» o'rniga «Rahbariyatga yozish».
+
 ## Production tayyorgarligi: my.spetion.uz (2026-11-26)
 - **Qidiruv tizimlari tasdiqlandi (kodlar serverda):** Google (meta teg va `/google74e779e242cab715.html`), Yandex (meta teg). **spetion.uz** landing sahifasida (eski VPS, `/var/www/spetion-landing/index.html`, zaxira `/root/backups/spetion-landing-index-20261126.html`) sarlavhadagi Instagram tugmasi o'rniga «My Spetion» tugmasi va pastki qismda «My Spetion — kirish» havolasi.
 - **Panel va ilova ko'rinishi:** tibbiyotga xos «+» naqsh olib tashlandi; fonda tashkilot rangidagi sekin harakatlanuvchi aurora (faqat transform — telefonni qiynamaydi; harakatni kamaytirish hurmat qilinadi) va nozik donadorlik. Yon menyuda rangli nur. Statistika kartalarida xira dog' o'rniga yuqori chetda rangli chiziq, raqamlar kattaroq. Yorliqlar (badge) bir qatorda.

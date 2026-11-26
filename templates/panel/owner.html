@@ -55,7 +55,7 @@
     {% if r.next %}<a href="?oy={{ r.next|date:'Y-m' }}&davr={{ period }}" aria-label="Keyingi oy">›</a>{% else %}<span class="off">›</span>{% endif %}
   </div>
   <div class="ow-seg"><a href="?oy={{ r.month|date:'Y-m' }}&davr=oy" class="{% if period == 'oy' %}on{% endif %}">Shu oy</a><a href="?oy={{ r.month|date:'Y-m' }}&davr=yil" class="{% if period == 'yil' %}on{% endif %}">O'quv yili</a></div>
-  <div class="ow-where">Ko'rsatilmoqda: <b>{{ scope.label|default:"Hammasi" }}</b>{% if scope and scope.selectable %} · o'zgartirish: «Ish maydoni» tanlagichida{% endif %}</div>
+  <div class="ow-where">Ko'rsatilmoqda: <b>{{ scope.label|default:"Hammasi" }}</b>{% if founder_lean %} · bitta tashkilotni ko'rish: chapdagi «Tashkilotlar»{% elif scope and scope.selectable %} · o'zgartirish: «Ish maydoni» tanlagichida{% endif %}</div>
 </div>
 
 <div class="grid g4" style="margin-bottom:16px">
