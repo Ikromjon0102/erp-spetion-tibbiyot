@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spetion — til markazi, maktab, tibbiyot maktabi va bog'cha</title>
+<meta name="description" content="Spetion — 10 yildan ortiq tajribaga ega ta'lim oilasi: Spetion til markazi (4 filial), Spetion School, tibbiyotga ixtisoslashgan maktab va bog'cha. Ota-onalar uchun My Spetion ilovasi.">
+<link rel="canonical" href="https://spetion.uz/">
+<link rel="icon" href="assets/spetion-mark-red.png">
+<meta name="theme-color" content="#0B1020">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Spetion">
+<meta property="og:locale" content="uz_UZ">
+<meta property="og:title" content="Spetion — butun ta'lim oilasi">
+<meta property="og:description" content="Til markazi, Spetion School, tibbiyot maktabi va bog'cha. Ota-onalar uchun My Spetion ilovasi.">
+<meta property="og:url" content="https://spetion.uz/">
+<meta property="og:image" content="https://spetion.uz/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"EducationalOrganization","name":"Spetion","url":"https://spetion.uz/",
+ "logo":"https://spetion.uz/assets/spetion-mark-red.png","sameAs":["https://www.instagram.com/spetion.lc/","https://my.spetion.uz/"],
+ "founder":{"@type":"Person","name":"Sherzod Muradovich"},
+ "subOrganization":[{"@type":"School","name":"Spetion School"},{"@type":"School","name":"Spetion tibbiyot maktabi"},
+   {"@type":"Preschool","name":"Spetion bog'cha"},{"@type":"EducationalOrganization","name":"Spetion til markazi"}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F6F5F3; --ink:#120F0E; --dim:#5E5754; --faint:#A39A96; --card:rgba(255,255,255,.72); --card-solid:#fff; --line:rgba(18,15,14,.09);
+    --brand:#DD1808; --brand-2:#F8483A;
+    --med:#16A34A; --school:#2563EB; --kg:#F97316; --center:#E11D48;
+    --btn:#120F0E; --btn-ink:#fff; --blob:.5;
+    --shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 20px 50px -24px rgba(18,15,14,.28);
+  }
+  @media (prefers-color-scheme: dark) { :root {
+    --bg:#08080B; --ink:#F4F2F0; --dim:#ABA39F; --faint:#6E6764; --card:rgba(22,21,24,.66); --card-solid:#16151A; --line:rgba(255,255,255,.09);
+    --btn:#F4F2F0; --btn-ink:#0B0A0C; --blob:.36; --shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 24px 60px -24px rgba(0,0,0,.7);
+  } }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  html, body { margin:0; padding:0; overflow-x:hidden; }
+  body { background:var(--bg); color:var(--ink); font:16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; }
+  img { max-width:100%; display:block; }
+  .wrap { width:100%; max-width:1180px; margin:0 auto; padding:0 20px; }
+
+  /* aurora fon: tashkilotlar ranglari */
+  .aurora { position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
+  .aurora i { position:absolute; width:48vmax; height:48vmax; border-radius:50%; filter:blur(80px); opacity:var(--blob); animation:drift 26s ease-in-out infinite alternate; }
+  .aurora i:nth-child(1) { background:var(--med); left:-16vmax; top:-18vmax; }
+  .aurora i:nth-child(2) { background:var(--school); right:-18vmax; top:-8vmax; animation-duration:30s; animation-delay:-8s; }
+  .aurora i:nth-child(3) { background:var(--kg); left:10vmax; bottom:-26vmax; animation-duration:34s; animation-delay:-14s; }
+  .aurora i:nth-child(4) { background:var(--center); right:-10vmax; bottom:-24vmax; animation-duration:28s; animation-delay:-4s; }
+  .aurora::after { content:""; position:absolute; inset:0; background-image:radial-gradient(rgba(127,127,127,.1) 1px, transparent 1px); background-size:3px 3px; }
+  @keyframes drift { 0% { transform:translate(0,0) scale(1); } 50% { transform:translate(6vmax,4vmax) scale(1.1); } 100% { transform:translate(-4vmax,7vmax) scale(.95); } }
+
+  /* sarlavha */
+  header.site { position:sticky; top:0; z-index:20; backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+    background:color-mix(in srgb, var(--bg) 70%, transparent); border-bottom:1px solid var(--line); }
+  header.site .wrap { display:flex; align-items:center; gap:24px; height:68px; }
+  .logo { height:30px; width:auto; }
+  .logo-dark { display:none; }
+  @media (prefers-color-scheme: dark) { .logo-light { display:none; } .logo-dark { display:block; } }
+  nav.links { margin-left:auto; display:flex; align-items:center; gap:22px; }
+  nav.links a.a { text-decoration:none; font-weight:600; font-size:14.5px; color:var(--dim); }
+  nav.links a.a:hover { color:var(--ink); }
+  @media (max-width:760px) { nav.links a.a { display:none; } }
+
+  .btn { display:inline-flex; align-items:center; gap:9px; padding:14px 22px; border-radius:14px; font-weight:700; font-size:15.5px; text-decoration:none;
+    border:1px solid transparent; transition:transform .15s, box-shadow .2s, background .2s; white-space:nowrap; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn svg { width:17px; height:17px; }
+  .btn.ink { background:var(--btn); color:var(--btn-ink); box-shadow:0 14px 30px -14px rgba(0,0,0,.55); }
+  .btn.brand { background:linear-gradient(135deg, var(--brand-2), var(--brand)); color:#fff; box-shadow:0 14px 30px -12px rgba(221,24,8,.55); }
+  .btn.ghost { background:var(--card); border-color:var(--line); color:var(--ink); backdrop-filter:blur(12px); }
+  .btn.sm { padding:10px 16px; font-size:14px; border-radius:12px; }
+
+  /* hero */
+  .hero { padding:84px 0 56px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:7px 14px 7px 8px; border-radius:999px; background:var(--card); border:1px solid var(--line);
+    font-size:13.5px; font-weight:600; color:var(--dim); backdrop-filter:blur(12px); }
+  .eyebrow b { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:11px;
+    background:conic-gradient(var(--med), var(--school), var(--kg), var(--center), var(--med)); }
+  h1 { font-size:clamp(40px, 7.2vw, 84px); line-height:1.02; letter-spacing:-.045em; font-weight:900; margin:22px 0 20px; max-width:15ch; }
+  .grad { background:linear-gradient(90deg, var(--med), var(--school) 35%, var(--kg) 68%, var(--center)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  @media (prefers-color-scheme: dark) { .grad { filter:brightness(1.35) saturate(1.1); } }
+  .lead { font-size:clamp(17px, 2vw, 20px); color:var(--dim); max-width:62ch; margin:0 0 30px; }
+  .cta { display:flex; flex-wrap:wrap; gap:12px; }
+  .stats { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:56px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:20px 22px; backdrop-filter:blur(16px); box-shadow:var(--shadow); }
+  .stat b { display:block; font-size:clamp(30px, 4vw, 42px); letter-spacing:-.04em; font-weight:900; line-height:1.05; }
+  .stat span { color:var(--dim); font-size:14px; font-weight:600; }
+  @media (max-width:760px) { .stats { grid-template-columns:repeat(2, minmax(0,1fr)); } .hero { padding:56px 0 40px; } }
+
+  section.block { padding:72px 0; }
+  .kicker { font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--brand); }
+  h2 { font-size:clamp(30px, 4.4vw, 48px); line-height:1.06; letter-spacing:-.035em; font-weight:900; margin:10px 0 14px; max-width:20ch; }
+  .sub { color:var(--dim); font-size:17.5px; max-width:60ch; margin:0 0 34px; }
+
+  /* oila: 4 tashkilot */
+  .family { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; }
+  @media (max-width:820px) { .family { grid-template-columns:minmax(0,1fr); } }
+  .org { position:relative; overflow:hidden; background:var(--card); border:1px solid var(--line); border-radius:26px; padding:28px; backdrop-filter:blur(18px); box-shadow:var(--shadow);
+    transition:transform .25s, box-shadow .25s; }
+  .org:hover { transform:translateY(-4px); }
+  .org::before { content:""; position:absolute; width:260px; height:260px; right:-90px; top:-110px; border-radius:50%; background:var(--c); filter:blur(60px); opacity:.28; }
+  .org .tag { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
+  .org .tag i { width:9px; height:9px; border-radius:50%; background:var(--c); box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent); }
+  .org h3 { font-size:26px; letter-spacing:-.03em; margin:12px 0 8px; font-weight:800; }
+  .org p { color:var(--dim); margin:0 0 18px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chips span { font-size:13px; font-weight:600; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:color-mix(in srgb, var(--c) 8%, transparent); }
+
+  /* tarix */
+  .timeline { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; position:relative; }
+  @media (max-width:900px) { .timeline { grid-template-columns:minmax(0,1fr); } }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:24px; backdrop-filter:blur(16px); box-shadow:var(--shadow); }
+  .step .when { font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+  .step b { display:block; font-size:19px; letter-spacing:-.02em; margin:8px 0 6px; line-height:1.25; }
+  .step span { color:var(--dim); font-size:14.5px; }
+  .step.now { background:var(--btn); color:var(--btn-ink); border-color:transparent; }
+  .step.now .when, .step.now span { color:color-mix(in srgb, var(--btn-ink) 70%, transparent); }
+
+  /* nega */
+  .why { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+  @media (max-width:900px) { .why { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+  @media (max-width:520px) { .why { grid-template-columns:minmax(0,1fr); } }
+  .why div { padding:22px; border-radius:20px; border:1px solid var(--line); background:var(--card); backdrop-filter:blur(14px); }
+  .why b { display:block; font-size:17px; margin:12px 0 6px; letter-spacing:-.015em; }
+  .why span { color:var(--dim); font-size:14.5px; }
+  .why .ic { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:var(--btn); color:var(--btn-ink); }
+  .why .ic svg { width:20px; height:20px; }
+
+  /* My Spetion */
+  .app { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:48px; align-items:center; background:#0B1020; color:#EEF2F8; border-radius:34px;
+    padding:56px; position:relative; overflow:hidden; }
+  .app::before, .app::after { content:""; position:absolute; border-radius:50%; filter:blur(90px); opacity:.55; pointer-events:none; }
+  .app::before { width:420px; height:420px; left:-120px; top:-160px; background:var(--med); }
+  .app::after { width:420px; height:420px; right:-120px; bottom:-180px; background:var(--school); }
+  .app > * { position:relative; z-index:1; }
+  .app .kicker { color:#7DD3FC; }
+  .app h2 { color:#fff; }
+  .app .sub { color:#A3ADBD; }
+  .feat { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px 22px; margin:0 0 30px; padding:0; list-style:none; }
+  .feat li { display:flex; gap:12px; align-items:flex-start; font-size:15px; color:#D5DBE5; }
+  .feat li i { flex-shrink:0; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; background:rgba(255,255,255,.08); font-style:normal; font-size:15px; }
+  .app .btn.ink { background:#fff; color:#0B1020; }
+  .phone { justify-self:center; width:280px; border-radius:40px; padding:12px; background:linear-gradient(160deg,#2A3142,#11151F); box-shadow:0 40px 80px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.12); }
+  .screen { border-radius:30px; background:#F4F6FA; color:#0E1420; padding:18px 14px 16px; min-height:470px; font-size:12.5px; }
+  .screen .top { display:flex; justify-content:space-between; align-items:center; font-weight:700; }
+  .screen .kid { margin:14px 0 10px; border-radius:18px; padding:14px; color:#fff; background:linear-gradient(135deg,#16A34A,#0F766E); }
+  .screen .kid b { font-size:15px; display:block; } .screen .kid small { opacity:.85; }
+  .screen .pill { display:inline-flex; gap:6px; align-items:center; margin-top:10px; padding:5px 10px; border-radius:999px; background:rgba(255,255,255,.2); font-weight:600; }
+  .screen .row { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; margin-top:8px; border-radius:14px; background:#fff; box-shadow:0 2px 8px rgba(14,20,32,.06); }
+  .screen .row b { font-size:12.5px; } .screen .row small { color:#6B7384; display:block; }
+  .screen .g { font-weight:800; color:#16A34A; font-size:15px; }
+  .screen .tg { margin-top:12px; padding:10px 12px; border-radius:14px; background:#E8F1FF; color:#1E3A8A; font-weight:600; }
+  @media (max-width:900px) { .app { grid-template-columns:minmax(0,1fr); padding:36px 22px; border-radius:26px; } .feat { grid-template-columns:minmax(0,1fr); } }
+
+  /* asoschi */
+  .quote { display:grid; grid-template-columns:auto minmax(0,1fr); gap:26px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:28px;
+    padding:36px; backdrop-filter:blur(18px); box-shadow:var(--shadow); }
+  .avatar { width:84px; height:84px; border-radius:50%; display:grid; place-items:center; font-weight:900; font-size:26px; color:#fff;
+    background:linear-gradient(135deg, var(--brand-2), var(--brand)); }
+  .quote blockquote { margin:0; font-size:clamp(18px, 2.2vw, 23px); line-height:1.45; letter-spacing:-.015em; font-weight:600; }
+  .quote cite { display:block; margin-top:14px; color:var(--dim); font-style:normal; font-weight:600; }
+  @media (max-width:640px) { .quote { grid-template-columns:minmax(0,1fr); padding:26px; } }
+
+  .banner { text-align:center; border-radius:30px; padding:56px 24px; color:#fff; background:linear-gradient(135deg, var(--brand), #F97316); box-shadow:0 30px 70px -30px rgba(221,24,8,.6); }
+  .banner h2 { margin:0 auto 10px; color:#fff; }
+  .banner p { margin:0 auto 24px; max-width:52ch; opacity:.92; }
+  .banner .btn { background:#fff; color:var(--brand); }
+
+  footer { padding:40px 0 50px; color:var(--dim); font-size:14px; }
+  footer .wrap { display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between; border-top:1px solid var(--line); padding-top:28px; }
+  footer nav { display:flex; gap:18px; flex-wrap:wrap; } footer a { text-decoration:none; font-weight:600; } footer a:hover { color:var(--ink); }
+
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .aurora i { animation:none; } .reveal { opacity:1; transform:none; transition:none; } }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<header class="site">
+  <div class="wrap">
+    <a href="#" aria-label="Spetion — bosh sahifa"><img class="logo logo-light" src="assets/spetion-lockup-horizontal-red.png" alt="Spetion"><img class="logo logo-dark" src="assets/spetion-lockup-horizontal-white.png" alt="Spetion"></a>
+    <nav class="links">
+      <a class="a" href="#oila">Yo'nalishlar</a>
+      <a class="a" href="#tarix">Tarix</a>
+      <a class="a" href="#my">My Spetion</a>
+      <a class="btn ink sm" href="https://my.spetion.uz/">Kirish
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow reveal"><b>✦</b>10+ yildan beri ta'lim sohasida</span>
+      <h1 class="reveal">Til markazidan — <span class="grad">butun ta'lim oilasigacha</span></h1>
+      <p class="lead reveal">Spetion 10 yildan ortiq avval ingliz tili o'quv markazi sifatida boshlangan. Bugun u — til markazi, Spetion School,
+        tibbiyotga ixtisoslashgan maktab va bog'chadan iborat ta'lim oilasi. Farzandingizning bog'chadan to bitiruvgacha bo'lgan yo'li bitta jamoa qo'lida.</p>
+      <div class="cta reveal">
+        <a class="btn brand" href="#oila">Yo'nalishlarimiz
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3.5v9M3.5 8.5 8 13l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn ghost" href="https://my.spetion.uz/">Ota-onalar uchun: My Spetion</a>
+      </div>
+      <div class="stats">
+        <div class="stat reveal"><b>10+</b><span>yil tajriba</span></div>
+        <div class="stat reveal"><b>8000+</b><span>bitiruvchi</span></div>
+        <div class="stat reveal"><b>4</b><span>yo'nalish</span></div>
+        <div class="stat reveal"><b>4</b><span>til markazi filiali</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="oila">
+    <div class="wrap">
+      <div class="kicker reveal">Spetion oilasi</div>
+      <h2 class="reveal">To'rt yo'nalish, bitta falsafa</h2>
+      <p class="sub reveal">Har bir yo'nalish o'z yoshidagi bolaga mos, lekin hammasi bir qadriyat ustiga qurilgan: sifatli ta'lim va har bir bolaga e'tibor.</p>
+      <div class="family">
+        <article class="org reveal" style="--c:var(--center)">
+          <span class="tag"><i></i>O'quv markazi</span>
+          <h3>Spetion til markazi</h3>
+          <p>10 yildan ortiq tajriba bilan ingliz tili bo'yicha sifatli ta'lim. 4 ta filialimizda minglab o'quvchi IELTS va CEFR bo'yicha yuqori natijalarga erishgan.</p>
+          <div class="chips"><span>IELTS</span><span>CEFR</span><span>General English</span><span>4 filial</span></div>
+        </article>
+        <article class="org reveal" style="--c:var(--school)">
+          <span class="tag"><i></i>Xususiy maktab</span>
+          <h3>Spetion School</h3>
+          <p>Til markazidan o'sib chiqqan tajriba asosida qurilgan zamonaviy xususiy maktab — bolalarimizni sifatli va zamonaviy ta'lim bilan kelajakka tayyorlaymiz.</p>
+          <div class="chips"><span>Zamonaviy metodika</span><span>Kichik sinflar</span><span>Tajribali jamoa</span></div>
+        </article>
+        <article class="org reveal" style="--c:var(--med)">
+          <span class="tag"><i></i>Ixtisoslashgan maktab</span>
+          <h3>Spetion tibbiyot maktabi</h3>
+          <p>Tibbiyotga yo'naltirilgan xususiy maktab: biologiya va kimyo chuqurlashtirib o'qitiladi — kelajakdagi shifokorlar uchun mustahkam poydevor.</p>
+          <div class="chips"><span>Biologiya</span><span>Kimyo</span><span>5–10 sinflar</span></div>
+        </article>
+        <article class="org reveal" style="--c:var(--kg)">
+          <span class="tag"><i></i>Maktabgacha ta'lim</span>
+          <h3>Spetion bog'cha</h3>
+          <p>Kichkintoylar uchun mehrli muhit: rivojlantiruvchi mashg'ulotlar, tarbiya va sog'lom ovqatlanish. Ota-onalar farzandining kunini ilovada kuzatib boradi.</p>
+          <div class="chips"><span>Mashg'ulotlar</span><span>Taomnoma</span><span>Rasmlar albomi</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="tarix">
+    <div class="wrap">
+      <div class="kicker reveal">Bizning yo'limiz</div>
+      <h2 class="reveal">Bitta til markazidan bugungi oilagacha</h2>
+      <div class="timeline">
+        <div class="step reveal"><div class="when">10+ yil oldin</div><b>Ingliz tili o'quv markazi</b><span>IELTS · CEFR · General English</span></div>
+        <div class="step reveal"><div class="when">Yillar davomida</div><b>4 ta filial, 8000+ bitiruvchi</b><span>Shahar bo'ylab o'sdik</span></div>
+        <div class="step reveal"><div class="when">Keyingi bosqich</div><b>Spetion School</b><span>Yangi avlod uchun xususiy maktab</span></div>
+        <div class="step now reveal"><div class="when">Bugun</div><b>Tibbiyot maktabi va bog'cha</b><span>Bog'chadan bitiruvgacha — bitta oila</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="kicker reveal">Nega Spetion</div>
+      <h2 class="reveal">Tajriba bilan qurilgan ishonch</h2>
+      <p class="sub reveal">O'n yildan ortiq davomida bir necha ming oilaning tanlovi.</p>
+      <div class="why">
+        <div class="reveal"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span><b>Tajribali ustozlar</b><span>Yillar davomida shakllangan pedagogik jamoa.</span></div>
+        <div class="reveal"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Individual yondashuv</b><span>Har bir o'quvchining o'z sur'ati va ehtiyoji hisobga olinadi.</span></div>
+        <div class="reveal"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><b>Isbotlangan natija</b><span>8000+ bitiruvchi va yuqori IELTS/CEFR ko'rsatkichlari.</span></div>
+        <div class="reveal"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span><b>Ota-ona doim xabardor</b><span>Kelish-ketish, baholar va to'lovlar — My Spetion ilovasida.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="my">
+    <div class="wrap">
+      <div class="app reveal">
+        <div>
+          <div class="kicker">My Spetion</div>
+          <h2>Farzandingiz kuni — telefoningizda</h2>
+          <p class="sub">Ota-ona, ustoz va ma'muriyat uchun yagona ilova. Telegram orqali ham ishlaydi.</p>
+          <ul class="feat">
+            <li><i>✅</i><span><b>Keldi / ketdi</b> — yuz tanish orqali darhol xabar</span></li>
+            <li><i>📝</i><span><b>Baholar va uy vazifalari</b> — kunma-kun</span></li>
+            <li><i>🗓</i><span><b>Dars jadvali va taomnoma</b></span></li>
+            <li><i>💳</i><span><b>To'lovlar va cheklar</b> — qarz bo'lsa eslatma</span></li>
+            <li><i>📸</i><span><b>Bog'cha rasmlari</b> — faqat o'z farzandingiz</span></li>
+            <li><i>📢</i><span><b>E'lonlar</b> — maktabdan to'g'ridan-to'g'ri</span></li>
+          </ul>
+          <a class="btn ink" href="https://my.spetion.uz/">My Spetion'ga kirish
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+        <div class="phone" aria-hidden="true">
+          <div class="screen">
+            <div class="top"><span>Spetion</span><span>08:31</span></div>
+            <div class="kid"><b>Aziza Karimova</b><small>5-sinf · Tibbiyot maktabi</small><div class="pill">● Maktabda · 08:24 dan beri</div></div>
+            <div class="row"><span><b>Biologiya</b><small>08:30 – 09:15</small></span><span class="g">5</span></div>
+            <div class="row"><span><b>Kimyo</b><small>09:20 – 10:05</small></span><span class="g">4</span></div>
+            <div class="row"><span><b>Tushlik</b><small>12:30 · palov, salat, kompot</small></span><span>🍽</span></div>
+            <div class="row"><span><b>Noyabr to'lovi</b><small>to'langan · chek bor</small></span><span class="g">✓</span></div>
+            <div class="tg">✈️ Telegram: «Aziza 08:24 da keldi»</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="quote reveal">
+        <div class="avatar">SM</div>
+        <div>
+          <blockquote>«10 yildan ortiq davom etgan yo'limiz — bitta til markazidan bugungi ta'lim oilasigacha. Har bir qadam ta'lim sifatiga xizmat qilish g'oyasi bilan qo'yilgan.»</blockquote>
+          <cite>Sherzod Muradovich — Spetion asoschisi</cite>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" style="padding-top:20px">
+    <div class="wrap">
+      <div class="banner reveal">
+        <h2>Hayotimizdan lavhalar</h2>
+        <p>Yangiliklar, tadbirlar va o'quvchilarimiz yutuqlarini Instagram sahifamizda kuzatib boring.</p>
+        <a class="btn" href="https://www.instagram.com/spetion.lc/" target="_blank" rel="noopener">Instagram'da kuzatish</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Spetion · til markazi, Spetion School, tibbiyot maktabi, bog'cha</span>
+    <nav><a href="https://my.spetion.uz/">My Spetion — kirish</a><a href="https://www.instagram.com/spetion.lc/" target="_blank" rel="noopener">Instagram</a></nav>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+</script>
+</body>
+</html>
