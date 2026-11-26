@@ -3,6 +3,7 @@
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
 ## Production tayyorgarligi: my.spetion.uz (2026-11-26)
+- **Login sahifasi yangilandi:** tibbiyot maktabiga bog'liq «+» belgisi va fon naqshi olib tashlandi. Neytral Spetion brendi; fonda tashkilotlar ranglaridagi sekin harakatlanuvchi aurora (harakatni kamaytirish sozlamasi hurmat qilinadi). Katta ekranda chapda shior va tashkilotlar, o'ngda shisha karta; telefonda logo, tashkilotlar va karta. «Telefon raqam yoki login», kirish tugmasida yuklanish holati, xato xabari silkinadi, «Parolni unutdingizmi?» yig'ma. Yorug' va qorong'i rejim.
 - **my.spetion.uz** — yagona tizim manzili (SSL). Server 2 CPU / 2 GB: gunicorn 3 worker. med-new.spetion.uz sinov manzili sifatida qoladi.
 - **Galereyaga ko'p rasm:** nginx 12 MB chegarasi bir yo'la bir nechta telefon rasmini rad etardi — galereya yo'llarida 400 MB / 300 s; JPEG kichraytirib o'qiladi (tezroq, kam xotira).
 - **Qurilma qo'shishda filial tanlanadi** (avval qo'shgan xodimning birinchi filialiga tushardi — founder boshqa tashkilot uchun qo'shsa xato filial). Sozlash sahifasida terminal uchun aniq ko'rsatma (Host, HTTPS, 443, URL, JSON).
