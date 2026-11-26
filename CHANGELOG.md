@@ -2,9 +2,9 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
-## spetion.uz landing — yangi dizayn (ko'rib chiqishda, 2026-11-26)
+## spetion.uz landing — yangi dizayn (2026-11-26, founder tasdiqladi)
 - `landing/` (repoga olindi). Bo'limlar: hero (til markazidan — butun ta'lim oilasigacha), statistika, **Spetion oilasi** (til markazi, Spetion School, tibbiyot maktabi, bog'cha — har biri o'z rangida), tarix (4 bosqich), nega Spetion, **My Spetion** (ota-ona nimalarni ko'radi, telefon maketi, kirish tugmasi), asoschi, Instagram. Login va panel bilan bir uslub (aurora, shisha kartalar), yorug'/qorong'i, telefon. SEO: description, canonical, Open Graph, JSON-LD (EducationalOrganization).
-- Ko'rib chiqish: https://spetion.uz/yangi/ (indekslanmaydi). Asosiy sahifa hali eskisi.
+- Joylandi: https://spetion.uz/. Eski sahifa zaxirasi serverda `/root/backups/spetion-landing-index-before-redesign-20261126.html`.
 
 ## Founder paneli: «Rahbariyat» rejimi va rahbariyatga xabar (2026-11-26)
 - **Ixcham menyu** (founder, «Hammasi» tanlanganda): Raqamlar, Rahbariyatga xabar, **Tashkilotlar** (har biri — bosilsa shu tashkilot ichiga kiradi), Moliya (xarajat, oylik), Sozlamalar (tashkilot va brend, xodimlar, lavozimlar, jurnal). O'quvchilar, ota-onalar, jadval, sinflar, to'lovlar, e'lonlar, taomnoma, galereya, qurilmalar, exam bog'lash — faqat tashkilot ichida; u yerda tepada «‹ Rahbariyat» qaytish. Telefonda: Raqamlar · Xabarlar · Tashkilotlar · Xarajatlar · Ko'proq.
