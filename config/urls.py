@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.templatetags.static import static
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 from accounts import views as acc
 from billing import views as billing_views
 from accounts.photo_view import face_photo
-from accounts import pwa
+from accounts import pwa, seo
 from panel import views_gallery, views_meals
 
 admin.site.site_header = 'Tibbiyot maktabi — boshqaruv'
@@ -14,6 +16,9 @@ admin.site.site_title = 'Tibbiyot maktabi'
 urlpatterns = [
     path('manifest.webmanifest', pwa.manifest, name='pwa_manifest'),
     path('sw.js', pwa.service_worker, name='pwa_sw'),
+    path('robots.txt', seo.robots, name='robots'),
+    path('favicon.ico', RedirectView.as_view(url=static('brand/favicon.ico'), permanent=True)),
+    path('sitemap.xml', seo.sitemap, name='sitemap'),
     path('admin/', admin.site.urls),
     path('panel/', include('panel.urls')),
     path('login/', acc.ThrottledLoginView.as_view(), name='login'),

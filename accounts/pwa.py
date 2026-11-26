@@ -17,11 +17,11 @@ def manifest(request):
     data = {
         'name': APP_NAME, 'short_name': APP_NAME, 'description': "Spetion: ota-ona, ustoz va ma'muriyat ilovasi",
         'lang': 'uz', 'start_url': '/?source=pwa', 'scope': '/', 'id': '/', 'display': 'standalone',
-        'orientation': 'portrait', 'background_color': '#ffffff', 'theme_color': color,
+        'orientation': 'portrait', 'background_color': '#0B1020', 'theme_color': color,
         'icons': [
-            {'src': static('pwa/icon-192.png'), 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
-            {'src': static('pwa/icon-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
-            {'src': static('pwa/icon-maskable-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'},
+            {'src': static('brand/icon-192.png'), 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+            {'src': static('brand/icon-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+            {'src': static('brand/icon-maskable-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'},
         ],
     }
     return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/manifest+json')

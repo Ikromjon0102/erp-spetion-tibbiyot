@@ -52,6 +52,8 @@ class ThrottledLoginView(LoginView):
         ctx = super().get_context_data(**kwargs)
         ctx['orgs'] = list(Organization.objects.filter(is_active=True).order_by('id').values('name', 'short_name', 'brand_color', 'kind'))
         ctx['blocked'] = getattr(self, 'blocked', False)
+        from .seo import seo_context
+        ctx.update(seo_context(self.request))
         return ctx
 
     def get_form(self, form_class=None):
@@ -91,12 +93,13 @@ def change_password(request):
     return render(request, 'registration/change_password.html', {'form': form, 'forced': forced})
 
 
-@login_required
 def home(request):
     """Kirgandan keyingi yo'naltirish. Bir nechta imkoniyati bor hisob (ustoz / ota-ona / boshqaruv paneli) oxirgi
     tanlangan rejimda ochiladi; menyudan ikkinchisiga bir bosishda o'tadi."""
     from panel.access import has_panel
     u = request.user
+    if not u.is_authenticated:          # bosh sahifa qidiruv tizimlari uchun: yo'naltirish emas, kirish sahifasining o'zi (200)
+        return ThrottledLoginView.as_view()(request)
     if request.GET.get('rejim') == 'ota-ona':  # menyudagi "Farzandlarim"
         request.session['mode'] = 'parent'
     children = list(u.children.filter(user__is_active=True).select_related('user', 'group', 'branch__organization'))

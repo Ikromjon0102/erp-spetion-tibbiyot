@@ -194,6 +194,10 @@ SESSION_COOKIE_AGE = 30 * 24 * 3600
 # Telegram bot (token .env da)
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
 TELEGRAM_SYNC = 'test' in sys.argv
+CANONICAL_HOST = os.environ.get('CANONICAL_HOST', 'my.spetion.uz')      # qidiruv tizimlarida faqat shu manzil indekslanadi
+GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '')
+BING_SITE_VERIFICATION = os.environ.get('BING_SITE_VERIFICATION', '')
+YANDEX_VERIFICATION = os.environ.get('YANDEX_VERIFICATION', '')
 SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili (ota-onalarda shu; ko'chirish kuni .env da my.spetion.uz)
 
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)

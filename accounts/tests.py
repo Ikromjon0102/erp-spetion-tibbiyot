@@ -120,3 +120,34 @@ class ParentSeesChildPhotoTests(TestCase):
             r.close()
             self.client.force_login(other)
             self.assertEqual(self.client.get(f'/rasm/{ku.pk}/?s=1').status_code, 403)
+
+
+class SeoTests(__import__('django.test', fromlist=['TestCase']).TestCase):
+    """Qidiruv tizimlari: faqat my.spetion.uz indekslanadi, ichki sahifalar yopiq; bosh sahifa kirmaganga kirish sahifasi (200)."""
+
+    def test_robots_canonical_and_other_hosts(self):
+        from django.test import override_settings
+        with override_settings(ALLOWED_HOSTS=['my.spetion.uz', 'med-new.spetion.uz']):
+            r = self.client.get('/robots.txt', HTTP_HOST='my.spetion.uz')
+            self.assertContains(r, 'Disallow: /panel/')
+            self.assertContains(r, 'Sitemap: https://my.spetion.uz/sitemap.xml')
+            r = self.client.get('/robots.txt', HTTP_HOST='med-new.spetion.uz')
+            self.assertEqual(r.content.decode().strip().splitlines()[-1], 'Disallow: /')
+            self.assertContains(self.client.get('/sitemap.xml', HTTP_HOST='my.spetion.uz'), '<loc>https://my.spetion.uz/</loc>')
+
+    def test_home_is_login_page_for_search(self):
+        from django.test import override_settings
+        with override_settings(ALLOWED_HOSTS=['my.spetion.uz']):
+            r = self.client.get('/', HTTP_HOST='my.spetion.uz')
+            self.assertEqual(r.status_code, 200)
+            body = r.content.decode()
+            self.assertIn('My Spetion', body)
+            self.assertIn('content="index, follow"', body)
+            self.assertIn('rel="canonical" href="https://my.spetion.uz/"', body)
+            self.assertIn('application/ld+json', body)
+
+    def test_inner_pages_noindex(self):
+        from accounts.models import User
+        u = User.objects.create_user('p1', password='x', role='parent')
+        self.client.force_login(u)
+        self.assertContains(self.client.get('/elonlar/'), 'noindex, nofollow')
