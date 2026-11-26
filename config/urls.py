@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.templatetags.static import static
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
 from accounts import views as acc
@@ -19,6 +19,7 @@ urlpatterns = [
     path('robots.txt', seo.robots, name='robots'),
     path('favicon.ico', RedirectView.as_view(url=static('brand/favicon.ico'), permanent=True)),
     path('sitemap.xml', seo.sitemap, name='sitemap'),
+    re_path(r'^google(?P<token>[0-9a-f]{8,32})\.html$', seo.google_file),
     path('admin/', admin.site.urls),
     path('panel/', include('panel.urls')),
     path('login/', acc.ThrottledLoginView.as_view(), name='login'),

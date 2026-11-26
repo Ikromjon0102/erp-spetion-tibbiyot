@@ -46,3 +46,11 @@ def seo_context(request):
         'bing': getattr(settings, 'BING_SITE_VERIFICATION', ''),
         'yandex': getattr(settings, 'YANDEX_VERIFICATION', ''),
     }}
+
+
+def google_file(request, token):
+    """Google Search Console «HTML fayl» bilan tasdiqlash: /google<token>.html — faqat .env dagi tokenga javob beradi."""
+    from django.http import Http404
+    if not token or token != getattr(settings, 'GOOGLE_HTML_TOKEN', ''):
+        raise Http404
+    return HttpResponse(f'google-site-verification: google{token}.html', content_type='text/html')

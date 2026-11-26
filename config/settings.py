@@ -198,6 +198,7 @@ CANONICAL_HOST = os.environ.get('CANONICAL_HOST', 'my.spetion.uz')      # qidiru
 GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '')
 BING_SITE_VERIFICATION = os.environ.get('BING_SITE_VERIFICATION', '')
 YANDEX_VERIFICATION = os.environ.get('YANDEX_VERIFICATION', '')
+GOOGLE_HTML_TOKEN = os.environ.get('GOOGLE_HTML_TOKEN', '')      # /google<token>.html
 SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili (ota-onalarda shu; ko'chirish kuni .env da my.spetion.uz)
 
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)

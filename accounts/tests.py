@@ -151,3 +151,11 @@ class SeoTests(__import__('django.test', fromlist=['TestCase']).TestCase):
         u = User.objects.create_user('p1', password='x', role='parent')
         self.client.force_login(u)
         self.assertContains(self.client.get('/elonlar/'), 'noindex, nofollow')
+
+
+class GoogleFileTests(__import__('django.test', fromlist=['TestCase']).TestCase):
+    def test_only_configured_token(self):
+        from django.test import override_settings
+        with override_settings(GOOGLE_HTML_TOKEN='74e779e242cab715'):
+            self.assertContains(self.client.get('/google74e779e242cab715.html'), 'google-site-verification: google74e779e242cab715.html')
+            self.assertEqual(self.client.get('/googleabcdef0123456789.html').status_code, 404)
