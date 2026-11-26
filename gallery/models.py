@@ -38,3 +38,13 @@ class Photo(models.Model):
         for f in (self.image, self.thumb):
             if f:
                 f.delete(save=False)
+
+
+class GalleryNotice(models.Model):
+    """Ota-onaga «yangi rasm» xabari yuborilgan (albom, bola) — bir albom bo'yicha bolaga bitta xabar (spam bo'lmasin)."""
+    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='notices')
+    student = models.ForeignKey('accounts.Student', on_delete=models.CASCADE, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['album', 'student'], name='gallery_notice_once')]

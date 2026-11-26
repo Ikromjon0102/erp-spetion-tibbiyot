@@ -32,5 +32,6 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] O'quv markazda guruhdan-guruhga o'tkazish — faqat filial rahbari (`students.move`)
 - [x] Bog'cha galereyasi: ota-ona faqat o'z farzandi belgilangan rasmlarni ko'radi
 - [x] Avans summasi qo'lda (foiz olib tashlandi); ko'p filialli ustozda qat'iy oylik birinchi filialga — tasdiqlandi
-- [ ] Galereya: tarbiyachi o'z telefonidan (ustoz ilovasidan) rasm yuklashi — founder qarori kutilmoqda
-- [ ] Galereya: yangi rasm qo'shilganda ota-onaga Telegram xabari — founder qarori kutilmoqda
+- [x] Galereya: tarbiyachi o'z telefonidan (ustoz ilovasidan) rasm yuklaydi
+- [x] Galereya: yangi rasm belgilanganda ota-onaga Telegram xabari; «Fotograf» lavozimi
+- [ ] Galereya: video — server diski va tarmoq bo'yicha qaror kerak

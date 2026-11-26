@@ -251,6 +251,7 @@
   <button data-tab="week"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>Hafta</button>
   <button data-tab="classes"><span class="pill"><svg class="ic"><use href="#i-users"/></svg></span><span id="classTab">Sinflar</span></button>
   <button data-tab="news"><span class="pill"><svg class="ic"><use href="#i-bell"/></svg></span>E'lonlar<i class="badge" id="newsBadge" hidden></i></button>
+  {% if gallery %}<button type="button" onclick="location.href='{% url 'gallery:home' %}'"><span class="pill"><svg class="ic"><use href="#i-image"/></svg></span>Rasmlar</button>{% endif %}
 </div></nav>
 {% endblock %}
 

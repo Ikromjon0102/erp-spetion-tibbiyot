@@ -1,0 +1,54 @@
+{% extends 'app/base.html' %}
+{% block title %}{{ album.title }}{% endblock %}
+{% block heading %}{{ album.title }}{% endblock %}
+{% block content %}
+<div class="muted" style="margin:0 4px 10px;font-size:14px">{{ album.group.name }} · {{ album.date|date:"j F Y" }} · {{ photos|length }} ta rasm
+  {% if untagged %}<br><b style="color:#C2410C">{{ untagged }} ta rasmda hech kim belgilanmagan — ota-onalar ko'rmaydi</b>{% endif %}</div>
+
+<form method="post" enctype="multipart/form-data" id="addForm">{% csrf_token %}
+  <label class="pick"><input type="file" name="photos" accept="image/*" multiple id="more"><span>＋ Yana rasm qo'shish</span></label>
+</form>
+
+{% if photos %}
+<form method="post" id="tagForm">{% csrf_token %}
+{% for ph in photos %}
+<div class="card ph{% if not ph.ids %} untag{% endif %}">
+  <img src="{% url 'gallery_photo' ph.pk %}?t=1" alt="" loading="lazy">
+  <div class="tools">
+    <button type="button" data-all="{{ ph.pk }}">Hammasi</button>
+    <button type="button" data-none="{{ ph.pk }}">Hech kim</button>
+    <button type="submit" form="del{{ ph.pk }}" class="del" aria-label="O'chirish"><svg class="ic"><use href="#i-trash"/></svg></button>
+  </div>
+  <div class="kids" data-photo="{{ ph.pk }}">
+    {% for c in children %}<label class="kid"><input type="checkbox" name="p{{ ph.pk }}" value="{{ c.pk }}"{% if c.pk in ph.ids %} checked{% endif %}><span>{{ c.user.first_name }} {{ c.user.last_name|slice:":1" }}.</span></label>{% endfor %}
+  </div>
+</div>
+{% endfor %}
+<div class="savebar"><button class="btn">Saqlash va ota-onalarga yuborish</button></div>
+</form>
+{% for ph in photos %}<form method="post" action="{% url 'gallery:photo_delete' ph.pk %}" id="del{{ ph.pk }}" onsubmit="return confirm('Rasm o\'chirilsinmi?')">{% csrf_token %}</form>{% endfor %}
+{% endif %}
+<style>
+  .pick { display:block; position:relative; padding:14px; margin-bottom:12px; border:1.5px dashed var(--line-strong); border-radius:14px; text-align:center; font-weight:700; color:var(--accent-deep); background:var(--card); }
+  .pick input { position:absolute; inset:0; opacity:0; width:100%; }
+  .ph { padding:0; overflow:hidden; }
+  .ph.untag { border-color:#EA580C; }
+  .ph img { width:100%; display:block; aspect-ratio:4/3; object-fit:cover; background:var(--tint); }
+  .tools { display:flex; gap:8px; padding:10px 12px 4px; }
+  .tools button { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; }
+  .tools .del { margin-left:auto; color:var(--dim); display:grid; place-items:center; }
+  .kids { display:flex; flex-wrap:wrap; gap:6px; padding:6px 12px 12px; }
+  .kid { display:inline-flex; align-items:center; gap:5px; padding:7px 11px; border:1px solid var(--line); border-radius:999px; font-size:14px; }
+  .kid input { margin:0; width:18px; height:18px; accent-color:var(--accent); }
+  .kid:has(input:checked) { background:var(--tint); border-color:var(--accent); font-weight:700; }
+  .savebar { position:sticky; bottom:0; padding:12px 0 calc(12px + env(safe-area-inset-bottom)); background:linear-gradient(transparent, var(--bg) 35%); }
+</style>
+<script>
+document.getElementById('more').addEventListener('change', function(){ if (this.files.length) { this.form.querySelector('span').textContent = 'Yuklanmoqda…'; this.form.submit(); } });
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-all],[data-none]'); if (!b) return;
+  var id = b.dataset.all || b.dataset.none, on = !!b.dataset.all;
+  document.querySelectorAll('.kids[data-photo="' + id + '"] input').forEach(function (i) { i.checked = on; });
+});
+</script>
+{% endblock %}

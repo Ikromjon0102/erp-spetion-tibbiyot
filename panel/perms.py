@@ -117,4 +117,6 @@ PRESETS = [
     ('Hisobchi', False, ['students.view', 'sensitive.phones', 'payments.view', 'payments.reports', 'groups.view',
                          'announcements.view', 'expenses.view', 'expenses.add', 'expenses.change', 'expenses.manage', 'payroll.view', 'payroll.manage']),
     ('Zavxoz', False, ['schedule.view', 'devices.view', 'groups.view', 'monitoring.view', 'announcements.view', 'meals.view', 'meals.manage']),
+    # Bog'chada rasm va videoga oluvchi: faqat galereya (albom, rasm yuklash, bolalarni belgilash). Qaysi filial — «Ish filiallari»
+    ('Fotograf', False, ['gallery.view', 'gallery.manage']),
 ]

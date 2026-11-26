@@ -73,7 +73,8 @@ def teacher_home(request):
         'periods': [{'period': p, 'start': s, 'end': e} for p, s, e in PERIODS],
         'csrf': get_token(request),
     }
-    return render(request, 'teacher/schedule.html', {'school': school})
+    from gallery.services import teacher_groups
+    return render(request, 'teacher/schedule.html', {'school': school, 'gallery': teacher_groups(user).exists()})
 
 
 # ---------------------------------------------------------------- davomat va baho API (kirgan ustoz uchun)

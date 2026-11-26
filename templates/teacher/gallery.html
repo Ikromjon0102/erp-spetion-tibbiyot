@@ -1,0 +1,27 @@
+{% extends 'app/base.html' %}
+{% block title %}Galereya{% endblock %}
+{% block heading %}Galereya{% endblock %}
+{% block content %}
+{% if groups %}
+<a class="btn" href="{% url 'gallery:add' %}" style="margin-bottom:8px">📷 Yangi albom — rasm yuklash</a>
+<p class="hint" style="margin:0 4px 14px">Ota-ona faqat o'z farzandi belgilangan rasmlarni ko'radi va Telegram'da xabar oladi.</p>
+{% else %}
+<div class="empty">Galereya faqat bog'cha guruhlari uchun. Sizga hali bog'cha guruhi biriktirilmagan.</div>
+{% endif %}
+{% for a in albums %}
+<a class="card alb" href="{% url 'gallery:album' a.pk %}">
+  <span class="cv">{% if a.cover %}<img src="{% url 'gallery_photo' a.cover.pk %}?t=1" alt="" loading="lazy">{% endif %}</span>
+  <span class="tx"><b>{{ a.title }}</b>
+    <small>{{ a.group.name }} · {{ a.date|date:"j F" }} · {{ a.n }} ta rasm</small>
+    {% if a.untagged %}<small class="warn">{{ a.untagged }} tasida bola belgilanmagan</small>{% endif %}</span>
+</a>
+{% empty %}{% if groups %}<div class="empty">Hali albom yo'q</div>{% endif %}
+{% endfor %}
+<style>
+  .alb { display:flex; gap:12px; align-items:center; color:inherit; text-decoration:none; padding:10px; }
+  .alb .cv { width:72px; height:72px; border-radius:12px; overflow:hidden; background:var(--tint); flex-shrink:0; }
+  .alb .cv img { width:100%; height:100%; object-fit:cover; display:block; }
+  .alb .tx { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .alb small { color:var(--dim); font-size:13px; } .alb small.warn { color:#C2410C; font-weight:700; }
+</style>
+{% endblock %}

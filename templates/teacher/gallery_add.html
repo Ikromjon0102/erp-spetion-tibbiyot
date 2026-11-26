@@ -1,0 +1,31 @@
+{% extends 'app/base.html' %}
+{% block title %}Yangi albom{% endblock %}
+{% block heading %}Yangi albom{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="msg error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  {% for f in form %}
+  <div class="field" style="margin-bottom:12px">
+    <label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}
+    {% for e in f.errors %}<div class="hint" style="color:#C2410C">{{ e }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+  <div class="field" style="margin-bottom:14px">
+    <label>Rasmlar</label>
+    <label class="pick"><input type="file" name="photos" accept="image/*" multiple required id="ph"><span id="phn">📷 Rasmlarni tanlang yoki suratga oling</span></label>
+    <div class="hint">Bir yo'la 60 tagacha. Keyingi qadamda har rasmda kimlar borligini belgilaysiz.</div>
+  </div>
+  <button class="btn" id="go">Yuklash</button>
+</form>
+<style>
+  .field select { width:100%; font:500 16px 'Inter',sans-serif; padding:13px; border-radius:14px; border:1.5px solid var(--line-strong); background:var(--card); color:var(--ink); }
+  .pick { display:block; position:relative; padding:18px; border:1.5px dashed var(--line-strong); border-radius:14px; text-align:center; font-weight:700; color:var(--accent-deep); }
+  .pick input { position:absolute; inset:0; opacity:0; width:100%; }
+</style>
+<script>
+document.getElementById('ph').addEventListener('change', function(){
+  var n = this.files.length; document.getElementById('phn').textContent = n ? n + ' ta rasm tanlandi' : '📷 Rasmlarni tanlang yoki suratga oling';
+});
+document.querySelector('form').addEventListener('submit', function(){ var b = document.getElementById('go'); b.disabled = true; b.textContent = 'Yuklanmoqda…'; });
+</script>
+{% endblock %}
