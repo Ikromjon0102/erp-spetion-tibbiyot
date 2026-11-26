@@ -32,6 +32,8 @@ def children_of(user):
 def link(chat_id, username, user):
     TelegramLink.objects.update_or_create(chat_id=chat_id, defaults={'user': user, 'username': username or ''})
     kids = children_of(user)
+    if not kids:          # panel xodimi (direktor, filial rahbari, hisobchi...): rahbariyat xabarlari shu yerga keladi
+        return send(chat_id, f"✅ Ulandi, {esc(user.get_full_name())}!\n\nRahbariyat xabarlari endi shu yerga keladi.", reply_markup=MENU_KB)
     names = '\n'.join(f'• {esc(k.user.get_full_name())} ({esc(k.group or "—")})' for k in kids) or '—'
     send(chat_id, f'✅ Ulandi, {esc(user.get_full_name())}!\n\nFarzandlaringiz:\n{names}', reply_markup=MENU_KB)
 
@@ -53,7 +55,8 @@ def handle(update):
         digits = to_digits('+' + str(c.get('phone_number', '')).lstrip('+'))
         user = None
         if digits:
-            user = next((u for u in User.objects.filter(phone_digits=digits, is_active=True) if u.has_children), None)
+            from panel.access import has_panel
+            user = next((u for u in User.objects.filter(phone_digits=digits, is_active=True) if u.has_children or has_panel(u)), None)
         if not user:
             return send(chat_id, "Bu raqam maktabda ota-ona sifatida topilmadi. Maktab ma'muriyatiga murojaat qiling.")
         return link(chat_id, frm.get('username'), user)

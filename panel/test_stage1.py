@@ -354,3 +354,53 @@ class DeviceBranchTests(Base):
                                                            'port': 80, 'username': 'admin', 'is_active': 'on'})
         self.assertFalse(Device.objects.filter(name='X').exists())
         self.assertEqual(r.status_code, 200)
+
+
+class LeadershipInboxTests(Base):
+    """Founder «Rahbariyat» rejimi: ixcham menyu; rahbariyatga xabar (panel + Telegram), javob, kim o'qigani; founder «Rahbariyat» bo'lib ko'rinadi."""
+
+    def setUp(self):
+        super().setUp()
+        from panel.models import Position
+        self.boss = self.staff('founder', [], self.c1, owner=True)
+        self.boss.first_name, self.boss.last_name = 'Ali', 'Asoschi'
+        self.boss.save()
+        self.d1 = self.staff('dir1', ['students.view'], self.c1)
+        self.d2 = self.staff('dir2', ['students.view'], self.b_school)
+
+    def test_lean_menu_for_founder_on_all(self):
+        self.client.force_login(self.boss)
+        body = self.client.get(reverse('panel:dashboard')).content.decode()
+        self.assertIn('Rahbariyatga xabar', body)
+        self.assertIn('s=org-', body)                                     # tashkilotga kirish havolalari
+        self.assertNotIn(reverse('panel:parents'), body)                  # ota-onalar menyuda yo'q
+        self.client.get(reverse('panel:set_scope') + f'?s=org-{self.center.pk}&next=/panel/')
+        body = self.client.get(reverse('panel:dashboard') + '?kunlik=1').content.decode()
+        self.assertIn(reverse('panel:parents'), body)                     # tashkilot ichida to'liq menyu
+        self.assertIn('Rahbariyat', body)
+
+    def test_thread_flow(self):
+        from panel.models import Thread, ThreadMember
+        self.client.force_login(self.boss)
+        r = self.client.post(reverse('panel:thread_new'), {'subject': 'Dekabr rejasi', 'body': 'Hisobot tayyorlang',
+                                                           'to': [self.d1.staff_profile.pk]})
+        t = Thread.objects.get()
+        self.assertRedirects(r, reverse('panel:thread', args=[t.pk]))
+        self.assertEqual(set(t.members.values_list('user_id', flat=True)), {self.boss.pk, self.d1.pk})
+        # rahbar: o'qilmagan, ochadi, founder ismi emas — «Rahbariyat»
+        self.client.force_login(self.d1)
+        self.assertContains(self.client.get(reverse('panel:inbox')), 'Dekabr rejasi')
+        page = self.client.get(reverse('panel:thread', args=[t.pk])).content.decode()
+        self.assertIn('Rahbariyat', page)
+        self.assertNotIn('Asoschi', page)
+        self.client.post(reverse('panel:thread', args=[t.pk]), {'body': 'Tayyor'})
+        # boshqa rahbar ko'ra olmaydi va yozishma ocha olmaydi
+        self.client.force_login(self.d2)
+        self.assertEqual(self.client.get(reverse('panel:thread', args=[t.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse('panel:thread_new')).status_code, 403)
+        # founder: javobni va kim o'qiganini ko'radi
+        self.client.force_login(self.boss)
+        page = self.client.get(reverse('panel:thread', args=[t.pk])).content.decode()
+        self.assertIn('Tayyor', page)
+        self.assertIn("o'qidi", page)
+        self.assertEqual(ThreadMember.objects.get(thread=t, user=self.boss).unread, False)

@@ -1,0 +1,62 @@
+{% extends 'panel/base.html' %}
+{% block title %}Rahbariyatga yozish{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:inbox' %}" style="font-weight:600">Xabarlar</a> <span class="muted">/</span> Yangi{% endblock %}
+{% block content %}
+<form method="post" class="nw-grid">{% csrf_token %}
+  <div class="card">
+    {% include 'panel/_field.html' with f=form.subject %}
+    {% include 'panel/_field.html' with f=form.body %}
+    <p class="hint">Xabar tanlanganlarga panelda va Telegram'da boradi. Ular shu yerda javob yozadi, kim o'qiganini ko'rasiz.</p>
+    <button class="btn primary"><svg class="ic"><use href="#p-send"/></svg>Yuborish</button>
+  </div>
+  <div class="card">
+    <div class="to-head"><b>Kimga</b> <span class="muted" id="toCount"></span></div>
+    {% if form.to.errors %}<div class="msg error" style="margin:8px 0">{{ form.to.errors|join:" " }}</div>{% endif %}
+    <input type="search" id="toq" placeholder="Ism yoki lavozim…" style="margin:8px 0 6px">
+    {% for pos, people in groups.items %}
+    <div class="to-grp">
+      <label class="to-pos"><input type="checkbox" data-grp="{{ forloop.counter }}"> <b>{{ pos }}</b> <span class="muted">· {{ people|length }}</span></label>
+      {% for p in people %}
+      <label class="to-p" data-q="{{ p.user.get_full_name|lower }} {{ pos|lower }} {{ p.where|lower }}">
+        <input type="checkbox" name="to" value="{{ p.pk }}" data-in="{{ forloop.parentloop.counter }}"{% if p.pk|stringformat:"s" in checked %} checked{% endif %}>
+        <span>{{ p.user.get_full_name|default:p.user.username }}<small>{{ p.where }}</small></span>
+      </label>
+      {% endfor %}
+    </div>
+    {% empty %}
+    <div class="empty">Panel xodimlari yo'q. Avval «Xodimlar»da direktor yoki filial rahbarini qo'shing.</div>
+    {% endfor %}
+  </div>
+</form>
+<style>
+  .nw-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:14px; align-items:start; }
+  .nw-grid .card { margin:0; }
+  @media (max-width:860px) { .nw-grid { grid-template-columns:minmax(0,1fr); } }
+  .to-head { display:flex; justify-content:space-between; align-items:baseline; }
+  .to-grp { border-top:1px solid var(--line); padding:8px 0; }
+  .to-pos { display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 0; }
+  .to-p { display:flex; align-items:center; gap:10px; padding:6px 4px 6px 24px; border-radius:10px; cursor:pointer; }
+  .to-p:hover { background:var(--tint); }
+  .to-p span { display:flex; flex-direction:column; min-width:0; }
+  .to-p small { color:var(--dim); font-size:12px; }
+  .to-p[hidden] { display:none; }
+</style>
+<script>
+(function(){
+  var boxes = document.querySelectorAll('input[name="to"]'), cnt = document.getElementById('toCount');
+  function count(){ var n = 0; boxes.forEach(function(b){ if (b.checked) n++; }); cnt.textContent = n ? n + ' ta tanlandi' : ''; }
+  document.querySelectorAll('[data-grp]').forEach(function(g){
+    g.addEventListener('change', function(){
+      document.querySelectorAll('input[data-in="' + g.dataset.grp + '"]').forEach(function(b){ if (!b.closest('.to-p').hidden) b.checked = g.checked; });
+      count();
+    });
+  });
+  boxes.forEach(function(b){ b.addEventListener('change', count); });
+  document.getElementById('toq').addEventListener('input', function(){
+    var q = this.value.trim().toLowerCase();
+    document.querySelectorAll('.to-p').forEach(function(r){ r.hidden = q && r.dataset.q.indexOf(q) < 0; });
+  });
+  count();
+})();
+</script>
+{% endblock %}

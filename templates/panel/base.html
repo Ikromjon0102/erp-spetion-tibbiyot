@@ -257,6 +257,13 @@
   .wsp summary span { flex:1; min-width:0; } .wsp summary small { display:block; font-size:10.5px; opacity:.7; text-transform:uppercase; letter-spacing:.06em; }
   .wsp summary b { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:14px; }
   .wdot { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .side .item.org-go .wdot { margin:0 4px 0 5px; box-shadow:0 0 0 3px rgba(255,255,255,.08); }
+  .side .item.org-go .go { margin-left:auto; width:15px; height:15px; opacity:.45; }
+  .side .item .nbadge { margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#fff; color:#111; font-size:11.5px; font-weight:800; display:inline-grid; place-items:center; }
+  .side .item.back-lead { opacity:.8; font-size:13.5px; } .side .item.back-lead .flip { transform:rotate(180deg); }
+  .mtab .pill { position:relative; } .mtab .mdot { position:absolute; top:4px; right:8px; width:9px; height:9px; border-radius:50%; background:var(--bad); }
+  .mtab button { background:none; border:0; color:inherit; font:inherit; }
+  html.side-min .side .item .nbadge, html.side-min .side .item.org-go .go { display:none; }
   .wmenu { margin-top:6px; padding:6px; border-radius:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); max-height:60vh; overflow:auto; }
   .wmenu a { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:9px; color:#fff; font-weight:600; font-size:13.5px; }
   .wmenu a.sub { padding-left:30px; font-weight:500; opacity:.9; }
@@ -321,7 +328,7 @@
 
 <aside class="side" id="side">
   <a class="brand" href="{% url 'panel:dashboard' %}">{% include 'teacher/_logo.svg' %}</a>
-  {% if scope and scope.selectable %}
+  {% if scope and scope.selectable and not founder_lean %}
   <details class="wsp" id="wsp">
     <summary><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i><span><small>Ish maydoni</small><b>{{ scope.label }}</b></span><svg class="ic chev"><use href="#p-more"/></svg></summary>
     <div class="wmenu">
@@ -330,7 +337,18 @@
   </details>
   {% endif %}
   <nav>
-    <a class="item {% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}"><svg class="ic"><use href="#p-dash"/></svg>Bosh sahifa</a>
+    {% if founder_lean %}
+    <a class="item {% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}"><svg class="ic"><use href="#p-dash"/></svg>Raqamlar</a>
+    <a class="item {% if nav == 'inbox' %}on{% endif %}" href="{% url 'panel:inbox' %}"><svg class="ic"><use href="#p-send"/></svg>Rahbariyatga xabar{% if inbox_unread %}<span class="nbadge">{{ inbox_unread }}</span>{% endif %}</a>
+    <div class="sec">Tashkilotlar</div>
+    {% for o in scope.tree %}<a class="item org-go" href="{% url 'panel:set_scope' %}?s=org-{{ o.org.pk }}&next=/panel/%3Fkunlik%3D1" title="{{ o.org.name }} — ichiga kirish"><i class="wdot" style="background:{{ o.org.brand_color }}"></i>{{ o.org.label }}<svg class="ic go"><use href="#p-chev"/></svg></a>{% endfor %}
+    {% if 'expenses.view' in panel_can or 'payroll.view' in panel_can %}<div class="sec">Moliya</div>{% endif %}
+    {% if 'expenses.view' in panel_can %}<a class="item {% if nav == 'expenses' %}on{% endif %}" href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
+    {% if 'payroll.view' in panel_can %}<a class="item {% if nav == 'payroll' %}on{% endif %}" href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
+    {% else %}
+    {% if panel_owner and scope and not scope.is_all %}<a class="item back-lead" href="{% url 'panel:set_scope' %}?s=all&next=/panel/"><svg class="ic flip"><use href="#p-chev"/></svg>Rahbariyat</a>{% endif %}
+    <a class="item {% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}{% if panel_owner %}?kunlik=1{% endif %}"><svg class="ic"><use href="#p-dash"/></svg>Bosh sahifa</a>
+    {% if inbox_has %}<a class="item {% if nav == 'inbox' %}on{% endif %}" href="{% url 'panel:inbox' %}"><svg class="ic"><use href="#p-send"/></svg>Xabarlar{% if inbox_unread %}<span class="nbadge">{{ inbox_unread }}</span>{% endif %}</a>{% endif %}
     {% if 'students.view' in panel_can or 'groups.view' in panel_can %}<div class="sec">Maktab</div>{% endif %}
     {% if 'students.view' in panel_can %}<a class="item {% if nav == 'students' %}on{% endif %}" href="{% url 'panel:students' %}"><svg class="ic"><use href="#p-students"/></svg>O'quvchilar</a>{% endif %}
     {% if 'parents.view' in panel_can %}<a class="item {% if nav == 'parents' %}on{% endif %}" href="{% url 'panel:parents' %}"><svg class="ic"><use href="#p-user"/></svg>Ota-onalar</a>{% endif %}
@@ -344,6 +362,7 @@
     {% if 'expenses.view' in panel_can or 'payroll.view' in panel_can %}<div class="sec">Moliya</div>{% endif %}
     {% if 'expenses.view' in panel_can %}<a class="item {% if nav == 'expenses' %}on{% endif %}" href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
     {% if 'payroll.view' in panel_can %}<a class="item {% if nav == 'payroll' %}on{% endif %}" href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
+    {% endif %}
   </nav>
   {% if 'staff.view' in panel_can or 'audit.view' in panel_can or 'devices.view' in panel_can or 'org.settings' in panel_can %}
   <button type="button" class="side-toggle bottom" id="sideToggle" aria-label="Menyuni yig'ish / ochish"><svg class="ic"><use href="#p-chev"/></svg>Yig'ish</button>
@@ -351,8 +370,8 @@
     <a href="#" class="item ddtrig {% if nav == 'devices' or nav == 'staff' or nav == 'positions' or nav == 'audit' %}on{% endif %}" id="settingsBtn" aria-haspopup="true" aria-expanded="false"><svg class="ic"><use href="#p-gear"/></svg>Sozlamalar<svg class="ic caret"><use href="#p-chev"/></svg></a>
     <div class="fly" role="menu">
       {% if panel_owner %}<a class="sub {% if nav == 'org' %}on{% endif %}" href="{% url 'panel:org_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Tashkilot va brend</a>{% endif %}
-      {% if 'org.settings' in panel_can %}<a class="sub {% if nav == 'examlink' %}on{% endif %}" href="{% url 'panel:examlink' %}"><svg class="ic"><use href="#p-book"/></svg>Exam bilan bog'lash</a>{% endif %}
-      {% if 'devices.view' in panel_can %}<a class="sub {% if nav == 'devices' %}on{% endif %}" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
+      {% if 'org.settings' in panel_can and not founder_lean %}<a class="sub {% if nav == 'examlink' %}on{% endif %}" href="{% url 'panel:examlink' %}"><svg class="ic"><use href="#p-book"/></svg>Exam bilan bog'lash</a>{% endif %}
+      {% if 'devices.view' in panel_can and not founder_lean %}<a class="sub {% if nav == 'devices' %}on{% endif %}" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
       {% if 'staff.view' in panel_can %}<a class="sub {% if nav == 'staff' %}on{% endif %}" href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>
       <a class="sub {% if nav == 'positions' %}on{% endif %}" href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-pos"/></svg>Lavozimlar</a>{% endif %}
       {% if 'audit.view' in panel_can %}<a class="sub {% if nav == 'audit' %}on{% endif %}" href="{% url 'panel:audit' %}"><svg class="ic"><use href="#p-audit"/></svg>Faoliyat jurnali</a>{% endif %}
@@ -389,10 +408,17 @@
   </div>
 </div>
 <nav class="mtab" aria-label="Bo'limlar">
-  <a class="{% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}"><span class="pill"><svg class="ic"><use href="#p-dash"/></svg></span>Bosh</a>
+  {% if founder_lean %}
+  <a class="{% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}"><span class="pill"><svg class="ic"><use href="#p-dash"/></svg></span>Raqamlar</a>
+  <a class="{% if nav == 'inbox' %}on{% endif %}" href="{% url 'panel:inbox' %}"><span class="pill"><svg class="ic"><use href="#p-send"/></svg>{% if inbox_unread %}<i class="mdot"></i>{% endif %}</span>Xabarlar</a>
+  <button type="button" data-open-wsp><span class="pill"><svg class="ic"><use href="#p-groups"/></svg></span>Tashkilotlar</button>
+  {% if 'expenses.view' in panel_can %}<a class="{% if nav == 'expenses' %}on{% endif %}" href="{% url 'panel:expenses' %}"><span class="pill"><svg class="ic"><use href="#p-coins"/></svg></span>Xarajatlar</a>{% endif %}
+  {% else %}
+  <a class="{% if nav == 'dashboard' %}on{% endif %}" href="{% url 'panel:dashboard' %}{% if panel_owner %}?kunlik=1{% endif %}"><span class="pill"><svg class="ic"><use href="#p-dash"/></svg></span>Bosh</a>
   {% if 'students.view' in panel_can %}<a class="{% if nav == 'students' %}on{% endif %}" href="{% url 'panel:students' %}"><span class="pill"><svg class="ic"><use href="#p-students"/></svg></span>O'quvchilar</a>{% endif %}
   {% if 'payments.view' in panel_can %}<a class="{% if nav == 'finance' %}on{% endif %}" href="{% url 'panel:finance' %}"><span class="pill"><svg class="ic"><use href="#p-wallet"/></svg></span>To'lovlar</a>{% endif %}
   {% if 'announcements.view' in panel_can %}<a class="{% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><span class="pill"><svg class="ic"><use href="#p-news"/></svg></span>E'lonlar</a>{% endif %}
+  {% endif %}
   <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' or nav == 'expenses' or nav == 'payroll' or nav == 'meals' or nav == 'gallery' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
 </nav>
 {% if scope and scope.selectable %}
@@ -407,15 +433,22 @@
   <div class="mhead"><span class="av">{{ user|initials }}</span><div><b>{{ user.get_full_name|default:user.username }}</b><small>{{ panel_position|default:"Xodim" }}</small></div></div>
   <div class="mlinks">
     {% if scope and scope.selectable %}<button type="button" data-open-wsp><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i>Ish maydoni: {{ scope.label }}</button><div class="sep"></div>{% endif %}
+    {% if panel_owner and scope and not scope.is_all %}<a href="{% url 'panel:set_scope' %}?s=all&next=/panel/"><svg class="ic"><use href="#p-dash"/></svg>Rahbariyat (raqamlar)</a>{% endif %}
+    {% if not founder_lean %}
+    {% if inbox_has %}<a href="{% url 'panel:inbox' %}"><svg class="ic"><use href="#p-send"/></svg>Xabarlar{% if inbox_unread %} ({{ inbox_unread }}){% endif %}</a>{% endif %}
     {% if 'meals.view' in panel_can %}<a href="{% url 'panel:meals' %}"><svg class="ic"><use href="#p-book"/></svg>Taomnoma</a>{% endif %}
     {% if 'gallery.view' in panel_can %}<a href="{% url 'panel:gallery' %}"><svg class="ic"><use href="#p-image"/></svg>Galereya</a>{% endif %}
     {% if 'expenses.view' in panel_can %}<a href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
+    {% endif %}
     {% if 'payroll.view' in panel_can %}<a href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
+    {% if not founder_lean %}
     {% if 'parents.view' in panel_can %}<a href="{% url 'panel:parents' %}"><svg class="ic"><use href="#p-user"/></svg>Ota-onalar</a>{% endif %}
     {% if 'teachers.view' in panel_can %}<a href="{% url 'panel:teachers' %}"><svg class="ic"><use href="#p-book"/></svg>Ustozlar</a>{% endif %}
     {% if 'schedule.view' in panel_can %}<a href="{% url 'panel:schedule' %}"><svg class="ic"><use href="#p-cal"/></svg>Dars jadvali</a>{% endif %}
     {% if 'devices.view' in panel_can %}<a href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-cam"/></svg>Qurilmalar</a>{% endif %}
     {% if 'groups.view' in panel_can %}<a href="{% url 'panel:groups' %}"><svg class="ic"><use href="#p-groups"/></svg>Sinflar</a>{% endif %}
+    {% endif %}
+    {% if panel_owner %}<a href="{% url 'panel:org_settings' %}"><svg class="ic"><use href="#p-gear"/></svg>Tashkilot va brend</a>{% endif %}
     {% if 'staff.view' in panel_can %}<a href="{% url 'panel:staff' %}"><svg class="ic"><use href="#p-staff"/></svg>Xodimlar</a>
     <a href="{% url 'panel:positions' %}"><svg class="ic"><use href="#p-pos"/></svg>Lavozimlar</a>{% endif %}
     {% if 'audit.view' in panel_can %}<a href="{% url 'panel:audit' %}"><svg class="ic"><use href="#p-audit"/></svg>Faoliyat jurnali</a>{% endif %}

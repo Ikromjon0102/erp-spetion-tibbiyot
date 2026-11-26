@@ -60,3 +60,42 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f'{self.actor_name}: {self.verb} {self.target_label}'
+
+
+class Thread(models.Model):
+    """Founder → rahbariyat yozishmasi (2026-11-26). Founder boshlaydi, a'zolar javob yozadi; har yangi xabar Telegram'ga ham boradi."""
+    subject = models.CharField('Mavzu', max_length=200)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_message_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        ordering = ['-last_message_at']
+        verbose_name = 'Yozishma'
+        verbose_name_plural = 'Yozishmalar'
+
+    def __str__(self):
+        return self.subject
+
+
+class ThreadMember(models.Model):
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='thread_memberships')
+    last_read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['thread', 'user'], name='thread_member_once')]
+
+    @property
+    def unread(self):
+        return self.last_read_at is None or self.last_read_at < self.thread.last_message_at
+
+
+class ThreadMessage(models.Model):
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='messages')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='+')
+    body = models.TextField('Matn', max_length=4000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at', 'id']

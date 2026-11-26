@@ -3,7 +3,7 @@
 {% block title %}Raqamlar{% endblock %}
 {% block heading %}Raqamlar{% endblock %}
 {% block actions %}
-  <a class="btn" href="{% url 'panel:dashboard' %}?kunlik=1"><svg class="ic"><use href="#p-dash"/></svg>Kundalik ish paneli</a>
+  {% if founder_lean %}<a class="btn primary" href="{% url 'panel:thread_new' %}"><svg class="ic"><use href="#p-send"/></svg>Rahbariyatga yozish</a>{% else %}<a class="btn" href="{% url 'panel:dashboard' %}?kunlik=1"><svg class="ic"><use href="#p-dash"/></svg>Kundalik ish paneli</a>{% endif %}
 {% endblock %}
 
 {% block content %}

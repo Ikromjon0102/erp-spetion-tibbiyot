@@ -1,10 +1,13 @@
 from django.urls import path
 
-from . import branch_assign, salary, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink, views_gallery
+from . import branch_assign, salary, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink, views_gallery, views_inbox
 
 app_name = 'panel'
 urlpatterns = [
     path('', views_core.dashboard, name='dashboard'),
+    path('xabarlar/', views_inbox.inbox, name='inbox'),
+    path('xabarlar/yangi/', views_inbox.thread_new, name='thread_new'),
+    path('xabarlar/<int:pk>/', views_inbox.thread, name='thread'),
     path('maydon/', views_scope.set_scope, name='set_scope'),
     path('jurnal/', views_core.audit_list, name='audit'),
 

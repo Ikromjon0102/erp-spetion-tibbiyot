@@ -1,0 +1,49 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ t.subject }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:inbox' %}" style="font-weight:600">Xabarlar</a> <span class="muted">/</span> {{ t.subject }}{% endblock %}
+{% block content %}
+<div class="th-grid{% if not owner %} solo{% endif %}">
+  <div>
+    <div class="th-list">
+      {% for x in msgs %}
+      <div class="th-msg{% if x.mine %} mine{% endif %}">
+        <div class="th-who">{% if x.mine %}Siz{% else %}{{ x.who }}{% endif %} <span>{{ x.m.created_at|date:"d.m.Y H:i" }}</span></div>
+        <div class="th-body">{{ x.m.body|linebreaksbr }}</div>
+      </div>
+      {% endfor %}
+      <span id="oxiri"></span>
+    </div>
+    <form method="post" class="card th-reply">{% csrf_token %}
+      {{ form.body }}
+      {% for e in form.body.errors %}<div class="hint" style="color:var(--bad)">{{ e }}</div>{% endfor %}
+      <button class="btn primary"><svg class="ic"><use href="#p-send"/></svg>Yuborish</button>
+    </form>
+  </div>
+  {% if owner %}
+  <aside class="card th-side">
+    <b>Kim o'qidi</b>
+    {% for m in members %}
+    <div class="th-mem"><i class="{% if m.seen %}ok{% endif %}"></i><span>{{ m.name }}<small>{% if m.seen %}o'qidi · {{ m.at|date:"d.m H:i" }}{% else %}hali o'qimagan{% endif %}</small></span></div>
+    {% endfor %}
+  </aside>
+  {% endif %}
+</div>
+<style>
+  .th-grid { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:14px; align-items:start; max-width:1100px; }
+  .th-grid.solo { grid-template-columns:minmax(0,1fr); max-width:820px; }
+  @media (max-width:900px) { .th-grid { grid-template-columns:minmax(0,1fr); } }
+  .th-list { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
+  .th-msg { max-width:86%; padding:12px 16px; border-radius:18px 18px 18px 6px; background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); }
+  .th-msg.mine { align-self:flex-end; border-radius:18px 18px 6px 18px; background:var(--tint); border-color:var(--tint-line); }
+  .th-who { font-weight:700; font-size:13px; margin-bottom:4px; } .th-who span { color:var(--dim); font-weight:500; margin-left:6px; }
+  .th-body { line-height:1.55; overflow-wrap:anywhere; }
+  .th-reply { margin:0; display:flex; flex-direction:column; gap:10px; }
+  .th-reply textarea { width:100%; min-height:84px; }
+  .th-reply .btn { align-self:flex-end; }
+  .th-side { margin:0; position:sticky; top:84px; }
+  .th-mem { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line); } .th-mem:last-child { border:0; }
+  .th-mem i { width:9px; height:9px; border-radius:50%; margin-top:6px; background:var(--faint); flex-shrink:0; } .th-mem i.ok { background:var(--ok); }
+  .th-mem span { display:flex; flex-direction:column; } .th-mem small { color:var(--dim); font-size:12px; }
+</style>
+<script>if (location.hash === '#oxiri') { var e = document.getElementById('oxiri'); e && e.scrollIntoView(); }</script>
+{% endblock %}
