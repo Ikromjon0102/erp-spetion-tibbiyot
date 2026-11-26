@@ -17,7 +17,7 @@ def token():
 
 def app_url(path=''):
     from urllib.parse import quote
-    url = getattr(settings, 'SITE_URL', 'https://med.spetion.uz').rstrip('/') + '/tg/app/'
+    url = getattr(settings, 'SITE_URL', 'https://my.spetion.uz').rstrip('/') + '/tg/app/'
     return url + ('?next=' + quote(path, safe='/') if path else '')
 
 

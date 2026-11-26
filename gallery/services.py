@@ -17,7 +17,10 @@ def add_photo(album, upload):
     if upload.size > MAX_UPLOAD:
         raise ValueError(f"{upload.name}: fayl juda katta (25 MB dan oshmasin)")
     try:
-        img = ImageOps.exif_transpose(Image.open(upload)).convert('RGB')
+        src = Image.open(upload)
+        if src.format == 'JPEG':
+            src.draft('RGB', (FULL_SIDE, FULL_SIDE))      # telefon rasmini (12 MP) kichraytirib o'qiydi — bir necha marta tez, kam xotira
+        img = ImageOps.exif_transpose(src).convert('RGB')
     except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
         raise ValueError(f"{upload.name}: rasm fayli emas yoki buzilgan")
     name = uuid.uuid4().hex
