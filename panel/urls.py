@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import branch_assign, salary, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink
+from . import branch_assign, salary, views_core, views_scope, views_devices, views_finance, views_parents, views_schedule, views_teachers, views_groups, views_news, views_staff, views_students, views_org, views_expenses, views_payroll, views_meals, views_examlink, views_gallery
 
 app_name = 'panel'
 urlpatterns = [
@@ -103,6 +103,11 @@ urlpatterns = [
     path('taomnoma/taomlar/<int:pk>/', views_meals.dish_edit, name='dish_edit'),
     path('taomnoma/taomlar/<int:pk>/ochirish/', views_meals.dish_delete, name='dish_delete'),
     path('taomnoma/sozlamalar/', views_meals.meals_settings, name='meals_settings'),
+    path('galereya/', views_gallery.gallery, name='gallery'),
+    path('galereya/yangi/', views_gallery.album_add, name='album_add'),
+    path('galereya/<int:pk>/', views_gallery.album, name='album'),
+    path('galereya/<int:pk>/ochirish/', views_gallery.album_delete, name='album_delete'),
+    path('galereya/rasm/<int:pk>/ochirish/', views_gallery.photo_delete, name='photo_delete'),
 
     path('oyliklar/', views_payroll.payroll_page, name='payroll'),
     path('oyliklar/hisoblash/', views_payroll.payroll_calculate, name='payroll_calculate'),

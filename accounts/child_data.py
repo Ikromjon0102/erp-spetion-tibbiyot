@@ -74,6 +74,19 @@ def _meal_rows(org, monday, today):
     return rows, detail
 
 
+def _gallery(student, org):
+    """Galereya: faqat shu bola belgilangan rasmlar, albom bo'yicha. Modul yoqilmagan tashkilotda None (yorliq chiqmaydi)."""
+    if org is None or not org.gallery_enabled:
+        return None
+    from gallery.services import photos_for_child
+    albums = []
+    for ph in photos_for_child(student):
+        if not albums or albums[-1]['id'] != ph.album_id:
+            albums.append({'id': ph.album_id, 'title': ph.album.title, 'date': ph.album.date, 'photos': []})
+        albums[-1]['photos'].append(ph.pk)
+    return albums
+
+
 def grade_class(avg):
     return 'g5' if avg >= 4.5 else 'g4' if avg >= 3.5 else 'g3' if avg >= 2.5 else 'g2'
 
@@ -221,4 +234,5 @@ def child_context(student, viewer):
         'today_lessons': days[today_idx]['lessons'] if today_idx is not None else [],
         'payments': payments, 'debt': debt, 'bill': bill, 'news': news, 'siblings': siblings,
         'homework': homework, 'hw_unread': hw_unread,
+        'gallery': _gallery(student, org),
     }

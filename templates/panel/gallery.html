@@ -1,0 +1,42 @@
+{% extends 'panel/base.html' %}
+{% block title %}Galereya{% endblock %}
+{% block heading %}Galereya{% endblock %}
+{% block actions %}
+{% if can_manage and org.gallery_enabled %}<a class="btn primary" href="{% url 'panel:album_add' %}?org={{ org.pk }}"><svg class="ic"><use href="#p-plus"/></svg>Yangi albom</a>{% endif %}
+{% endblock %}
+{% block content %}
+{% if orgs|length > 1 %}
+<form method="get" class="card" style="max-width:620px;margin-bottom:12px">
+  <label class="muted" style="font-size:13px">Tashkilot</label>
+  <select name="org" onchange="this.form.submit()">{% for o in orgs %}<option value="{{ o.pk }}"{% if o.pk == org.pk %} selected{% endif %}>{{ o.name }}</option>{% endfor %}</select>
+</form>
+{% endif %}
+{% if not org.gallery_enabled %}
+<div class="empty">«{{ org.name }}» tashkilotida galereya moduli yoqilmagan. Uni «Tashkilot va brend» sahifasida faqat maktab egasi yoqadi.</div>
+{% else %}
+<p class="hint" style="margin:0 0 12px">Ota-ona ilovasida faqat <b>o'z farzandi belgilangan</b> rasmlar chiqadi. Hech kim belgilanmagan rasmni ota-onalar ko'rmaydi.</p>
+<div class="gal-grid">
+  {% for a in albums %}
+  <a class="card gal-alb" href="{% url 'panel:album' a.pk %}">
+    <div class="gal-cover">{% if a.cover %}<img src="{% url 'gallery_photo' a.cover.pk %}?t=1" alt="" loading="lazy">{% else %}<svg class="ic"><use href="#p-image"/></svg>{% endif %}</div>
+    <div class="gal-meta">
+      <b>{{ a.title }}</b>
+      <span class="muted">{{ a.group.name|default:"—" }} · {{ a.date|date:"j F Y" }}</span>
+      <span>{{ a.n }} ta rasm{% if a.untagged %} · <span style="color:var(--late);font-weight:700">{{ a.untagged }} tasi belgilanmagan</span>{% endif %}</span>
+    </div>
+  </a>
+  {% empty %}
+  <div class="empty" style="grid-column:1/-1">Hali albom yo'q.{% if can_manage %} «Yangi albom» tugmasi bilan rasmlarni yuklang.{% endif %}</div>
+  {% endfor %}
+</div>
+{% endif %}
+<style>
+  .gal-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; }
+  .gal-alb { margin:0; padding:0; overflow:hidden; color:inherit; text-decoration:none; display:flex; flex-direction:column; min-width:0; }
+  .gal-cover { aspect-ratio:4/3; background:var(--tint, #f3f3f3); display:grid; place-items:center; overflow:hidden; }
+  .gal-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+  .gal-cover .ic { width:36px; height:36px; color:var(--muted); }
+  .gal-meta { display:flex; flex-direction:column; gap:2px; padding:10px 12px; font-size:13.5px; min-width:0; }
+  .gal-meta b { font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+</style>
+{% endblock %}

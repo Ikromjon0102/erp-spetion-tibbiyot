@@ -339,6 +339,7 @@
     {% if 'payments.view' in panel_can %}<a class="item {% if nav == 'finance' %}on{% endif %}" href="{% url 'panel:finance' %}"><svg class="ic"><use href="#p-wallet"/></svg>To'lovlar</a>{% endif %}
     {% if 'announcements.view' in panel_can %}<a class="item {% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><svg class="ic"><use href="#p-news"/></svg>E'lonlar</a>{% endif %}
     {% if 'meals.view' in panel_can %}<a class="item {% if nav == 'meals' %}on{% endif %}" href="{% url 'panel:meals' %}"><svg class="ic"><use href="#p-book"/></svg>Taomnoma</a>{% endif %}
+    {% if 'gallery.view' in panel_can %}<a class="item {% if nav == 'gallery' %}on{% endif %}" href="{% url 'panel:gallery' %}"><svg class="ic"><use href="#p-image"/></svg>Galereya</a>{% endif %}
     {% if 'expenses.view' in panel_can or 'payroll.view' in panel_can %}<div class="sec">Moliya</div>{% endif %}
     {% if 'expenses.view' in panel_can %}<a class="item {% if nav == 'expenses' %}on{% endif %}" href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
     {% if 'payroll.view' in panel_can %}<a class="item {% if nav == 'payroll' %}on{% endif %}" href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
@@ -391,7 +392,7 @@
   {% if 'students.view' in panel_can %}<a class="{% if nav == 'students' %}on{% endif %}" href="{% url 'panel:students' %}"><span class="pill"><svg class="ic"><use href="#p-students"/></svg></span>O'quvchilar</a>{% endif %}
   {% if 'payments.view' in panel_can %}<a class="{% if nav == 'finance' %}on{% endif %}" href="{% url 'panel:finance' %}"><span class="pill"><svg class="ic"><use href="#p-wallet"/></svg></span>To'lovlar</a>{% endif %}
   {% if 'announcements.view' in panel_can %}<a class="{% if nav == 'news' %}on{% endif %}" href="{% url 'panel:news' %}"><span class="pill"><svg class="ic"><use href="#p-news"/></svg></span>E'lonlar</a>{% endif %}
-  <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' or nav == 'expenses' or nav == 'payroll' or nav == 'meals' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
+  <button type="button" id="moreBtn" class="{% if nav == 'parents' or nav == 'schedule' or nav == 'devices' or nav == 'teachers' or nav == 'groups' or nav == 'staff' or nav == 'positions' or nav == 'audit' or nav == 'expenses' or nav == 'payroll' or nav == 'meals' or nav == 'gallery' %}on{% endif %}"><span class="pill"><svg class="ic"><use href="#p-more"/></svg></span>Ko'proq</button>
 </nav>
 {% if scope and scope.selectable %}
 <div class="msheet-ov" id="wspOv"><div class="msheet" role="dialog" aria-modal="true" aria-label="Ish maydonini tanlash">
@@ -406,6 +407,7 @@
   <div class="mlinks">
     {% if scope and scope.selectable %}<button type="button" data-open-wsp><i class="wdot" style="background:{% if scope.org %}{{ scope.org.brand_color }}{% else %}var(--faint){% endif %}"></i>Ish maydoni: {{ scope.label }}</button><div class="sep"></div>{% endif %}
     {% if 'meals.view' in panel_can %}<a href="{% url 'panel:meals' %}"><svg class="ic"><use href="#p-book"/></svg>Taomnoma</a>{% endif %}
+    {% if 'gallery.view' in panel_can %}<a href="{% url 'panel:gallery' %}"><svg class="ic"><use href="#p-image"/></svg>Galereya</a>{% endif %}
     {% if 'expenses.view' in panel_can %}<a href="{% url 'panel:expenses' %}"><svg class="ic"><use href="#p-coins"/></svg>Xarajatlar</a>{% endif %}
     {% if 'payroll.view' in panel_can %}<a href="{% url 'panel:payroll' %}"><svg class="ic"><use href="#p-wallet"/></svg>Oyliklar</a>{% endif %}
     {% if 'parents.view' in panel_can %}<a href="{% url 'panel:parents' %}"><svg class="ic"><use href="#p-user"/></svg>Ota-onalar</a>{% endif %}

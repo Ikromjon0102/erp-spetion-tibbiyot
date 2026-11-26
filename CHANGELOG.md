@@ -2,6 +2,11 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Taqdimotdan keyingi takliflar (2026-11-26)
+- **Bog'cha galereyasi** (yangi `gallery` ilovasi, «Galereya» menyusi, ruxsat `gallery.view` / `gallery.manage`): albom (guruh, nomi, sana) va bir yo'la 60 tagacha rasm. Rasmlar 1600 px gacha kichraytiriladi, eskizi 480 px. Har rasm tagida guruh bolalari — kim borligi belgilanadi («Hammasi» / «Hech kim» tugmalari). **Ota-ona ilovasida «Rasmlar» yorlig'i — faqat o'z farzandi belgilangan rasmlar**; belgilanmagan rasm hech bir ota-onaga ko'rinmaydi (fayl ham 404). Fayllar ochiq emas, ruxsat tekshiradigan view orqali beriladi. Modul tashkilot sozlamasida yoqiladi (bog'chada avtomatik yoqildi). Ruxsat Maktab egasi, Direktor, Filial rahbari lavozimlariga va ulardagi xodimlarga qo'shildi (migratsiya `panel.0010`).
+- **O'quv markazda guruhdan-guruhga o'tkazish — faqat filial rahbari** (yangi ruxsat `students.move`; Direktor andozasida yo'q). Ruxsatsiz xodimda o'quvchi tahririda guruh maydoni qulflangan. Maktab va bog'chada sinf o'zgartirish avvalgidek oddiy tahrir. Guruhsiz o'quvchini guruhga qo'shish hammaga ochiq. Jurnalda «O'quvchini boshqa guruhga o'tkazdi».
+- **Avans summasi qo'lda:** foiz olib tashlandi (`org.0006`). Hisobchi yoki rahbar «Avans» tugmasida summani o'zi yozadi. Oyliklar sahifasidagi avans kartasi: berilgan summa, necha kishi olgan, necha kishi hali olmagan. Eslatma: «N kishi hali avans olmagan». Sozlamada faqat avans kuni qoldi.
+
 ## «Filial rahbari» lavozimi (2026-11-23)
 - Yangi lavozim andozasi (migratsiya `panel.0008`): o'z filialida kundalik boshqaruv — o'quvchi, ustoz, ota-ona, sinf, jadval, to'lov qabul qilish, qarzdorlar, kunlik nazorat, terminallar, e'lonlar, taomnoma, xodimlar ro'yxatini ko'rish. **Yo'q:** xodim qo'shish/ruxsat, xarajat va oyliklar, narx va chegirmalar, to'lovni bekor qilish, faoliyat jurnali, exam bog'lash.
 - Qaysi filial — xodim qo'shishda «Ish filiallari»da bitta filial belgilanadi; boshqa filiallar unga ko'rinmaydi, yangi filial ham avtomatik qo'shilmaydi.

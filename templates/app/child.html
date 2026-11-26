@@ -431,6 +431,30 @@
   {% endif %}
 </section>
 {% endif %}
+
+<!-- ====================== GALEREYA (faqat shu bola belgilangan rasmlar) ====================== -->
+{% if gallery is not None %}
+<section class="tabpane" id="tab-gallery" hidden>
+  {% for a in gallery %}
+  <h2 class="sec"{% if forloop.first %} style="margin-top:6px"{% endif %}>{{ a.title }} <small>{{ a.date|date:"j F Y" }}</small></h2>
+  <div class="gal">
+    {% for pk in a.photos %}<a href="{% url 'gallery_photo' pk %}" data-full="{% url 'gallery_photo' pk %}"><img src="{% url 'gallery_photo' pk %}?t=1" alt="" loading="lazy"></a>{% endfor %}
+  </div>
+  {% empty %}
+  <div class="card" style="text-align:center;color:var(--muted)">Hozircha rasm yo'q. Tarbiyachilar farzandingiz tushgan rasmlarni yuklaganda shu yerda chiqadi.</div>
+  {% endfor %}
+</section>
+<div class="lb" id="lb" hidden><img alt=""><button class="xbtn" aria-label="Yopish"><svg class="ic"><use href="#i-x"/></svg></button></div>
+<style>
+  .gal { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:4px; margin-bottom:14px; }
+  .gal a { display:block; aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--tint); }
+  .gal img { width:100%; height:100%; object-fit:cover; display:block; }
+  .lb { position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.92); display:grid; place-items:center; }
+  .lb[hidden] { display:none; }
+  .lb img { max-width:100vw; max-height:100vh; object-fit:contain; }
+  .lb .xbtn { position:absolute; top:max(12px, env(safe-area-inset-top)); right:12px; }
+</style>
+{% endif %}
 {% endblock %}
 
 {% block bottomnav %}
@@ -448,6 +472,7 @@
   <button data-tab="attendance"><span class="pill"><svg class="ic"><use href="#i-check"/></svg></span>Davomat</button>
   <button data-tab="schedule"><span class="pill"><svg class="ic"><use href="#i-cal"/></svg></span>{% if kindergarten %}Mashg'ulot{% else %}Jadval{% endif %}{% if hw_unread %}<i class="badge" id="hwBadge" title="Yangi vazifa"></i>{% endif %}</button>
   {% if payments is not None %}<button data-tab="payments"><span class="pill"><svg class="ic"><use href="#i-wallet"/></svg></span>To'lov</button>{% endif %}
+  {% if gallery is not None %}<button data-tab="gallery"><span class="pill"><svg class="ic"><use href="#i-image"/></svg></span>Rasmlar</button>{% endif %}
 </div></nav>
 {% endblock %}
 
@@ -548,6 +573,15 @@
   });
 })();
 (function(){
+  // ---------- galereya: rasm ustiga bosilsa to'liq ekranda ochiladi ----------
+  var lb = document.getElementById('lb');
+  if (lb) {
+    document.addEventListener('click', function(e){
+      var a = e.target.closest('.gal a[data-full]'); if (!a) return;
+      e.preventDefault(); lb.querySelector('img').src = a.dataset.full; lb.hidden = false;
+    });
+    lb.onclick = function(){ lb.hidden = true; lb.querySelector('img').removeAttribute('src'); };
+  }
   var panes = document.querySelectorAll('.tabpane'), btns = document.querySelectorAll('[data-tab]');
   function show(name, noScroll){
     var found = false;

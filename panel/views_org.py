@@ -18,14 +18,14 @@ from .access import is_owner, panel_required
 class OrgForm(forms.ModelForm):
     class Meta:
         model = Organization
-        fields = ['name', 'short_name', 'brand_color', 'meals_enabled', 'expenses_enabled']
+        fields = ['name', 'short_name', 'brand_color', 'meals_enabled', 'expenses_enabled', 'gallery_enabled']
         labels = {'name': 'Tashkilot nomi', 'short_name': 'Qisqa nomi (ilovada)', 'brand_color': 'Brend rangi'}
         widgets = {'brand_color': forms.TextInput(attrs={'type': 'color', 'style': 'width:90px;height:44px;padding:2px'})}
 
     def __init__(self, *args, owner=False, **kwargs):
         super().__init__(*args, **kwargs)
         if not owner:       # modullarni yoqish-o'chirishni faqat egasi (founder) qiladi
-            del self.fields['meals_enabled'], self.fields['expenses_enabled']
+            del self.fields['meals_enabled'], self.fields['expenses_enabled'], self.fields['gallery_enabled']
 
     def clean_brand_color(self):
         value = self.cleaned_data['brand_color'].strip()

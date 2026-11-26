@@ -21,6 +21,8 @@ class Organization(models.Model):
     meals_enabled = models.BooleanField('Taomnoma moduli', default=False,
                                         help_text="Maktab va bog'chada yoqiladi, o'quv markazda kerak emas")
     expenses_enabled = models.BooleanField('Xarajatlar moduli', default=True)
+    gallery_enabled = models.BooleanField('Galereya moduli', default=False,
+                                          help_text="Bolalar rasmlari albomi; ota-ona faqat o'z farzandi belgilangan rasmlarni ko'radi")
     leave_notify_from = models.TimeField("Chiqish xabarlari vaqti", null=True, blank=True,
                                          help_text="Bo'sh bo'lsa umumiy sozlama (Qurilmalar sahifasi). Bog'cha va markazning ish soati boshqa bo'lishi mumkin")
     advance_day = models.PositiveSmallIntegerField('Avans kuni', default=15, validators=[MinValueValidator(1), MaxValueValidator(28)],

@@ -18,6 +18,7 @@
   {% if form.meals_enabled %}
     {% include 'panel/_field.html' with f=form.meals_enabled %}
     {% include 'panel/_field.html' with f=form.expenses_enabled %}
+    {% include 'panel/_field.html' with f=form.gallery_enabled %}
   {% endif %}
   <div style="display:flex;gap:8px;margin:4px 0 14px">
     <span title="Urg'u" style="flex:1;height:34px;border-radius:10px;background:{{ org.brand_color }}"></span>

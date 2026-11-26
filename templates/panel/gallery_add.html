@@ -1,0 +1,16 @@
+{% extends 'panel/base.html' %}
+{% block title %}Yangi albom{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:gallery' %}?org={{ org.pk }}" style="font-weight:600">Galereya</a> <span class="muted">/</span> Yangi albom{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:620px">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="msg error" style="margin-bottom:10px">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  {% include 'panel/_field.html' with f=form.group %}
+  {% include 'panel/_field.html' with f=form.title %}
+  {% include 'panel/_field.html' with f=form.date %}
+  <label style="display:block;margin:4px 0 6px;font-weight:600">Rasmlar</label>
+  <input type="file" name="photos" accept="image/*" multiple required>
+  <p class="hint">Bir yo'la 60 tagacha rasm. Telefon rasmlari avtomatik kichraytiriladi. Keyingi qadamda har rasmda kimlar borligini belgilaysiz.</p>
+  <button class="btn primary"><svg class="ic"><use href="#p-upload"/></svg>Yuklash</button>
+  <a class="btn" href="{% url 'panel:gallery' %}?org={{ org.pk }}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
+</form>
+{% endblock %}

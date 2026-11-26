@@ -21,7 +21,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for name, short, kind, color, meals, branches in ORGS:
             org, created = Organization.objects.get_or_create(
-                name=name, defaults={'short_name': short, 'kind': kind, 'brand_color': color, 'meals_enabled': meals})
+                name=name, defaults={'short_name': short, 'kind': kind, 'brand_color': color, 'meals_enabled': meals,
+                                   'gallery_enabled': kind == 'kindergarten'})
             for b in branches:
                 Branch.objects.get_or_create(organization=org, name=b)
             if options['verbosity'] > 0:

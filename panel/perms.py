@@ -69,6 +69,10 @@ CATALOG = [
         ('view', "Taomnomani ko'rish"),
         ('manage', "Menyu, taomlar rasmi va ovqatsiz kunlarni boshqarish"),
     ]),
+    ('gallery', "Galereya (bog'cha)", [
+        ('view', "Albom va rasmlarni ko'rish"),
+        ('manage', "Rasm yuklash, rasmdagi bolalarni belgilash, o'chirish"),
+    ]),
     ('org', "Tashkilot", [
         ('settings', "Exam platformasi bilan bog'lash (tashkilot va brend sozlamasi — faqat maktab egasida)"),
     ]),
@@ -81,7 +85,7 @@ ALL_PERMS = [f'{module}.{action}' for module, _, actions in CATALOG for action, 
 LABELS = {f'{m}.{a}': label for m, _, actions in CATALOG for a, label in actions}
 
 # Boshqa amal tanlansa, shu modulning "ko'rish" ruxsati ham kerak (ko'rmasdan tahrirlab bo'lmaydi)
-NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments', 'expenses', 'payroll', 'meals'}
+NEEDS_VIEW = {'parents', 'schedule', 'devices', 'teachers', 'students', 'groups', 'announcements', 'staff', 'payments', 'expenses', 'payroll', 'meals', 'gallery'}
 
 
 def normalize(perms):

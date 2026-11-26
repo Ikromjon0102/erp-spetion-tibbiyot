@@ -1,0 +1,78 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ album.title }}{% endblock %}
+{% block heading %}<a class="muted" href="{% url 'panel:gallery' %}?org={{ album.branch.organization_id }}" style="font-weight:600">Galereya</a> <span class="muted">/</span> {{ album.title }}{% endblock %}
+{% block actions %}
+{% if can_manage %}
+<form method="post" action="{% url 'panel:album_delete' album.pk %}" style="display:inline" data-confirm="Albom va undagi {{ photos|length }} ta rasm o'chirilsinmi? Qaytarib bo'lmaydi." data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-trash"/></svg>Albomni o'chirish</button></form>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="card" style="display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center">
+  <span><b>{{ album.group.name|default:"—" }}</b> · {{ album.branch.name }}</span>
+  <span class="muted">{{ album.date|date:"j F Y" }} · {{ photos|length }} ta rasm</span>
+  {% if untagged %}<span class="badge warn">{{ untagged }} ta rasmda hech kim belgilanmagan — ota-onalar ko'rmaydi</span>{% elif photos %}<span class="badge gray">hamma rasm belgilangan</span>{% endif %}
+</div>
+
+{% if can_manage %}
+<form method="post" enctype="multipart/form-data" class="card" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">{% csrf_token %}
+  <input type="file" name="photos" accept="image/*" multiple required style="flex:1;min-width:0">
+  <button class="btn"><svg class="ic"><use href="#p-upload"/></svg>Rasm qo'shish</button>
+</form>
+{% endif %}
+
+{% if photos %}
+{% if can_manage %}<form method="post" id="tagForm">{% csrf_token %}{% endif %}
+<p class="hint" style="margin:0 0 10px">Har rasm tagida undagi bolalarni belgilang. Ota-ona faqat o'z farzandi belgilangan rasmni ko'radi.{% if not children %} <b>Bu guruhda faol bola yo'q.</b>{% endif %}</p>
+<div class="ph-grid">
+  {% for ph in photos %}
+  <div class="card ph{% if not ph.ids %} untagged{% endif %}">
+    <a href="{% url 'gallery_photo' ph.pk %}" target="_blank" rel="noopener" class="ph-img"><img src="{% url 'gallery_photo' ph.pk %}?t=1" alt="" loading="lazy"></a>
+    <div class="ph-body">
+      {% if can_manage %}
+      <div class="ph-tools">
+        <button type="button" class="btn small" data-all="{{ ph.pk }}">Hammasi</button>
+        <button type="button" class="btn small" data-none="{{ ph.pk }}">Hech kim</button>
+        <button type="submit" class="btn small" form="del{{ ph.pk }}" title="Rasmni o'chirish"><svg class="ic"><use href="#p-trash"/></svg></button>
+      </div>
+      <div class="kids" data-photo="{{ ph.pk }}">
+        {% for c in children %}<label class="kid"><input type="checkbox" name="p{{ ph.pk }}" value="{{ c.pk }}"{% if c.pk in ph.ids %} checked{% endif %}><span>{{ c.user.first_name }} {{ c.user.last_name|slice:":1" }}.</span></label>{% endfor %}
+      </div>
+      {% else %}
+      <div class="muted" style="font-size:13px">{% for c in ph.children.all %}{{ c.user.first_name }} {{ c.user.last_name|slice:":1" }}.{% if not forloop.last %}, {% endif %}{% empty %}hech kim belgilanmagan{% endfor %}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% if can_manage %}
+<div class="tag-save"><button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Belgilarni saqlash</button></div>
+</form>
+{% for ph in photos %}<form method="post" action="{% url 'panel:photo_delete' ph.pk %}" id="del{{ ph.pk }}" data-confirm="Rasm o'chirilsinmi?" data-confirm-ok="O'chirish" data-confirm-danger>{% csrf_token %}</form>{% endfor %}
+{% endif %}
+{% else %}
+<div class="empty">Albomda rasm yo'q.</div>
+{% endif %}
+<style>
+  .ph-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+  .ph { margin:0; padding:0; overflow:hidden; display:flex; flex-direction:column; min-width:0; }
+  .ph.untagged { outline:2px solid var(--late); outline-offset:-2px; }
+  .ph-img { display:block; aspect-ratio:4/3; background:var(--tint, #f3f3f3); }
+  .ph-img img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ph-body { padding:8px 10px 10px; }
+  .ph-tools { display:flex; gap:6px; margin-bottom:6px; }
+  .ph-tools button:last-child { margin-left:auto; }
+  .kids { display:flex; flex-wrap:wrap; gap:5px; max-height:180px; overflow:auto; }
+  .kid { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border:1px solid var(--line); border-radius:999px; font-size:12.5px; cursor:pointer; }
+  .kid input { margin:0; }
+  .kid:has(input:checked) { background:var(--tint, #eef6ee); border-color:var(--accent, #166534); font-weight:700; }
+  .tag-save { position:sticky; bottom:0; padding:12px 0; background:linear-gradient(transparent, var(--bg, #fff) 40%); }
+  @media (max-width:640px) { .tag-save { bottom:64px; } }
+</style>
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-all],[data-none]'); if (!b) return;
+  var id = b.dataset.all || b.dataset.none, on = !!b.dataset.all;
+  document.querySelectorAll('.kids[data-photo="' + id + '"] input').forEach(function (i) { i.checked = on; });
+});
+</script>
+{% endblock %}

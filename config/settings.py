@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'finance',
     'examlink',
     'meals',
+    'gallery',
     'tgbot',
     'django.contrib.admin',
     'django.contrib.auth',
