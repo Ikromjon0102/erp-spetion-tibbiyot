@@ -54,9 +54,10 @@ def _glass(h, s, l, base, dark_accent):
         '--bar-bg': f'rgba({_rgb(lt_bg)},.62)', '--input-bg': 'rgba(255,255,255,.62)',
         '--shadow': f'var(--spec), 0 10px 34px rgba({acc},.12), 0 2px 6px rgba({acc},.07)',
         '--shadow-lift': f'var(--spec), 0 18px 44px rgba({acc},.20), 0 4px 10px rgba({acc},.09)',
-        '--bg-img': (f'radial-gradient(820px 560px at 6% -6%, rgba({lt_glow},.40), transparent 62%),'
-                     f'radial-gradient(760px 520px at 100% 2%, rgba({_rgb(_hex(hue2, s, max(l, 0.4)))},.26), transparent 58%),'
-                     f'radial-gradient(880px 640px at 72% 112%, rgba({acc},.24), transparent 62%),'
+        '--bg-img': (f'radial-gradient(820px 560px at 6% -6%, rgba({lt_glow},.48), transparent 62%),'
+                     f'radial-gradient(760px 520px at 100% 2%, rgba({_rgb(_hex(hue2, s, max(l, 0.4)))},.34), transparent 58%),'
+                     f'radial-gradient(640px 480px at 38% 70%, rgba({_rgb(_hex(h - 0.06, min(s, 0.7), 0.6))},.16), transparent 64%),'
+                     f'radial-gradient(880px 640px at 72% 112%, rgba({acc},.30), transparent 62%),'
                      f'linear-gradient(180deg,{_hex(h, min(s, 0.45), 0.965)} 0%,{_hex(h, min(s, 0.4), 0.91)} 100%)'),
         '--cross': f'rgba({acc},.07)',
     }
@@ -73,7 +74,8 @@ def _glass(h, s, l, base, dark_accent):
         '--accent-grad': f'linear-gradient(180deg,{_hex(h, s * 0.9, max(l, 0.40) + 0.08)} 0%,{_hex(h, s * 0.9, max(l * 0.8, 0.30))} 100%)',
         '--bar-bg': f'rgba({_rgb(dk_bg)},.58)', '--input-bg': 'rgba(255,255,255,.06)',
         '--shadow': 'var(--spec), 0 12px 40px rgba(0,0,0,.42)', '--shadow-lift': 'var(--spec), 0 20px 50px rgba(0,0,0,.55)',
-        '--bg-img': (f'radial-gradient(820px 560px at 6% -6%, rgba({dk_glow},.30), transparent 62%),'
+        '--bg-img': (f'radial-gradient(820px 560px at 6% -6%, rgba({dk_glow},.36), transparent 62%),'
+                     f'radial-gradient(640px 480px at 38% 70%, rgba({_rgb(_hex(h - 0.06, min(s, 0.7), 0.45))},.14), transparent 64%),'
                      f'radial-gradient(760px 520px at 100% 2%, rgba({_rgb(_hex(hue2, min(s, 0.8), 0.40))},.26), transparent 58%),'
                      f'radial-gradient(880px 640px at 72% 112%, rgba({acc},.34), transparent 62%),'
                      f'linear-gradient(180deg,{_hex(h, min(s, 0.4), 0.075)} 0%,{_hex(h, min(s, 0.4), 0.035)} 100%)'),
