@@ -74,3 +74,20 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - **O'quvchilar:** exam ro'yxati = eski yagona maktab. 1-noyabrdan tibbiyot yo'nalishi ajralgan (examdagi ~43 ta mos o'quvchi tibbiyotga), qolganlari **Asosiy maktab**ga biriktiriladi. Ikkala maktabda ham yo'q (chiqib ketgan) o'quvchilarni founder/admin o'zi o'chiradi. Imtihon natijalari bog'langan o'quvchini o'chirishdan oldin nofaol qilish tavsiya etiladi.
 - **Exam hamma tashkilot uchun:** maktablar va o'quv markazlarda ham imtihon bo'ladi; natijalardan o'quvchi o'zlashtirishi dinamikasi shakllantiriladi (ma'lumot yig'iladi). Exam ko'p tashkilotli bo'ladi (maktab/tashkilot bo'yicha ajratish).
 - **Server:** hozircha DigitalOcean'da yangi droplet olib ishga tushiriladi. Ota-ona va ustozlarga berishdan oldin (to'liq taqdimotdan keyin) founderning yakuniy serveriga (o'z serveri/boshqa hosting) ko'chiriladi. Shuning uchun deploy skripti ko'chiriladigan (bitta buyruq, `pg_dump` + media) bo'lishi kerak. Biometrik (yuz) ma'lumot lokalizatsiyasi bo'yicha huquqshunos xulosasi kerak.
+
+## 9. Rollar va ruxsatlar (2026-11-23 — 2026-11-26, rollar bo'yicha sharhdan)
+- **Founder hech kimga ko'rinmaydi:** quyi xodimlar ro'yxatida, jurnalda va xodim kartasida founder va uning ishlari ko'rsatilmaydi. Tashkilot va filial qo'shish — faqat founder.
+- **Yangi filial avtomatik:** tashkilotning hamma filialini ko'radigan xodimlarga (markaz direktori, hisobchi) yangi filial o'zi qo'shiladi; bitta filialdagi xodim va ustozlarga qo'shilmaydi.
+- **«Filial rahbari»** — o'z filialida kundalik boshqaruv. Narx, chegirma, to'lovni bekor qilish, xarajat/oylik, jurnal — markazda (founder). **Sabab:** narx markaz bo'yicha bir xil; to'lovni bekor qilish — o'g'rilik xavfi.
+- **O'quv markazda guruhdan-guruhga o'tkazish — faqat filial rahbari** (`students.move`, 2026-11-26). Maktab va bog'chada sinf o'zgartirish oddiy tahrir.
+
+## 10. Oylik (2026-11-23, yangilandi 2026-11-26)
+- Oylik ustoz/xodim qo'shishda kiritiladi, kartada o'zgartiriladi («qaysi oydan» — eski oylar o'zgarmaydi).
+- **Avans — summasi qo'lda** (hisobchi yoki rahbar yozadi), foiz bilan rejalanmaydi. Avans kuni tashkilot bo'yicha (standart 15), yakuniy hisob — oyning oxirgi kuni. Eslatma bosh sahifada.
+- Ko'p filialda ishlovchi: foiz — har filialga, **qat'iy oylik — faqat birinchi filialga** (ikki marta hisoblanmasin). Tasdiqlangan.
+
+## 11. Bog'cha galereyasi (2026-11-26)
+- Albom (guruh, nom, sana) va rasmlar; **har rasmda kim borligi qo'lda belgilanadi**. Ota-ona faqat o'z farzandi belgilangan rasmni ko'radi; belgilanmagan rasm hech kimga ko'rinmaydi. Fayllar ochiq emas — ruxsat tekshiradigan view orqali.
+- Yuklaydiganlar: tarbiyachi (ustoz ilovasidan, faqat o'z guruhi), «Fotograf» lavozimi (faqat galereya), direktor / filial rahbari.
+- Belgilangach ota-onaga Telegram xabari — bir albom bo'yicha bolaga bitta xabar (spam bo'lmasin).
+- **Video yo'q** — videolar serverni tez to'ldiradi (founder qarori). Rasmlar 1600 px gacha kichraytiriladi (~200–400 KB).

@@ -34,4 +34,4 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Avans summasi qo'lda (foiz olib tashlandi); ko'p filialli ustozda qat'iy oylik birinchi filialga — tasdiqlandi
 - [x] Galereya: tarbiyachi o'z telefonidan (ustoz ilovasidan) rasm yuklaydi
 - [x] Galereya: yangi rasm belgilanganda ota-onaga Telegram xabari; «Fotograf» lavozimi
-- [ ] Galereya: video — server diski va tarmoq bo'yicha qaror kerak
+- [x] Galereya: video qilinmaydi (founder qarori — server diski)
