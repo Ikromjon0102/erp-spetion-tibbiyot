@@ -91,3 +91,9 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Yuklaydiganlar: tarbiyachi (ustoz ilovasidan, faqat o'z guruhi), «Fotograf» lavozimi (faqat galereya), direktor / filial rahbari.
 - Belgilangach ota-onaga Telegram xabari — bir albom bo'yicha bolaga bitta xabar (spam bo'lmasin).
 - **Video yo'q** — videolar serverni tez to'ldiradi (founder qarori). Rasmlar 1600 px gacha kichraytiriladi (~200–400 KB).
+
+## 12. Domen va server (2026-11-26)
+- **spetion.uz** — landing sahifa. **my.spetion.uz** — hamma tashkilot uchun yagona tizim (panel, ustoz va ota-ona ilovasi, Telegram Mini App). «kundalik.spetion.uz» rad etildi: davlat elektron kundaligi (kundalik.com) bilan adashtirish xavfi.
+- **med.spetion.uz saqlanadi:** ota-ona va ustozlarga tarqatilgan. Ko'chirish kuni DNS yangi serverga o'tkaziladi va nginx 301 bilan my.spetion.uz ga (yo'li bilan) yo'naltiradi; foydalanuvchi bir marta qayta kiradi.
+- Server: DigitalOcean droplet 46.101.207.23 — 2 CPU / 2 GB / 60 GB (2026-11-26 kattalashtirildi). Gunicorn 3 worker. Galereya yuklash yo'llarida nginx 400 MB / 300 s.
+- med-new.spetion.uz — sinov manzili sifatida vaqtincha qoladi.
