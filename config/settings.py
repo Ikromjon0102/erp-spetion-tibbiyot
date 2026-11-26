@@ -194,7 +194,7 @@ SESSION_COOKIE_AGE = 30 * 24 * 3600
 # Telegram bot (token .env da)
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
 TELEGRAM_SYNC = 'test' in sys.argv
-SITE_URL = os.environ.get('SITE_URL', 'https://my.spetion.uz')   # Mini App manzili
+SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App manzili (ota-onalarda shu; ko'chirish kuni .env da my.spetion.uz)
 
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)
 EXAM_API_URL = os.environ.get('EXAM_API_URL', '')

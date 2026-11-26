@@ -337,3 +337,20 @@ class MoveBetweenGroupsTests(Base):
         self.client.post(reverse('panel:student_edit', args=[s.pk]), {'last_name': 'C', 'first_name': 'B', 'group': b.pk})
         s.refresh_from_db()
         self.assertEqual(s.group, b)
+
+
+class DeviceBranchTests(Base):
+    """Qurilma qo'shishda filial tanlanadi (founder boshqa tashkilot uchun qo'shsa, birinchi filialiga tushib qolmasin)."""
+
+    def test_owner_picks_branch_and_cannot_pick_foreign(self):
+        from access.models import Device
+        self.client.force_login(self.owner)
+        self.client.post(reverse('panel:device_add'), {'name': 'Kirish-1', 'direction': 'in', 'branch': self.c2.pk,
+                                                       'port': 80, 'username': 'admin', 'is_active': 'on'})
+        self.assertEqual(Device.objects.get(name='Kirish-1').branch, self.c2)
+        d = self.staff('dir', ['devices.view', 'devices.manage'], self.c1)
+        self.client.force_login(d)
+        r = self.client.post(reverse('panel:device_add'), {'name': 'X', 'direction': 'in', 'branch': self.b_school.pk,
+                                                           'port': 80, 'username': 'admin', 'is_active': 'on'})
+        self.assertFalse(Device.objects.filter(name='X').exists())
+        self.assertEqual(r.status_code, 200)

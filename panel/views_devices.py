@@ -32,7 +32,18 @@ class DeviceForm(forms.ModelForm):
 
     class Meta:
         model = Device
-        fields = ['name', 'direction', 'host', 'port', 'use_https', 'username', 'password', 'is_active']
+        fields = ['name', 'direction', 'branch', 'host', 'port', 'use_https', 'username', 'password', 'is_active']
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # qurilma qaysi filialda turadi — skanlar shu filial odamlari bilan solishtiriladi (ko'p tashkilotda xato tushmasin)
+        from org.scope import branches_for
+        qs = branches_for(user).select_related('organization').order_by('organization__name', 'order', 'name')
+        f = self.fields['branch']
+        f.queryset, f.required, f.empty_label = qs, True, None
+        f.label_from_instance = lambda b: f'{b.organization.label} · {b.name}'
+        if not self.instance.pk and user is not None:
+            f.initial = pick_branch(user).pk
 
     def clean_password(self):
         return self.cleaned_data['password'] or (self.instance.password if self.instance.pk else '')
@@ -217,12 +228,9 @@ def access_settings(request):
 @panel_required('devices.manage')
 def device_edit(request, pk=None):
     obj = get_object_or_404(scope_devices(Device.objects.all(), request.user), pk=pk) if pk else None
-    form = DeviceForm(request.POST or None, instance=obj)
+    form = DeviceForm(request.POST or None, instance=obj, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        d = form.save(commit=False)
-        if not obj:
-            d.branch = pick_branch(request.user)
-        d.save()
+        d = form.save()
         audit.log(request, "Qurilmani sozladi" if obj else "Qurilma qo'shdi", d, label=str(d), details={'manzil': d.host or '—'}, target_type='device')
         messages.success(request, 'Saqlandi')
         return redirect('panel:devices')

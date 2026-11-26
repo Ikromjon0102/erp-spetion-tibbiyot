@@ -35,3 +35,12 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Galereya: tarbiyachi o'z telefonidan (ustoz ilovasidan) rasm yuklaydi
 - [x] Galereya: yangi rasm belgilanganda ota-onaga Telegram xabari; «Fotograf» lavozimi
 - [x] Galereya: video qilinmaydi (founder qarori — server diski)
+
+## Ko'chirish (my.spetion.uz) — 2026-11-26
+
+- [x] my.spetion.uz: DNS, SSL, hostlar, yangi SECRET_KEY, gunicorn 3 worker, galereya yuklash chegarasi
+- [x] Terminal sozlovchi uchun yo'riqnoma (`docs/terminallar-yoriqnoma.md`); qurilmada filial tanlash
+- [ ] `tools/push_faces.py` — yangi server Postgres'da: rasm yuborish uchun nusxa olish usulini moslash (ko'chirishdan oldin)
+- [ ] Founder javoblari: Excel (narx/chegirma, «Grand/Free/tibbiyot/bol-y/Yozda», sentabr–noyabr to'lovlari, kirill ismlar)
+- [ ] Mock ma'lumotlarni o'chirish; Tibbiyot maktabini eski serverdan ko'chirish; Asosiy maktabni Excel'dan yuklash
+- [ ] Ko'chirish kuni: med.spetion.uz sertifikatini nusxalash → DNS → `nginx-med-legacy.conf`; ALLOWED_HOSTS ga med.spetion.uz; BOT_TOKEN va webhook; SITE_URL=my.spetion.uz; terminal tekshiruvi

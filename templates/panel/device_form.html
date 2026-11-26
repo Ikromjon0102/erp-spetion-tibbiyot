@@ -5,13 +5,14 @@
 <form method="post" class="card" style="max-width:520px">{% csrf_token %}
   {% include 'panel/_field.html' with f=form.name %}
   {% include 'panel/_field.html' with f=form.direction %}
+  {% include 'panel/_field.html' with f=form.branch %}
   {% include 'panel/_field.html' with f=form.host %}
   {% include 'panel/_field.html' with f=form.port %}
   <div class="field"><label>{{ form.use_https }} {{ form.use_https.label }}</label></div>
   {% include 'panel/_field.html' with f=form.username %}
   {% include 'panel/_field.html' with f=form.password %}
   <div class="field"><label>{{ form.is_active }} {{ form.is_active.label }}</label></div>
-  {% if obj %}<div class="hint" style="margin-bottom:12px">Hodisalarni qabul qilish manzili (qurilmada HTTP listening uchun): <span class="mono">{{ request.scheme }}://{{ request.get_host }}{{ obj.push_path }}</span></div>{% endif %}
+  {% if obj %}<div class="hint" style="margin-bottom:12px">Terminalda «HTTP Listening» uchun: Host <span class="mono">{{ request.get_host }}</span>, HTTPS, port 443, URL <span class="mono">{{ obj.push_path }}</span>, JSON. Batafsil: docs/terminallar-yoriqnoma.md</div>{% else %}<div class="hint" style="margin-bottom:12px">Saqlangach shu sahifada terminalga yoziladigan manzil (token) chiqadi.</div>{% endif %}
   <button class="btn primary"><svg class="ic"><use href="#p-check"/></svg>Saqlash</button> <a class="btn" href="{% url 'panel:devices' %}"><svg class="ic"><use href="#p-x"/></svg>Bekor qilish</a>
 </form>
 {% endblock %}

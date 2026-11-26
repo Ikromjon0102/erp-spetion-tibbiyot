@@ -2,6 +2,14 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Production tayyorgarligi: my.spetion.uz (2026-11-26)
+- **my.spetion.uz** — yagona tizim manzili (SSL). Server 2 CPU / 2 GB: gunicorn 3 worker. med-new.spetion.uz sinov manzili sifatida qoladi.
+- **Galereyaga ko'p rasm:** nginx 12 MB chegarasi bir yo'la bir nechta telefon rasmini rad etardi — galereya yo'llarida 400 MB / 300 s; JPEG kichraytirib o'qiladi (tezroq, kam xotira).
+- **Qurilma qo'shishda filial tanlanadi** (avval qo'shgan xodimning birinchi filialiga tushardi — founder boshqa tashkilot uchun qo'shsa xato filial). Sozlash sahifasida terminal uchun aniq ko'rsatma (Host, HTTPS, 443, URL, JSON).
+- **Telegram «Batafsil» tugmasi** hozircha med.spetion.uz da qoladi (ota-onalar ishlatmoqda); ko'chirish kuni `.env` da `SITE_URL` o'zgaradi.
+- `deploy/droplet/nginx-med-legacy.conf`: ko'chirish kuni med.spetion.uz — terminal voqealari (`/api/access/`) va Telegram webhook to'g'ridan-to'g'ri qabul qilinadi (terminallarni qayta sozlash shart emas), qolgan sahifalar my.spetion.uz ga 301.
+- **`docs/terminallar-yoriqnoma.md`** — terminal sozlovchi uchun: ko'chirish kuni tekshiruv, yangi terminal ulash (panel → token → HTTP Listening), muammolar jadvali.
+
 ## Taqdimotdan keyingi takliflar (2026-11-26)
 - **Tarbiyachi telefondan yuklaydi:** ustoz ilovasida «Rasmlar» tugmasi (faqat bog'cha guruhi bor ustozda). `/ustoz/galereya/`: albom ochish, rasmni tanlash yoki suratga olish, rasmdagi bolalarni belgilash — faqat o'z guruhlari. Guruh tarbiyachisi o'z albomidagi rasmlarni ko'radi.
 - **Telegram xabari:** belgilar saqlangach har yangi belgilangan bolaning ota-onasiga: «📸 Bobur — «Kuzgi sayr» (Quyoshcha): 2 ta yangi rasm», «Batafsil» — ilovadagi «Rasmlar». Bir albom bo'yicha bolaga bitta xabar (`GalleryNotice`), qayta saqlashda takrorlanmaydi.
