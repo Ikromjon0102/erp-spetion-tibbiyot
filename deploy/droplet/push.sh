@@ -14,7 +14,7 @@ echo ">> build exam frontend"
 
 echo ">> ship ERP"
 tar -C "$ERP_DIR" --exclude='.git' --exclude='*.sqlite3' --exclude='db.backup*' --exclude='media' --exclude='__pycache__' \
-    --exclude='*_credentials.csv' --exclude='tunl.exe' --exclude='datalar' --exclude='rasmlar' --exclude='staticfiles' -cf - . \
+    --exclude='*_credentials.csv' --exclude='tunl.exe' --exclude='datalar' --exclude='rasmlar' --exclude='staticfiles' --exclude='./dist' --exclude='./build' -cf - . \
   | $SSH 'tar -C /var/www/erp/app -xf - && chown -R erp:erp /var/www/erp'
 
 echo ">> ship Exam backend + frontend"
