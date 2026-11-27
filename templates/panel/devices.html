@@ -24,7 +24,9 @@
   {% if manage and pair_branches %}<form method="post" action="{% url 'panel:agent_code' %}" class="filters" style="padding:8px">{% csrf_token %}
     {% if pair_branches|length > 1 %}<select name="branch" style="width:auto">{% for b in pair_branches %}<option value="{{ b.pk }}">{{ b.organization.label }} · {{ b.name }}</option>{% endfor %}</select>
     {% else %}<input type="hidden" name="branch" value="{{ pair_branches.0.pk }}">{% endif %}
-    <button class="btn primary"><svg class="ic"><use href="#p-plus"/></svg>Ulash kodi olish</button></form>{% endif %}
+    <button class="btn primary"><svg class="ic"><use href="#p-plus"/></svg>Ulash kodi olish</button>
+    {% if agent_release %}<a class="btn" href="{% url 'panel:agent_download' %}"><svg class="ic"><use href="#p-download"/></svg>Agentni yuklab olish <span class="muted">v{{ agent_release.version }}</span></a>{% endif %}</form>
+  <p class="muted" style="margin:0 8px 8px;font-size:13px">O'rnatish: binodagi kompyuterda agentni yuklab oling va ishga tushiring. Windows ogohlantirsa, «Batafsil» → «Baribir ishga tushirish» tugmasini bosing. Keyin ulash kodini kiriting, terminallarni qidirib biriktiring va terminal parolini yozing.</p>{% endif %}
 </div>
 <div class="card"><h2>Chiqish xabarlari <small class="muted">{% if leave_org %}{{ leave_org.label }}{% else %}umumiy vaqt{% endif %}</small></h2>
   <p class="muted" style="margin:4px 0 10px">Ota-onaga «maktabdan chiqdi» xabari va «Uyga ketdi» holati shu vaqtdan keyin beriladi. Undan oldingi chiqish skanlari tanaffus hisoblanadi («Tashqarida»). Xabar kuniga bitta, takroriy skanlar xabar bermaydi. Barcha skanlar saqlanadi.{% if not leave_org and scope and scope.multi_org %} Bu umumiy vaqt; tashkilotga alohida vaqt qo'yish uchun «Ish maydoni»dan tashkilotni tanlang.{% endif %}</p>

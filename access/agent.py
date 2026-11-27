@@ -8,6 +8,7 @@ Server maktabning ichki tarmog'iga yeta olmaydi, shuning uchun rasmlarni termina
   GET  /api/access/agent/manifest/<qurilma tokeni>/    — shu terminalda bo'lishi kerak odamlar (Face ID, ism, rasm xeshi) va holat
   GET  /api/access/agent/photo/<user id>/              — rasm (JPEG)
   POST /api/access/agent/report/<qurilma tokeni>/      — yuborish natijasi (FaceSync va qurilma izohi yangilanadi)
+  GET  /api/access/agent/release/[file/]               — agentning oxirgi versiyasi (o'zini yangilash uchun)
 
 Kirish: `Authorization: Bearer <kalit>`.
   * Filial kaliti (Agent, panelda ulash kodi orqali olinadi) — faqat o'z filialining terminallari va odamlari. Asosiy usul.
@@ -220,3 +221,40 @@ def report(request, token):
     if note:
         Device.objects.filter(pk=device.pk).update(last_sync_at=now, last_sync_note=note)
     return JsonResponse({'ok': True, 'saved': saved})
+
+
+# ---- agentning yangi versiyasi --------------------------------------------------------------------------------------------
+
+def release_info():
+    """AGENT_RELEASE_DIR/SpetionAgent.json: {'version', 'sha256'} va SpetionAgent.exe. Yo'q bo'lsa None."""
+    d = settings.AGENT_RELEASE_DIR
+    try:
+        info = json.loads((d / 'SpetionAgent.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    exe = d / 'SpetionAgent.exe'
+    return {**info, 'path': exe, 'size': exe.stat().st_size} if exe.exists() else None
+
+
+def release_response(info):
+    from django.http import FileResponse
+    return FileResponse(open(info['path'], 'rb'), as_attachment=True, filename='SpetionAgent.exe',
+                        content_type='application/vnd.microsoft.portable-executable')
+
+
+@require_GET
+@_guard
+def release(request):
+    info = release_info()
+    if not info:
+        return JsonResponse({'ok': True, 'version': None})
+    return JsonResponse({'ok': True, 'version': info['version'], 'sha256': info['sha256'], 'size': info['size']})
+
+
+@require_GET
+@_guard
+def release_file(request):
+    info = release_info()
+    if not info:
+        raise Http404
+    return release_response(info)

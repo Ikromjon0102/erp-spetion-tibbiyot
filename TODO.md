@@ -42,7 +42,8 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Terminal sozlovchi uchun yo'riqnoma (`docs/terminallar-yoriqnoma.md`); qurilmada filial tanlash
 - [x] `tools/push_faces.py` — server API bilan (baza nusxasisiz), natija panelga qaytadi
 - [x] Agent 1-bosqich (server): ulash kodi, filial kaliti, heartbeat va iz, panelda agentlar holati, `check_agents` ogohlantirishi
-- [ ] Agent 2-bosqich: Windows dasturi (fonda, tray, terminallarni tarmoqdan topish, kirish/chiqish biriktirish, avto-sync, DPAPI, o'zini yangilash, o'rnatuvchi); avval Tibbiyot va Asosiy maktabda
+- [x] Agent 2-bosqich: Windows dasturi `SpetionAgent.exe` (fonda, tray, SADP qidiruv, biriktirish, avto-sync, DPAPI, o'zini yangilash)
+- [ ] Agentni binoda sinash: Tibbiyot (4 terminal), keyin Asosiy maktab; so'ng bog'cha va markaz terminallari kelgach
 - [ ] Founder javoblari: Excel (narx/chegirma, «Grand/Free/tibbiyot/bol-y/Yozda», sentabr–noyabr to'lovlari, kirill ismlar)
 - [ ] Mock ma'lumotlarni o'chirish; Tibbiyot maktabini eski serverdan ko'chirish; Asosiy maktabni Excel'dan yuklash
 - [ ] Ko'chirish kuni: med.spetion.uz sertifikatini nusxalash → DNS → `nginx-med-legacy.conf`; ALLOWED_HOSTS ga med.spetion.uz; BOT_TOKEN va webhook; SITE_URL=my.spetion.uz; terminal tekshiruvi

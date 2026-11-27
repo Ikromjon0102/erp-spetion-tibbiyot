@@ -53,6 +53,7 @@ urlpatterns = [
     path('qurilmalar/sync/', views_devices.device_sync, name='devices_sync'),
     path('qurilmalar/rasmlar-zip/', views_devices.faces_zip, name='faces_zip'),
     path('qurilmalar/agent/kod/', views_devices.agent_code, name='agent_code'),
+    path('qurilmalar/agent/yuklab-olish/', views_devices.agent_download, name='agent_download'),
     path('qurilmalar/agent/<int:pk>/uzish/', views_devices.agent_revoke, name='agent_revoke'),
     path('oquvchilar/<int:pk>/chiqarish/', views_students.student_leave, name='student_leave'),
     path('oquvchilar/<int:pk>/qaytarish/', views_students.student_restore, name='student_restore'),

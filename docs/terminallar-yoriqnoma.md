@@ -75,9 +75,9 @@ ichida turadi. Menyu nomi dasturiy ta'minot versiyasiga qarab biroz farq qilishi
 
 ### 5. Yuz rasmlarini terminalga yuklang
 O'quvchi, ustoz va xodimlarning rasmi panelda yuklanadi. Rasm va Face ID avtomatik tayyorlanadi.
-Terminalga yuborish **maktab tarmog'idagi kompyuterdan** maxsus skript bilan qilinadi: server maktab ichki tarmog'iga yeta olmaydi.
-Buni dasturchi yoki texnik xodim `docs/terminallar.md` dagi tartib bo'yicha bajaradi.
-Skript (`tools/push_faces.py`) serverdan kerakli ro'yxat va rasmlarni o'zi oladi; natija panelda «Qurilmalar»da ko'rinadi.
+Terminalga yuborishni **binodagi kompyuterdagi Spetion agent** qiladi: server maktab ichki tarmog'iga yeta olmaydi.
+Har binoda bir marta o'rnatiladi (panel → Qurilmalar → «Ulash kodi olish» va «Agentni yuklab olish»; qadamlar —
+`tools/spetion_agent/README.md`). Shundan keyin yangi rasmlar bir daqiqa ichida o'zi yuboriladi; natija panelda «Qurilmalar»da.
 
 ### 6. Tekshiring
 **A** bo'limidagi tekshiruv kabi: bitta odam o'tsin → panelda «Oxirgi signal» va «Kunlik nazorat».
@@ -89,7 +89,7 @@ Skript (`tools/push_faces.py`) serverdan kerakli ro'yxat va rasmlarni o'zi oladi
 | Belgi | Sabab | Nima qilish |
 |---|---|---|
 | Panelda «Oxirgi signal» eski (5 daqiqadan ko'p) | Terminalda internet yo'q yoki manzil xato | Terminaldan internet borligini tekshiring. HTTP Listening'da Host, Port 443, HTTPS va URL'ni qayta tekshiring |
-| Signal bor, lekin odam «keldi» bo'lmayapti | Yuz terminalda yo'q yoki Face ID mos emas | Terminalda shu odam bormi? Rasm yuborish skriptining `status` buyrug'ini ishga tushiring |
+| Signal bor, lekin odam «keldi» bo'lmayapti | Yuz terminalda yo'q yoki Face ID mos emas | Terminalda shu odam bormi? Agent oynasidagi «Terminalda» ustuni (yoki panel → Qurilmalar) |
 | Odam boshqa filialda ko'rinyapti | Panelda qurilmaning filiali xato | Qurilmalar → qurilma → filialni to'g'rilang |
 | Vaqt 5 soatga farq qiladi | Vaqt zonasi xato | 3-qadam: GMT+05:00 Tashkent va NTP |
 | Bitta terminal ishlamayapti, qolganlari ishlayapti | Shu terminalning tokeni yoki URL'i xato | 1-qadamdagi manzilni qaytadan nusxalab yozing (bo'sh joy va oxiridagi `/` ham kerak) |

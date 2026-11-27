@@ -18,3 +18,7 @@ tunl.exe
 # haqiqiy ro'yxatlar va yuz rasmlari (shaxsiy ma'lumot) — hech qachon git'ga qo'shilmaydi
 datalar/
 rasmlar/
+
+# Windows agent yig'ish natijasi
+/dist/
+/build/

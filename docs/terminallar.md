@@ -81,7 +81,7 @@ python tools/push_faces.py status      # tekshiring: foydalanuvchi soni = yuz so
 
 ## Binodagi agent (filial kaliti, holat, ogohlantirish)
 
-Har binoda bitta agent — o'sha binodagi barcha terminallar uchun (Windows dasturi — 2-bosqich, hozircha `push_faces.py`).
+Har binoda bitta agent — o'sha binodagi barcha terminallar uchun: **`SpetionAgent.exe`** (o'rnatish va ishlash tartibi — `tools/spetion_agent/README.md`). `tools/push_faces.py` — zaxira/qo'lda usul.
 - Ulash: panel → Qurilmalar → «Ulash kodi olish» (8 raqam, 24 soat, bir marta). Kod faqat xeshi bilan saqlanadi.
 - Agent har daqiqa `POST /api/access/agent/heartbeat/` yuboradi: terminallar holati (IP, MAC, onlayn, odam/yuz soni, xato).
   Javobdagi `stamp` (filial izi) o'zgarsa — sync. Panelda: agent onlayn/aloqa yo'q, terminal qatorida agent ko'rgan holat.

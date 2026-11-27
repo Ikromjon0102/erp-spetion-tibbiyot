@@ -203,6 +203,7 @@ SITE_URL = os.environ.get('SITE_URL', 'https://med.spetion.uz')   # Mini App man
 
 # Exam platformasi bilan bog'lanish (bo'sh bo'lsa o'chiq)
 FACE_AGENT_TOKEN = os.environ.get('FACE_AGENT_TOKEN', '')      # tools/push_faces.py (maktab kompyuteri) uchun API kaliti
+AGENT_RELEASE_DIR = Path(os.environ.get('AGENT_RELEASE_DIR') or BASE_DIR.parent / 'agent')   # SpetionAgent.exe + SpetionAgent.json (deploy/droplet/push_agent.sh)
 EXAM_API_URL = os.environ.get('EXAM_API_URL', '')
 EXAM_API_KEY = os.environ.get('EXAM_API_KEY', '')
 

@@ -2,6 +2,13 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Binodagi agent — 2-bosqich: Windows dasturi (2026-11-27)
+- **`SpetionAgent.exe`** (`tools/spetion_agent/`, yo'riqnoma `tools/spetion_agent/README.md`): ulash kodi bilan filialga bog'lanadi; tarmoqdagi Hikvision terminallarini o'zi topadi (SADP, parolsiz; bo'lmasa IP qo'lda) va panel terminallariga biriktiriladi; terminal paroli bir marta kiritiladi.
+- Fonda ishlaydi (soat yonida ikonka), Windows bilan birga ishga tushadi, bitta nusxa. Har daqiqa heartbeat; filial izi o'zgarsa — sync; xato bo'lsa 30 daqiqada qayta; IP o'zgarsa MAC bo'yicha topadi.
+- Kalit va parol DPAPI bilan shifrlangan. Jurnal `%LOCALAPPDATA%\SpetionAgent\agent.log`.
+- **O'zini yangilaydi:** server `/api/access/agent/release/` (versiya + sha256); `deploy/droplet/push_agent.sh` bilan yangi versiya joylanadi. Panel → Qurilmalar: «Agentni yuklab olish».
+- Imzosiz (birinchi ishga tushirishda Windows ogohlantiradi — «Baribir ishga tushirish»).
+
 ## Binodagi agent — 1-bosqich: server tomoni (2026-11-27)
 - Reja: 20 terminal, 8 bino (Tibbiyot 4, Asosiy maktab 4, Bog'cha 2, Markaz 2 + 4 filial × 2). Har binoda bitta agent (Windows, fonda) o'sha binodagi terminallarga rasm yuboradi. Agent dasturi — 2-bosqich.
 - **Ulash kodi:** panel → Qurilmalar → «Ulash kodi olish» (filial tanlanadi). 8 raqamli kod, 24 soat, bir marta ishlaydi, bir marta ko'rsatiladi; bazada faqat xeshi. Agent kodni kiritib **filial kalitini** oladi (`POST /api/access/agent/pair/`, IP bo'yicha soatiga 10 urinish).

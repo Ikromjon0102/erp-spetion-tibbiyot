@@ -195,7 +195,7 @@ def devices(request):
     errors = list(FaceSync.objects.filter(ok=False, device__in=devices_qs).select_related('user', 'device').order_by('-updated_at')[:15])
     pair_branches = list(branches_for(request.user).select_related('organization').order_by('organization__name', 'order', 'name'))
     return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted,
-                                                  'agents': agents, 'pair_branches': pair_branches,
+                                                  'agents': agents, 'pair_branches': pair_branches, 'agent_release': _release(),
                                                   'new_code': request.session.pop('agent_code', None),
                                                   'leave_org': _leave_target(request)[0], 'leave_from': _leave_target(request)[1]})
 
@@ -342,3 +342,18 @@ def agent_revoke(request, pk):
     audit.log(request, 'Agentni uzdi', label=str(agent), target_type='device')
     messages.success(request, f"{agent} uzildi: uning kaliti endi ishlamaydi.")
     return redirect('panel:devices')
+
+
+def _release():
+    from access.agent import release_info
+    return release_info()
+
+
+@panel_required('devices.manage')
+def agent_download(request):
+    """Binodagi kompyuterga o'rnatish uchun agent dasturi."""
+    from access.agent import release_response
+    info = _release()
+    if not info:
+        raise Http404
+    return release_response(info)
