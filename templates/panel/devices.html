@@ -8,6 +8,24 @@
   <div class="stat"><span class="ico"><svg class="ic"><use href="#p-image"/></svg></span><div class="k">Ustozlar rasmi</div><div class="v">{{ stats.teachers_photo }}<small class="muted"> / {{ stats.teachers }}</small></div><div class="s">rasmi yuklangan</div></div>
   <div class="stat good"><span class="ico"><svg class="ic"><use href="#p-check"/></svg></span><div class="k">Qurilmaga tayyor</div><div class="v">{{ stats.ready }}</div><div class="s">rasm va Face ID bor</div></div>
 </div>
+{% if new_code %}<div class="card" style="border:1px solid var(--good,#22c55e)"><h2>Ulash kodi: <span class="mono" style="font-size:28px;letter-spacing:2px">{{ new_code.code }}</span></h2>
+  <p class="muted" style="margin:4px 0 0">{{ new_code.branch }} uchun. Binodagi kompyuterda Spetion agentini oching va shu kodni kiriting. Kod {{ new_code.hours }} soat amal qiladi va bir marta ishlatiladi. Bu sahifadan chiqqach, kod qayta ko'rsatilmaydi.</p></div>{% endif %}
+<div class="card" style="padding:6px 10px"><h2 style="padding:8px 8px 0;margin:0">Binodagi kompyuterlar (agent)</h2>
+  <p class="muted" style="margin:4px 8px 8px">Server maktab tarmog'iga kira olmaydi. Rasmlarni terminallarga har bir binodagi kompyuterda ishlaydigan agent yuboradi. Agent faqat o'z filialining terminallari va odamlarini ko'radi.</p>
+  <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Kompyuter</th><th>Filial</th><th>Holat</th><th></th></tr></thead><tbody>
+  {% for a in agents %}<tr>
+    <td><b>{{ a.name|default:"Agent" }}</b>{% if a.version %} <span class="muted" style="font-size:12px">v{{ a.version }}</span>{% endif %}</td>
+    <td>{{ a.branch.organization.label }} · {{ a.branch.name }}</td>
+    <td>{% if a.online %}<span class="badge">onlayn</span>{% else %}<span class="badge warn">aloqa yo'q</span>{% endif %}
+      <div class="muted" style="font-size:12px">oxirgi aloqa: {{ a.last_seen_at|date:"d.m H:i"|default:"—" }}</div></td>
+    <td style="text-align:right">{% if manage %}<form method="post" action="{% url 'panel:agent_revoke' a.pk %}" style="display:inline" data-confirm="Agent uzilsinmi? Uning kaliti darhol ishlamay qoladi." data-confirm-ok="Uzish" data-confirm-danger>{% csrf_token %}<button class="btn">Uzish</button></form>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="4"><div class="empty">Hali ulangan agent yo'q</div></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if manage and pair_branches %}<form method="post" action="{% url 'panel:agent_code' %}" class="filters" style="padding:8px">{% csrf_token %}
+    {% if pair_branches|length > 1 %}<select name="branch" style="width:auto">{% for b in pair_branches %}<option value="{{ b.pk }}">{{ b.organization.label }} · {{ b.name }}</option>{% endfor %}</select>
+    {% else %}<input type="hidden" name="branch" value="{{ pair_branches.0.pk }}">{% endif %}
+    <button class="btn primary"><svg class="ic"><use href="#p-plus"/></svg>Ulash kodi olish</button></form>{% endif %}
+</div>
 <div class="card"><h2>Chiqish xabarlari <small class="muted">{% if leave_org %}{{ leave_org.label }}{% else %}umumiy vaqt{% endif %}</small></h2>
   <p class="muted" style="margin:4px 0 10px">Ota-onaga «maktabdan chiqdi» xabari va «Uyga ketdi» holati shu vaqtdan keyin beriladi. Undan oldingi chiqish skanlari tanaffus hisoblanadi («Tashqarida»). Xabar kuniga bitta, takroriy skanlar xabar bermaydi. Barcha skanlar saqlanadi.{% if not leave_org and scope and scope.multi_org %} Bu umumiy vaqt; tashkilotga alohida vaqt qo'yish uchun «Ish maydoni»dan tashkilotni tanlang.{% endif %}</p>
   {% if manage %}<form method="post" action="{% url 'panel:access_settings' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">{% csrf_token %}<input type="time" name="leave_from" value="{{ leave_from|time:'H:i' }}" required style="width:auto"> <button class="btn primary">Saqlash</button></form>
@@ -17,17 +35,19 @@
   <div class="tbl-wrap"><table class="tbl stack"><thead><tr><th>Qurilma</th><th>Manzil</th><th>Oxirgi signal</th><th>Rasmlar</th><th></th></tr></thead><tbody>
   {% for r in rows %}<tr>
     <td><b>{{ r.d.name }}</b> <span class="badge gray">{{ r.d.get_direction_display }}</span>{% if not r.d.is_active %} <span class="badge gray">nofaol</span>{% endif %}</td>
-    <td>{% if r.d.host %}<span class="mono">{{ r.d.host }}:{{ r.d.port }}</span>{% else %}<span class="badge warn">manzil kiritilmagan</span><div class="muted" style="font-size:12px">rasm yuborib bo'lmaydi</div>{% endif %}</td>
+    <td>{% if r.agent %}<span class="mono">{{ r.agent.ip|default:"—" }}</span> {% if r.agent.online and r.agent_online %}<span class="badge">agent ko'ryapti</span>{% else %}<span class="badge warn">agent ko'rmayapti</span>{% endif %}
+      {% if r.agent.users is not None %}<div class="muted" style="font-size:12px">terminalda {{ r.agent.users }} kishi, {{ r.agent.faces }} yuz</div>{% endif %}{% if r.agent.error %}<div class="muted" style="font-size:12px">{{ r.agent.error }}</div>{% endif %}
+    {% elif r.d.host %}<span class="mono">{{ r.d.host }}:{{ r.d.port }}</span>{% elif r.pending is not None %}<span class="muted">agent orqali</span>{% else %}<span class="badge warn">agent ulanmagan</span><div class="muted" style="font-size:12px">rasm yuborib bo'lmaydi</div>{% endif %}</td>
     <td class="muted">{{ r.d.last_seen|date:"d.m.Y H:i"|default:"hali signal yo'q" }}</td>
-    <td>{% if r.d.host %}{% if r.pending %}<span class="badge warn">{{ r.pending }} ta yuborilishi kerak</span>{% else %}<span class="badge">hammasi yuborilgan</span>{% endif %}{% if r.failed %} <span class="badge bad">{{ r.failed }} xato</span>{% endif %}
+    <td>{% if r.pending is not None %}{% if r.pending %}<span class="badge warn">{{ r.pending }} ta yuborilishi kerak</span>{% else %}<span class="badge">hammasi yuborilgan</span>{% endif %}{% if r.failed %} <span class="badge bad">{{ r.failed }} xato</span>{% endif %}
       {% if r.d.last_sync_at %}<div class="muted" style="font-size:12px">{{ r.d.last_sync_at|date:"d.m H:i" }} · {{ r.d.last_sync_note }}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
     <td style="text-align:right;white-space:nowrap">{% if manage %}
-      <form method="post" action="{% url 'panel:device_test' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn"{% if not r.d.host %} disabled title="Avval «Sozlash»da manzilni kiriting"{% endif %}><svg class="ic"><use href="#p-pulse"/></svg>Tekshirish</button></form>
-      <form method="post" action="{% url 'panel:device_sync' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn"{% if not r.d.host %} disabled title="Avval «Sozlash»da manzilni kiriting"{% endif %}><svg class="ic"><use href="#p-refresh"/></svg>Rasmlarni yuborish</button></form>
+      {% if r.d.host %}<form method="post" action="{% url 'panel:device_test' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-pulse"/></svg>Tekshirish</button></form>
+      <form method="post" action="{% url 'panel:device_sync' r.d.pk %}" style="display:inline">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-refresh"/></svg>Rasmlarni yuborish</button></form>{% endif %}
       <a class="btn" href="{% url 'panel:device_edit' r.d.pk %}"><svg class="ic"><use href="#p-gear"/></svg>Sozlash</a>{% endif %}</td>
   </tr>{% empty %}<tr><td colspan="5"><div class="empty">Qurilmalar yo'q</div></td></tr>{% endfor %}
   </tbody></table></div>
-  {% if manage and rows %}<form method="post" action="{% url 'panel:devices_sync' %}" style="padding:8px">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-refresh"/></svg>Hamma qurilmalarga rasmlarni yuborish (fonda)</button></form>{% endif %}
+  {% if manage and rows and not agents %}<form method="post" action="{% url 'panel:devices_sync' %}" style="padding:8px">{% csrf_token %}<button class="btn"><svg class="ic"><use href="#p-refresh"/></svg>Hamma qurilmalarga rasmlarni yuborish (fonda)</button></form>{% endif %}
 </div>
 {% if errors %}<div class="card" style="padding:6px 10px"><h2 style="padding:8px 8px 0;margin:0">So'nggi xatolar</h2>
   <div class="tbl-wrap"><table class="tbl stack"><tbody>{% for e in errors %}<tr><td><b>{{ e.user.get_full_name|default:e.user.username }}</b> <span class="muted">· {{ e.device.name }}</span></td><td class="muted">{{ e.error }}</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
@@ -35,5 +55,5 @@
   <p class="muted">Fayl nomi — Face ID bo'lsin: <span class="mono">1001.jpg</span>, <span class="mono">7001.png</span> (o'quvchi yoki ustoz Face ID si). Bitta rasm uchun o'quvchi/ustoz kartasidan yuklang.</p>
   <form method="post" action="{% url 'panel:faces_zip' %}" enctype="multipart/form-data" class="filters">{% csrf_token %}<input type="file" name="zip" accept=".zip" required><button class="btn primary"><svg class="ic"><use href="#p-upload"/></svg>Yuklash</button></form>
 </div>{% endif %}
-<p class="hint">Rasm yuklanganda qurilmalarga o'zi yuboriladi. Qurilma manzili, logini va paroli «Sozlash» orqali kiritiladi; server qurilma bilan bir tarmoqda bo'lishi kerak.</p>
+<p class="hint">Rasm yuklanganda binodagi agent uni bir daqiqa ichida ko'radi va terminallarga yuboradi. Natija shu sahifada ko'rinadi.</p>
 {% endblock %}

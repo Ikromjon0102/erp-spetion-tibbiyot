@@ -2,6 +2,15 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Binodagi agent — 1-bosqich: server tomoni (2026-11-27)
+- Reja: 20 terminal, 8 bino (Tibbiyot 4, Asosiy maktab 4, Bog'cha 2, Markaz 2 + 4 filial × 2). Har binoda bitta agent (Windows, fonda) o'sha binodagi terminallarga rasm yuboradi. Agent dasturi — 2-bosqich.
+- **Ulash kodi:** panel → Qurilmalar → «Ulash kodi olish» (filial tanlanadi). 8 raqamli kod, 24 soat, bir marta ishlaydi, bir marta ko'rsatiladi; bazada faqat xeshi. Agent kodni kiritib **filial kalitini** oladi (`POST /api/access/agent/pair/`, IP bo'yicha soatiga 10 urinish).
+- **Filial kaliti** faqat o'z filialining terminallari, ro'yxati va rasmlarini ko'radi (boshqa filial — 404). Bazada sha256. Paneldan «Uzish» — darhol ishlamay qoladi. Umumiy `FACE_AGENT_TOKEN` faqat server administratori uchun qoladi. `tools/push_faces.py` filial kaliti bilan ham ishlaydi.
+- **Heartbeat** (`POST /api/access/agent/heartbeat/`, har daqiqa): agent terminallar holatini yuboradi (IP, MAC, onlayn, terminaldagi odam/yuz soni, xato); javobda filialning qisqa **izi** — kim va qaysi rasm (rasm fayllari o'qilmaydi). Iz o'zgarsa agent sync qiladi.
+- **Panel → Qurilmalar:** «Binodagi kompyuterlar (agent)» — onlayn/aloqa yo'q, oxirgi aloqa, versiya, «Uzish». Har terminal qatorida agent ko'rgan IP, terminaldagi odam/yuz soni. Server to'g'ridan-to'g'ri yeta olmaydigan terminallarda «Tekshirish/Yuborish» tugmalari yashirildi.
+- **Ogohlantirish:** `manage.py check_agents` (cron, har 10 daqiqa, Du–Sh 09:00–17:00): agent 30 daqiqa aloqaga chiqmasa — bir marta xabar, qayta ulansa — xabar (ALERT chat + Telegram'ga ulangan founder).
+- Tuzatildi: xodim rasmini yuklash/o'chirish xato berardi (`_staff_user` chaqiruvi). Cron'dagi `generate_recurring_expenses` `.env` ni o'qimasdi — endi o'qiydi (`setup.sh`).
+
 ## Terminallarga rasm yuborish — yangi server uchun (2026-11-26)
 - `tools/push_faces.py` qayta yozildi: baza nusxasi (sqlite) o'rniga **server API** bilan ishlaydi — kimni qaysi terminalga yuborish kerak, rasmlar, natija (`access/agent.py`: `/api/access/agent/devices|manifest|photo|report/`, kalit `FACE_AGENT_TOKEN`). Natija serverga yoziladi: panel «Qurilmalar»da «yuborilishi kerak» soni va oxirgi sync izohi endi to'g'ri. Nofaol/rasmi olingan odam `sync` da terminaldan o'chadi. Maktab kompyuterida faqat Python + `requests` kerak (Django shart emas).
 - Eski usul ko'chirishgacha `tools/push_faces_sqlite.py` da. `docs/terminallar.md` va yo'riqnoma yangilandi.

@@ -106,7 +106,8 @@ cat > /etc/cron.d/spetion <<'CRON'
 30 21 * * * root /usr/local/bin/spetion-backup >> /var/log/spetion-backup.log 2>&1
 0 23 * * 0 root /usr/local/bin/spetion-restore-test >> /var/log/spetion-backup.log 2>&1
 */5 * * * * root /usr/local/bin/spetion-healthcheck
-10 1 * * * erp cd /var/www/erp/app && /var/www/erp/venv/bin/python manage.py generate_recurring_expenses >> /var/www/erp/cron.log 2>&1
+10 1 * * * erp cd /var/www/erp/app && set -a && . /var/www/erp/.env && set +a && /var/www/erp/venv/bin/python manage.py generate_recurring_expenses >> /var/www/erp/cron.log 2>&1
+*/10 * * * * erp cd /var/www/erp/app && set -a && . /var/www/erp/.env && set +a && /var/www/erp/venv/bin/python manage.py check_agents >> /var/www/erp/cron.log 2>&1
 CRON
 
 echo

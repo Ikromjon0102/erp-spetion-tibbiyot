@@ -7,7 +7,8 @@ Server (my.spetion.uz) maktabning ichki tarmog'iga yeta olmaydi, shuning uchun b
 
 Kerakli muhit o'zgaruvchilari (parollar hech qayerga yozilmaydi):
     HIK_PASS              terminal admin paroli
-    SPETION_AGENT_TOKEN   server API kaliti (serverdagi .env dagi FACE_AGENT_TOKEN bilan bir xil)
+    SPETION_AGENT_TOKEN   filial kaliti (panel → Qurilmalar → «Ulash kodi olish», docs/terminallar.md) —
+                          faqat shu filial terminallari ko'rinadi. Umumiy FACE_AGENT_TOKEN faqat administrator uchun.
     SPETION_URL           ixtiyoriy, standart https://my.spetion.uz
 
 PowerShell:

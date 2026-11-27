@@ -58,7 +58,7 @@ Baza nusxasi kerak emas. Kompyuterda faqat Python 3 va `requests` bo'lsa yetadi 
 Tayyorgarlik (bir marta):
 - Panelda har bir terminal **Qurilmalar**da qo'shilgan bo'lsin (nomi va filiali to'g'ri). `tools/terminals.json` dagi nom panel
   nomi bilan bir xil bo'lsin; bir xil nom bir nechta filialda bo'lsa yozuvga `"branch": <filial id>` qo'shing.
-- **API kaliti**: serverdagi `/var/www/erp/.env` da `FACE_AGENT_TOKEN`. Uni faqat shu kompyuterdagi xodimga bering, chatga yozmang.
+- **API kaliti — filial kaliti** (tavsiya): panel → Qurilmalar → «Ulash kodi olish» → kod bilan kalit olinadi (agent buni o'zi qiladi; skript uchun: `POST /api/access/agent/pair/ {"code": "1234-5678", "name": "kompyuter"}`, javobdagi `key`). Filial kaliti faqat o'z filialini ko'radi va paneldan uziladi. Umumiy `FACE_AGENT_TOKEN` (`/var/www/erp/.env`) — faqat server administratori uchun, maktab kompyuterlariga qo'yilmaydi.
 
 ```powershell
 # parollar muhit o'zgaruvchisida (tarixga va faylga yozilmaydi)
@@ -78,6 +78,15 @@ python tools/push_faces.py status      # tekshiring: foydalanuvchi soni = yuz so
 
 **Eski server (med.spetion.uz, ko'chirishgacha):** `tools/push_faces_sqlite.py <baza nusxasi papkasi> sync` — avvalgi usul
 (sqlite nusxa + `media/faces`). Ko'chirishdan keyin ishlatilmaydi.
+
+## Binodagi agent (filial kaliti, holat, ogohlantirish)
+
+Har binoda bitta agent — o'sha binodagi barcha terminallar uchun (Windows dasturi — 2-bosqich, hozircha `push_faces.py`).
+- Ulash: panel → Qurilmalar → «Ulash kodi olish» (8 raqam, 24 soat, bir marta). Kod faqat xeshi bilan saqlanadi.
+- Agent har daqiqa `POST /api/access/agent/heartbeat/` yuboradi: terminallar holati (IP, MAC, onlayn, odam/yuz soni, xato).
+  Javobdagi `stamp` (filial izi) o'zgarsa — sync. Panelda: agent onlayn/aloqa yo'q, terminal qatorida agent ko'rgan holat.
+- `manage.py check_agents` (cron, har 10 daqiqa, Du–Sh 09:00–17:00): 30 daqiqa aloqa bo'lmasa bir marta ogohlantirish, qayta ulansa xabar.
+- Kompyuter almashsa yoki kalit chiqib ketgan deb gumon bo'lsa: panelda «Uzish» → yangi ulash kodi.
 
 ## Chiqqan o'quvchilarni terminaldan olib tashlash
 

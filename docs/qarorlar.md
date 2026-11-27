@@ -97,3 +97,12 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - **med.spetion.uz saqlanadi:** ota-ona va ustozlarga tarqatilgan. Ko'chirish kuni DNS yangi serverga o'tkaziladi va nginx 301 bilan my.spetion.uz ga (yo'li bilan) yo'naltiradi; foydalanuvchi bir marta qayta kiradi.
 - Server: DigitalOcean droplet 46.101.207.23 — 2 CPU / 2 GB / 60 GB (2026-11-26 kattalashtirildi). Gunicorn 3 worker. Galereya yuklash yo'llarida nginx 400 MB / 300 s.
 - med-new.spetion.uz — sinov manzili sifatida vaqtincha qoladi.
+
+## 13. Terminallarga rasm: binodagi agent (2026-11-27)
+- 20 terminal, 8 alohida bino. Server maktab tarmog'iga kira olmaydi, shuning uchun har binoda bitta **agent** (kichik Windows dasturi, fonda, kompyuter yoqilganda ishga tushadi) o'sha binodagi terminallarga rasm yuboradi. Har binoda doim ishlaydigan kompyuter bor.
+- Tashkilot/filialni dastur taxmin qilmaydi: paneldagi **bir martalik ulash kodi** bilan biriktiriladi (xato taxmin bir maktab bolalari yuzini boshqa maktab terminaliga yuborib qo'yardi).
+- Har agentda **o'z filialining kaliti** (bekor qilinadigan). Umumiy kalit maktab kompyuterlariga tarqatilmaydi: u hamma bolalarning biometrik rasmlarini ochardi.
+- Agent faqat tashqariga ulanadi (maktab routerida port ochish kerak emas). Kompyuter kechasi o'chsa — yoqilganda kechikkan rasmlar yuboriladi; ish vaqtida 30 daqiqa aloqa bo'lmasa ogohlantirish.
+- Boshida **imzosiz** exe (8 ta o'rnatishni o'zimiz qilamiz; Windows «noma'lum dastur» ogohlantirishi). Imzo sertifikati keyin.
+- Yangi terminallar: hozirgi model (DS-K1T343EFWX), imkon bo'lsa LAN kabel, routerda doimiy IP.
+- ISUP («Platform access», kompyutersiz) keyinroq alohida o'rganiladi.

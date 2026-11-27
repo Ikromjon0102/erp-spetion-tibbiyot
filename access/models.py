@@ -147,3 +147,71 @@ class PresenceNotice(models.Model):
 
     class Meta:
         unique_together = ('student', 'date', 'kind')
+
+
+# ---- maktab kompyuteridagi agent (rasmlarni terminallarga yuboradi) ----------------------------------------------------
+
+def hash_secret(value):
+    import hashlib
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+class Agent(models.Model):
+    """Binodagi kompyuterga o'rnatilgan agent. Faqat o'z filialining terminallari va odamlarini ko'radi.
+    Kalit bazada ochiq saqlanmaydi (faqat sha256); paneldan bekor qilinsa darhol ishlamay qoladi."""
+    ONLINE_SECONDS = 180
+
+    branch = models.ForeignKey('org.Branch', on_delete=models.PROTECT, related_name='agents', verbose_name='Filial')
+    name = models.CharField('Kompyuter nomi', max_length=100, blank=True)
+    key_hash = models.CharField(max_length=64, unique=True, editable=False)
+    key_hint = models.CharField(max_length=12, blank=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    is_active = models.BooleanField('Faol', default=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    last_ip = models.CharField(max_length=64, blank=True)
+    version = models.CharField(max_length=20, blank=True)
+    state = models.JSONField(default=dict, blank=True)        # {device_id: {ip, mac, online, users, faces, error, at}}
+    offline_alerted = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Agent'
+        verbose_name_plural = 'Agentlar'
+        ordering = ['-is_active', 'branch_id', '-created_at']
+
+    @property
+    def online(self):
+        from django.utils import timezone
+        return bool(self.is_active and self.last_seen_at and (timezone.now() - self.last_seen_at).total_seconds() < self.ONLINE_SECONDS)
+
+    def __str__(self):
+        return f'{self.name or "Agent"} ({self.branch})'
+
+
+class AgentPairing(models.Model):
+    """Bir martalik ulash kodi: panelda filial uchun yaratiladi, agentga kiritiladi (24 soat amal qiladi)."""
+    TTL_HOURS = 24
+
+    branch = models.ForeignKey('org.Branch', on_delete=models.CASCADE, related_name='agent_pairings')
+    code_hash = models.CharField(max_length=64, unique=True)
+    created_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    agent = models.ForeignKey(Agent, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    @classmethod
+    def issue(cls, branch, user=None):
+        """Yangi kod (ochiq matni faqat shu yerda qaytadi). Shu filialning eski ishlatilmagan kodlari bekor qilinadi."""
+        from datetime import timedelta
+        from django.utils import timezone
+        cls.objects.filter(branch=branch, used_at__isnull=True).delete()
+        while True:
+            digits = ''.join(secrets.choice('0123456789') for _ in range(8))
+            code = f'{digits[:4]}-{digits[4:]}'
+            if not cls.objects.filter(code_hash=hash_secret(digits)).exists():
+                break
+        cls.objects.create(branch=branch, code_hash=hash_secret(digits), created_by=user,
+                           expires_at=timezone.now() + timedelta(hours=cls.TTL_HOURS))
+        return code

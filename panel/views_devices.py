@@ -8,13 +8,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from access.hikvision import Client, DeviceError
-from access.models import AccessSettings, Device, FaceSync
+from access.models import AccessSettings, Agent, AgentPairing, Device, FaceSync
 from access.sync import eligible_users, pending_count, sync_device, sync_in_background
 from accounts.face_ids import next_staff_id, next_teacher_id as _next_teacher_id
 from accounts.models import Student, User
 from accounts.photos import PhotoError, prepare as prepare_photo, remove_photo, save_photo
 from billing.reports import real_students
-from org.scope import pick_branch, scope_devices, scope_staff, scope_students, scope_teachers
+from org.scope import branches_for, pick_branch, scope_devices, scope_staff, scope_students, scope_teachers
 
 from . import audit
 from .hubs import org_hub
@@ -149,7 +149,7 @@ def _staff_user(request, pk):
 @require_POST
 @panel_required('staff.manage')
 def staff_photo(request, pk):
-    user = _staff_user(pk)
+    user = _staff_user(request, pk)
     upload = request.FILES.get('photo')
     if not upload:
         messages.error(request, 'Rasm tanlanmadi')
@@ -161,7 +161,7 @@ def staff_photo(request, pk):
 @require_POST
 @panel_required('staff.manage')
 def staff_photo_delete(request, pk):
-    user = _staff_user(pk)
+    user = _staff_user(request, pk)
     remove_photo(user)
     audit.log(request, "Yuz rasmini o'chirdi", user, label=user.get_full_name(), target_type='photo')
     sync_in_background()
@@ -173,13 +173,19 @@ def staff_photo_delete(request, pk):
 @org_hub('devices')
 def devices(request):
     granted = perms_of(request.user)
-    devices_qs = list(scope_devices(Device.objects.all(), request.user))
+    devices_qs = list(scope_devices(Device.objects.select_related('branch__organization'), request.user))
+    agents = list(scope_devices(Agent.objects.filter(is_active=True).select_related('branch__organization'), request.user))
+    by_branch = {}
+    for a in agents:
+        by_branch.setdefault(a.branch_id, []).append(a)
     rows, ready = [], set()
     for d in devices_qs:
         people = eligible_users(d)
         ready |= {u.pk for u in people}
-        rows.append({'d': d, 'pending': pending_count(d, people) if d.host else None,
-                     'failed': d.face_syncs.filter(ok=False).count()})
+        seen = [(a, a.state.get(str(d.pk))) for a in by_branch.get(d.branch_id, []) if a.state.get(str(d.pk))]
+        rows.append({'d': d, 'pending': pending_count(d, people) if d.host or d.branch_id in by_branch else None,
+                     'failed': d.face_syncs.filter(ok=False).count(), 'agent': seen[0][1] if seen else None,
+                     'agent_online': seen[0][0].online if seen else False})
     students = real_students(request.user)
     teachers = scope_teachers(User.objects.filter(role=User.Role.TEACHER, is_demo=False), request.user)
     stats = {'students': students.count(), 'students_photo': students.exclude(user__photo='').exclude(user__photo__isnull=True).count(),
@@ -187,7 +193,10 @@ def devices(request):
              'teachers_photo': teachers.exclude(photo='').exclude(photo__isnull=True).count(),
              'ready': len(ready)}
     errors = list(FaceSync.objects.filter(ok=False, device__in=devices_qs).select_related('user', 'device').order_by('-updated_at')[:15])
+    pair_branches = list(branches_for(request.user).select_related('organization').order_by('organization__name', 'order', 'name'))
     return render(request, 'panel/devices.html', {'nav': 'devices', 'rows': rows, 'stats': stats, 'errors': errors, 'manage': 'devices.manage' in granted,
+                                                  'agents': agents, 'pair_branches': pair_branches,
+                                                  'new_code': request.session.pop('agent_code', None),
                                                   'leave_org': _leave_target(request)[0], 'leave_from': _leave_target(request)[1]})
 
 
@@ -309,4 +318,27 @@ def faces_zip(request):
         messages.error(request, "Rasm xato: " + '; '.join(bad[:8]))
     if not names:
         messages.error(request, "ZIP ichida rasm (jpg/png) topilmadi")
+    return redirect('panel:devices')
+
+
+@require_POST
+@panel_required('devices.manage')
+def agent_code(request):
+    """Filial uchun bir martalik ulash kodi (24 soat). Kod bir marta ko'rsatiladi, bazada faqat xeshi saqlanadi."""
+    branch = get_object_or_404(branches_for(request.user), pk=request.POST.get('branch') or 0)
+    code = AgentPairing.issue(branch, request.user)
+    audit.log(request, 'Agent ulash kodini yaratdi', label=f'{branch.organization.label} · {branch.name}', target_type='device')
+    request.session['agent_code'] = {'code': code, 'branch': f'{branch.organization.label} · {branch.name}', 'hours': AgentPairing.TTL_HOURS}
+    return redirect('panel:devices')
+
+
+@require_POST
+@panel_required('devices.manage')
+def agent_revoke(request, pk):
+    from django.utils import timezone
+    agent = get_object_or_404(scope_devices(Agent.objects.filter(is_active=True), request.user), pk=pk)
+    agent.is_active, agent.revoked_at = False, timezone.now()
+    agent.save(update_fields=['is_active', 'revoked_at'])
+    audit.log(request, 'Agentni uzdi', label=str(agent), target_type='device')
+    messages.success(request, f"{agent} uzildi: uning kaliti endi ishlamaydi.")
     return redirect('panel:devices')

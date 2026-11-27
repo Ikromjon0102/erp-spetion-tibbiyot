@@ -18,15 +18,25 @@ log = logging.getLogger(__name__)
 _lock = threading.Lock()
 
 
-def eligible_users(device=None):
+def eligible_users(device=None, branch_id=None):
     """Qurilmada bo'lishi kerak odamlar: rasmi va Face ID si bor, faol o'quvchi/ustoz/xodimlar (sinov hisoblari emas).
-    `device` berilsa, faqat shu qurilma filialining odamlari: o'quvchilar shu filialdan, ustoz/xodimlar shu filialda ishlaydiganlar."""
+    `device` (yoki `branch_id`) berilsa, faqat shu filial odamlari: o'quvchilar shu filialdan, ustoz/xodimlar shu filialda
+    ishlaydiganlar (bir necha filialda ishlaydigan ustoz har birining terminaliga tushadi)."""
+    if device is not None and device.branch_id:
+        branch_id = device.branch_id
     users = (User.objects.filter(is_active=True, role__in=[User.Role.STUDENT, User.Role.TEACHER, User.Role.STAFF], is_demo=False)
              .exclude(photo='').exclude(photo__isnull=True).exclude(username__startswith='sinov_')
              .select_related('student'))
-    if device is not None and device.branch_id:
-        users = users.filter(Q(student__branch_id=device.branch_id) | Q(role__in=[User.Role.TEACHER, User.Role.STAFF], branches=device.branch_id)).distinct()
+    if branch_id:
+        users = users.filter(Q(student__branch_id=branch_id) | Q(role__in=[User.Role.TEACHER, User.Role.STAFF], branches=branch_id)).distinct()
     return [u for u in users if u.device_id]
+
+
+def branch_stamp(branch_id):
+    """Filial terminallarida kim va qaysi rasm bilan bo'lishi kerakligining qisqa izi (rasm fayllari o'qilmaydi:
+    yangi rasm har doim yangi nom bilan saqlanadi). Agent shu iz o'zgargandagina to'liq sync qiladi."""
+    rows = sorted(f'{u.pk}|{u.device_id}|{_display_name(u)}|{u.photo.name}' for u in eligible_users(branch_id=branch_id))
+    return hashlib.sha256('|'.join(rows).encode()).hexdigest()[:16]
 
 
 def _display_name(user):
