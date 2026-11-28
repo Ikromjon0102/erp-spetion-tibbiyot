@@ -136,6 +136,8 @@ def import_staff_sheet(rows, branch):
         if not phone:
             report['no_phone'].append(full)
         is_new = user is None
+        if user is not None:                                      # ota-ona hisobi (farzandi shu maktabda) xodimga aylanadi
+            user.last_name, user.first_name = last, first
         if title:                                                 # dars bermaydigan xodim
             position = Position.objects.filter(name=title).first() or Position.objects.create(name=title, default_perms=[])
             if user is None:

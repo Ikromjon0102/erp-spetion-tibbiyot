@@ -92,9 +92,12 @@ class PaySheetImportTests(TestCase):
         # ro'yxat yangilandi: telefon bir xil, ism tuzatildi; telefonsiz xodimga telefon yozildi; yangi ustoz
         updated = [('Ergashev Ikromjon IT', 'Informatika', None, '90-218-57-07'),
                    ('Solijanov Shaxzod', 'Rus tili', None, '94-458-29-99'),
-                   ('Xalikova Gulnora', "Boshlang'ich", None, '99-974-77-87')]
+                   ('Xalikova Gulnora', "Boshlang'ich", None, '94-590-59-06')]   # telefoni ota-ona sifatida bor edi
         r = import_staff_sheet(updated, self.branch)
         self.assertEqual((r['existing'], r['teachers']), (2, 1))
+        mom = User.objects.get(phone_digits='998945905906')
+        self.assertEqual((mom.last_name, mom.first_name, mom.role), ('Xalikova', 'Gulnora', User.Role.TEACHER))
+        self.assertEqual(mom.children.count(), 2)
         self.assertEqual(r['renamed'], ['Ergashev Ikromjon -> Ergashev Ikromjon IT'])
         self.assertEqual(r['phone_added'], ['Solijanov Shaxzod'])
         sol = User.objects.get(last_name='Solijanov')
