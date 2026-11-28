@@ -163,3 +163,50 @@ class PayHistoryTests(TestCase):
         import_pay_sheets(read_pay_sheets(self.path), self.branch)
         self.assertEqual(Student.objects.count(), 5)                               # chiqqan o'quvchi qayta yaratilmadi
         self.assertEqual(Charge.objects.filter(student__user__first_name='Ali').count(), 3)
+
+
+class TelegramPhotoTests(TestCase):
+    """Telegram eksportidan rasm biriktirish: yozilish farqlari mos keladi, ism bir xil-familiya boshqa — yo'q."""
+
+    def test_match_rules(self):
+        from accounts.telegram_photos import color_of, grade_of, match
+        students = [(1, 'Turdiyev', 'Xumoyun', '7-Blue'), (2, "G'ofurjonova", 'Sevinchoy', '8-Red'),
+                    (3, 'Daminjanova', 'Mubina', '1-Green'), (4, 'Baxtiyarova', 'Shodiya', '1-Blue'),
+                    (5, 'Ikromjanov', 'Imronbek', '1-Blue'), (6, 'Ikromov', 'Imronbek', '2-Red'),
+                    (7, 'Baxtiyorova', 'Binafsha Baxtiyor qizi', '4-Blue')]
+        entries = [(Path(f'p{i}.jpg'), name, label, i, '') for i, (name, label) in enumerate([
+            ('Turdiyev Xumoyin', '7b uzb'), ('Gafurjanova Sevinch', '9r Rus'), ('Komiljonova Mubina', '1g'),
+            ('Bahtiyorova Shoira', '1b uzb'), ('Ikromjonov Imronbek', '1b uzb'), ('Bahtiyorova Binavsha', '4b uzbek')])]
+        r = match(entries, students)
+        self.assertEqual(sorted(r['matched']), [1, 2, 5, 7])
+        self.assertEqual(sorted(e[0][1] for e in r['unmatched']), ['Bahtiyorova Shoira', 'Komiljonova Mubina'])
+        self.assertEqual((grade_of('8-9 huquq'), color_of('7b uzb'), color_of('10 huquq')), (8, 'blue', None))
+
+    def test_command_attaches_photo(self):
+        import json
+        from io import BytesIO, StringIO
+
+        from django.core.management import call_command
+        from PIL import Image
+
+        from academics.models import Group
+        branch = Branch.objects.create(organization=Organization.objects.create(name='Asosiy maktab'), name='Asosiy')
+        g = Group.objects.create(name='7-Blue', branch=branch)
+        u = User.objects.create(username='s1', first_name='Xumoyun', last_name='Turdiyev', role=User.Role.STUDENT)
+        st = Student.objects.create(user=u, group=g, branch=branch)
+        u2 = User.objects.create(username='s2', first_name='Ali', last_name='Valiyev', role=User.Role.STUDENT)
+        Student.objects.create(user=u2, group=g, branch=branch)
+        folder = Path(tempfile.mkdtemp())
+        (folder / 'photos').mkdir()
+        Image.new('RGB', (600, 800), (200, 180, 160)).save(folder / 'photos' / 'a.jpg')
+        (folder / 'result.json').write_text(json.dumps({'messages': [
+            {'id': 1, 'type': 'message', 'photo': 'photos/a.jpg', 'text': 'Turdiyev Xumoyin\n\n7b uzb'}]}), encoding='utf-8')
+        out = StringIO()
+        with self.settings(MEDIA_ROOT=tempfile.mkdtemp()):
+            call_command('attach_telegram_photos', branch=branch.pk, export=str(folder), stdout=out)
+            u.refresh_from_db()
+            st.refresh_from_db()
+            self.assertTrue(u.photo)
+            self.assertTrue(st.access_id)
+            self.assertIn('7-Blue: 1 / 2 rasmsiz', out.getvalue())
+            self.assertIn('Valiyev Ali', out.getvalue())
