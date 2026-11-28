@@ -36,6 +36,10 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f'  o\'tkazib yuborildi: {x}'))
             for x in r['no_phone']:
                 self.stdout.write(self.style.WARNING(f'  telefonsiz: {x}'))
+            for x in r['renamed']:
+                self.stdout.write(f'  ism yangilandi: {x}')
+            for x in r['phone_added']:
+                self.stdout.write(f"  telefon qo'shildi: {x}")
         if sheets:
             r = import_pay_sheets(sheets, branch)
             self.stdout.write(self.style.SUCCESS(

@@ -106,7 +106,7 @@ def _staff_title(subject):
 
 @transaction.atomic
 def import_staff_sheet(rows, branch):
-    report = {'teachers': 0, 'staff': 0, 'existing': 0, 'skipped': [], 'no_phone': []}
+    report = {'teachers': 0, 'staff': 0, 'existing': 0, 'skipped': [], 'no_phone': [], 'renamed': [], 'phone_added': []}
     for full, subject, birth, phone_raw in rows:
         title = _staff_title(subject)
         if title == 'skip':
@@ -114,9 +114,22 @@ def import_staff_sheet(rows, branch):
             continue
         phone = normalize_phone(phone_raw)
         last, first = split_name(full)
-        user = User.objects.filter(phone_digits=re.sub(r'\D', '', phone)).order_by('id').first() if phone else \
-            User.objects.filter(last_name=last, first_name=first).exclude(role__in=['student', 'parent']).first()
+        by_name = User.objects.filter(last_name=last, first_name=first).exclude(role__in=['student', 'parent'])
+        user = User.objects.filter(phone_digits=re.sub(r'\D', '', phone)).order_by('id').first() if phone else by_name.first()
+        if user is None and phone:                                # ro'yxat yangilanib, telefoni keyin yozilgan xodim
+            user = by_name.filter(phone='').first()
+            if user:
+                user.phone = phone
+                if user.role == User.Role.TEACHER:
+                    user.set_password(re.sub(r'\D', '', phone)[-4:])
+                    user.must_change_password = True
+                user.save()
+                report['phone_added'].append(full)
         if user and (user.role in (User.Role.TEACHER, User.Role.STAFF) or hasattr(user, 'staff_profile')):
+            if phone and (user.last_name, user.first_name) != (last, first):   # telefon bir xil, ism tuzatilgan
+                report['renamed'].append(f'{user.last_name} {user.first_name} -> {full}')
+                user.last_name, user.first_name = last, first
+                user.save(update_fields=['last_name', 'first_name'])
             user.branches.add(branch)
             report['existing'] += 1
             continue
@@ -127,7 +140,11 @@ def import_staff_sheet(rows, branch):
             if user is None:
                 user = User(username=_unique_username(phone and re.sub(r'\D', '', phone) or f'{last}-{first}'),
                             first_name=first, last_name=last, phone=phone or '', role=User.Role.STAFF)
-                user.set_unusable_password()
+                if phone:                                         # birinchi parol: telefonning oxirgi 4 raqami
+                    user.set_password(re.sub(r'\D', '', phone)[-4:])
+                    user.must_change_password = True
+                else:
+                    user.set_unusable_password()
             user.access_id = user.access_id or next_staff_id()
             user.save()
             panel = title in PANEL_TITLES

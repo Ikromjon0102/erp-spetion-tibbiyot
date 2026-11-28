@@ -67,6 +67,7 @@ class PaySheetImportTests(TestCase):
         self.assertTrue(teacher.check_password('5707') and teacher.must_change_password)
         director = User.objects.get(last_name='Boltaboyev')
         self.assertTrue(director.staff_profile.is_active)
+        self.assertTrue(director.check_password('9666') and director.must_change_password)
         self.assertFalse(User.objects.get(last_name='Mamatov').staff_profile.is_active)
         self.assertTrue(all(u.branches.filter(pk=self.branch.pk).exists() for u in User.objects.all()))
 
@@ -86,6 +87,18 @@ class PaySheetImportTests(TestCase):
         again = import_pay_sheets(read_pay_sheets(self.tmp / 'pay.xlsx'), self.branch)
         self.assertEqual((again['created'], again['parents_new'], again['parents_linked']), (0, 0, 0))
         self.assertEqual(import_staff_sheet(staff, self.branch)['existing'], 4)
+
+        # ro'yxat yangilandi: telefon bir xil, ism tuzatildi; telefonsiz xodimga telefon yozildi; yangi ustoz
+        updated = [('Ergashev Ikromjon IT', 'Informatika', None, '90-218-57-07'),
+                   ('Solijanov Shaxzod', 'Rus tili', None, '94-458-29-99'),
+                   ('Xalikova Gulnora', "Boshlang'ich", None, '99-974-77-87')]
+        r = import_staff_sheet(updated, self.branch)
+        self.assertEqual((r['existing'], r['teachers']), (2, 1))
+        self.assertEqual(r['renamed'], ['Ergashev Ikromjon -> Ergashev Ikromjon IT'])
+        self.assertEqual(r['phone_added'], ['Solijanov Shaxzod'])
+        sol = User.objects.get(last_name='Solijanov')
+        self.assertTrue(sol.check_password('2999') and sol.must_change_password)
+        self.assertEqual(User.objects.filter(last_name='Solijanov').count(), 1)
 
 
 class PayHistoryTests(TestCase):
