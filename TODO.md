@@ -50,7 +50,7 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Asosiy maktab: oylik badal, chegirma, grant, Free, sentabr–noyabr to'lovlari (2026-11-28)
 - [ ] Asosiy maktab: `korib_chiqish.txt` dagi 30 holat (badalsiz 20, bol-y/spravka 4, «Shoxsanam opa», «25-da», «100$», 200 000)
 - [x] Asosiy maktab: dars jadvali (1000 dars, 2026-11-28); o'quvchi rasmlari Telegramdan 305 / 415, ustozlar 25 / 47
-- [ ] Asosiy maktab: dushanba (30.11) 110 o'quvchi va 22 ustoz suratga olinadi (`datalar/asosiy maktab/rasmsizlar_dushanba.txt`); «Абдуллаева Хилола» (Mental arifmetika) kim — telefon
+- [ ] Asosiy maktab: dushanba (30.11) 110 o'quvchi va 22 ustoz suratga olinadi (`datalar/asosiy maktab/rasmsizlar_dushanba.txt`); dushanba: Abdullayeva Xilola (Mental arifmetika, hisobi ochilgan, telefonsiz) telefoni; 8-Ingliz va 8-Med rus sinf rahbarlari
 - [ ] Tibbiyot ko'chirilganda: «Ra'no Madaminova», «Yakubova Nigora» rasmlari (`datalar/asosiy maktab/ustozlar rasmi`)
 - [ ] Asl ma'lumotlarni `datalar/` ga yig'ish va kiritish: Tibbiyot (eski serverdan), Asosiy maktab (Excel + terminaldagi 190 kishi/123 yuz), bog'cha, markaz
 - [ ] Terminallarni panelga qayta qo'shish: Tibbiyot 4, Asosiy maktab 4 (192.168.1.190–193)
