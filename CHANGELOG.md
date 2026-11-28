@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Asosiy maktab: xodimlar ro'yxati yangilandi, markaz filiali olib tashlandi (2026-11-28)
+- Xato: yangi ustoz/xodim yaratilganda `org/signals.py` uni «birinchi filial»ga (O'quv markaz · 40-maktab) ham qo'shardi — Asosiy direktori panelda markazni ko'rgan. Import endi yangi xodimni faqat ko'rsatilgan filialda qoldiradi; serverda 60 xodimdan markaz filiali olib tashlandi.
+- Xodimlarga ham birinchi parol — telefonning oxirgi 4 raqami (almashtirish shart): serverda paroli yo'q 16 xodimga qo'yildi (direktor kira oladi). Ota-ona va o'quvchilarda sayt paroli yo'q (Telegram orqali).
+- Yangilangan ro'yxat: ism tuzatildi (Xoshimov Jahongir, No'monjonov Axrorbek), Solijanov Shaxzodga telefon, yangi ustozlar Xalikova Gulnora (ota-ona hisobi ustozga aylandi) va Odilbekov Ixtiyor (telefonsiz). Import qayta ishga tushirilganda shunday tuzatishlarni o'zi qiladi.
+- Zaxira: `/var/backups/erp/erp-before-staff-update-20261128.dump`.
+
 ## Asosiy maktab: to'lovlar, chegirmalar va grantlar kiritildi (2026-11-28)
 - `import_pay_sheet --payments` (`billing/pay_sheet_history.py`), founder qoidalari: badal 2 000 000; kam yozilgani shaxsiy chegirma (10/35/25/30/19/20/5%); «Grand» — choraklik imtihon 1-o'rni, noyabr–dekabr 100%; «Free» — muddatsiz 100% (panelda olib tashlash mumkin); «1300000(bol)» — kasal oy summasi; «tibbiyot» — Tibbiyotga o'tgan: shu oydan hisob bekor, o'quvchi chiqarildi; «Yozda», «bol-y», «spravka» va tushunarsiz belgilar ko'rib chiqish ro'yxatiga.
 - my.spetion.uz: 880 to'lov (1 614 800 000 so'm), 1256 oylik hisob (sentabr–noyabr), 170 chegirma, 22 grant, 1 Free, 5 o'quvchi Tibbiyotga o'tgan. Excel sana raqamlari (46346) to'lov deb olinmaydi.
