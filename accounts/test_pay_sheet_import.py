@@ -82,6 +82,7 @@ class PaySheetImportTests(TestCase):
         self.assertEqual(vali.branch, self.branch)
         mom = User.objects.get(phone_digits='998945905906')
         self.assertEqual(mom.children.count(), 2)                       # aka-singil bitta ota-onada
+        self.assertTrue(mom.check_password('5906') and mom.must_change_password)
         self.assertIn(teacher, Student.objects.get(user__first_name='Farzandi').parents.all())   # ustoz = ota-ona
         self.assertEqual(teacher.role, User.Role.TEACHER)
 

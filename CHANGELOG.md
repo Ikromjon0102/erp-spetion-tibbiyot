@@ -4,7 +4,7 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 
 ## Asosiy maktab: xodimlar ro'yxati yangilandi, markaz filiali olib tashlandi (2026-11-28)
 - Xato: yangi ustoz/xodim yaratilganda `org/signals.py` uni «birinchi filial»ga (O'quv markaz · 40-maktab) ham qo'shardi — Asosiy direktori panelda markazni ko'rgan. Import endi yangi xodimni faqat ko'rsatilgan filialda qoldiradi; serverda 60 xodimdan markaz filiali olib tashlandi.
-- Xodimlarga ham birinchi parol — telefonning oxirgi 4 raqami (almashtirish shart): serverda paroli yo'q 16 xodimga qo'yildi (direktor kira oladi). Ota-ona va o'quvchilarda sayt paroli yo'q (Telegram orqali).
+- Xodimlarga ham birinchi parol — telefonning oxirgi 4 raqami (almashtirish shart): serverda paroli yo'q 16 xodimga qo'yildi (direktor kira oladi). Founder qarori bilan ota-onalarga ham shu qoida: import yangi ota-onaga oxirgi 4 raqamni qo'yadi, serverdagi ota-onalarga ham qo'yildi (Telegram orqali kirish o'zgarmadi). O'quvchilarda sayt paroli yo'q.
 - Yangilangan ro'yxat: ism tuzatildi (Xoshimov Jahongir, No'monjonov Axrorbek), Solijanov Shaxzodga telefon, yangi ustozlar Xalikova Gulnora (ota-ona hisobi ustozga aylandi) va Odilbekov Ixtiyor (telefonsiz). Import qayta ishga tushirilganda shunday tuzatishlarni o'zi qiladi.
 - Zaxira: `/var/backups/erp/erp-before-staff-update-20261128.dump`.
 

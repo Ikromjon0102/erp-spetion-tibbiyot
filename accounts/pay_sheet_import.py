@@ -195,7 +195,8 @@ def _link_parent(student, phone_raw, parent_name, report):
         u = student.user
         parent = User(username=digits, role=User.Role.PARENT, phone=phone,
                       first_name=parent_name or f"{u.last_name} {u.first_name} {RELATIONS.get('', 'ota-onasi')}")
-        parent.set_unusable_password()
+        parent.set_password(digits[-4:])                          # birinchi parol: telefonning oxirgi 4 raqami (founder, 2026-11-28)
+        parent.must_change_password = True
         parent.save()
         report['parents_new'] += 1
     if not student.parents.filter(pk=parent.pk).exists():
