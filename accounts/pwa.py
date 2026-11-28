@@ -7,6 +7,7 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
 APP_NAME = 'Spetion'      # hamma tashkilot uchun umumiy (tibbiyot, maktab, bog'cha, markaz)
+ICON_V = '?v=3'           # ikonka almashganda oshiring (o'rnatilgan ilova yangisini oladi)
 
 
 @require_GET
@@ -17,11 +18,11 @@ def manifest(request):
     data = {
         'name': APP_NAME, 'short_name': APP_NAME, 'description': "Spetion: ota-ona, ustoz va ma'muriyat ilovasi",
         'lang': 'uz', 'start_url': '/?source=pwa', 'scope': '/', 'id': '/', 'display': 'standalone',
-        'orientation': 'portrait', 'background_color': '#0B1020', 'theme_color': color,
+        'orientation': 'portrait', 'background_color': '#FFFFFF', 'theme_color': color,
         'icons': [
-            {'src': static('brand/icon-192.png'), 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
-            {'src': static('brand/icon-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
-            {'src': static('brand/icon-maskable-512.png'), 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'},
+            {'src': static('brand/icon-192.png') + ICON_V, 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+            {'src': static('brand/icon-512.png') + ICON_V, 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+            {'src': static('brand/icon-maskable-512.png') + ICON_V, 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'},
         ],
     }
     return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/manifest+json')
