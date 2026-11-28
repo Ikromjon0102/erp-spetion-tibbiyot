@@ -2,6 +2,9 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Ilova ikonkasi: «Dark liquid glass» (2026-11-28)
+- Founder tanlovi: qorong'i shisha fonda 4 rangli belgi (yuqoridan yumshoq nur va yaltiroq, chekka nuri, logo ostida soya va rangli nur). Koddan yasaladi: `python tools/brand/make_app_icon.py` (fon chetigacha to'liq — iOS/Android o'zi burchaklaydi; maskable variantda logo xavfsiz zona ichida). 1024 px nusxa: `static/brand/logo/spetion-ilova-ikonka-1024.png`. Ochilish ekrani foni qorong'i, `?v=4`.
+
 ## Ota-ona ilovasi: dars jadvalida sanalar (2026-11-28)
 - Kun tugmalarida kun nomi o'rniga sana (Du 30.11, Se 01.12 …), sarlavha ostida hafta oralig'i («30-noyabr – 5-dekabr»). Yakshanba kuni keyingi hafta ko'rsatiladi (taomnoma bilan bir xil hafta). Ustoz ilovasining «Hafta» bo'limida sanalar oldindan bor edi.
 
