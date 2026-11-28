@@ -8,6 +8,10 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 - Yangilangan ro'yxat: ism tuzatildi (Xoshimov Jahongir, No'monjonov Axrorbek), Solijanov Shaxzodga telefon, yangi ustozlar Xalikova Gulnora (ota-ona hisobi ustozga aylandi) va Odilbekov Ixtiyor (telefonsiz). Import qayta ishga tushirilganda shunday tuzatishlarni o'zi qiladi.
 - Zaxira: `/var/backups/erp/erp-before-staff-update-20261128.dump`.
 
+## ISUP 5.0 server: loyiha va prototip (2026-11-28)
+- `docs/isup-server.md`: terminallarni binodagi kompyutersiz, to'g'ridan-to'g'ri serverdan boshqarish rejasi (eduschool.uz kabi). Tanlov — Hikvision'ning rasmiy ISUP SDK (Linux x64) ustida kichik Python shlyuzi (`isup-gateway`, systemd); ochiq kodli muqobillar ko'rib chiqildi va yaroqsiz deb topildi. Portlar (7660 CMS, 7663 alarm, 443 faceURL), xavfsizlik, Django bilan aloqa, har terminalni o'tkazish va qaytarish tartibi, bosqichlar (≈ 10–13 ish kuni), founder qo'lda qiladigan ishlar.
+- Prototip `tools/isup_server/` (SDK'siz): qurilmalar ro'yxati va ISUP kalitlari, hodisalarni mavjud `/api/access/hikvision/<token>/` ga yuborish (navbat bilan), ISAPI-over-ISUP mijozi (`access.hikvision.Client` bilan bir xil usullar, yuz `faceURL` bilan), bir martalik rasm manzillari, ichki API, soxta backend. 24 test (`python manage.py test tools.isup_server`). Ishlab chiqarishga hech narsa qo'yilmadi.
+
 ## Asosiy maktab: to'lovlar, chegirmalar va grantlar kiritildi (2026-11-28)
 - `import_pay_sheet --payments` (`billing/pay_sheet_history.py`), founder qoidalari: badal 2 000 000; kam yozilgani shaxsiy chegirma (10/35/25/30/19/20/5%); «Grand» — choraklik imtihon 1-o'rni, noyabr–dekabr 100%; «Free» — muddatsiz 100% (panelda olib tashlash mumkin); «1300000(bol)» — kasal oy summasi; «tibbiyot» — Tibbiyotga o'tgan: shu oydan hisob bekor, o'quvchi chiqarildi; «Yozda», «bol-y», «spravka» va tushunarsiz belgilar ko'rib chiqish ro'yxatiga.
 - my.spetion.uz: 880 to'lov (1 614 800 000 so'm), 1256 oylik hisob (sentabr–noyabr), 170 chegirma, 22 grant, 1 Free, 5 o'quvchi Tibbiyotga o'tgan. Excel sana raqamlari (46346) to'lov deb olinmaydi.

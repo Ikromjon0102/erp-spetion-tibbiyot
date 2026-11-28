@@ -52,5 +52,6 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [ ] Asosiy maktab: dars jadvali (yangi format importchisi; sinf nomlari, ustozlar mosligi), yuz rasmlari (Telegram eksport yoki terminal)
 - [ ] Asl ma'lumotlarni `datalar/` ga yig'ish va kiritish: Tibbiyot (eski serverdan), Asosiy maktab (Excel + terminaldagi 190 kishi/123 yuz), bog'cha, markaz
 - [ ] Terminallarni panelga qayta qo'shish: Tibbiyot 4, Asosiy maktab 4 (192.168.1.190–193)
+- [ ] **ISUP server** (`docs/isup-server.md`): founder ISUP SDK (Linux64) ni o'z hisobi bilan yuklab oladi → M0 faceURL sinovi (LAN) → M1 CMS + pass-through → M2 hodisalar → M3 Django (`Device.transport`, `RemoteClient`) → M4 terminallarni o'tkazish (Tibbiyot, keyin Asosiy maktab). Asosiy maktab: httpHosts 2-slotini hoziroq bizga yo'naltirish mumkin
 - [ ] Exam platformasidagi sinov o'quvchilarini tozalash (ERP tomonidagi bog'lanishlar o'chirildi)
 - [ ] Ko'chirish kuni: med.spetion.uz sertifikatini nusxalash → DNS → `nginx-med-legacy.conf`; ALLOWED_HOSTS ga med.spetion.uz; BOT_TOKEN va webhook; SITE_URL=my.spetion.uz; terminal tekshiruvi
