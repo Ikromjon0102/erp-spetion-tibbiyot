@@ -189,6 +189,12 @@ class AgentCoreTests(TestCase):
     def test_parse_sadp(self):
         d = core.parse_sadp(SADP_REPLY)
         self.assertEqual((d['ip'], d['mac'], d['model']), ('192.168.68.108', '88:de:39:8e:19:83', 'DS-K1T343EFWX'))
+        self.assertTrue(d['terminal'])
+        # Asosiy maktab: DeviceType raqam kodi, model seriyada; kamera terminal emas
+        self.assertEqual(core.device_model('DS-K1T341CM20260119V0303200ENGS3815581', '', '852140'), 'DS-K1T341CM')
+        self.assertTrue(core.is_terminal('DS-K1T341CM'))
+        self.assertFalse(core.is_terminal(core.device_model('DS-2CD1023G2-LIU20260616AAWRGW4208297', '', '149534')))
+        self.assertEqual(core.device_model('', '', '852140'), '852140')
         self.assertIsNone(core.parse_sadp(b'<Probe/>'))
         self.assertIsNone(core.parse_sadp(b'not xml'))
 

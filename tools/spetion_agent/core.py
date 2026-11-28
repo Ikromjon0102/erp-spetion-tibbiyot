@@ -31,7 +31,7 @@ if str(ROOT) not in sys.path:
 from access.hikvision import Client, DeviceError  # noqa: E402
 from tools.push_faces import FATAL, Terminal, arp_table, norm_mac, sweep, sync_terminal  # noqa: E402
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 DEFAULT_URL = 'https://my.spetion.uz'
 APP_DIR = Path(os.environ.get('SPETION_AGENT_DIR') or Path(os.environ.get('LOCALAPPDATA') or Path.home()) / 'SpetionAgent')
 
@@ -237,8 +237,24 @@ def parse_sadp(payload):
     ip, mac = get('IPv4Address'), get('MAC')
     if not ip or not mac:
         return None
-    return {'ip': ip, 'mac': norm_mac(mac), 'model': get('DeviceType') or get('DeviceDescription'),
-            'serial': get('DeviceSN'), 'port': int(get('HttpPort') or 80), 'activated': get('Activated').lower() != 'false'}
+    serial = get('DeviceSN')
+    model = device_model(serial, get('DeviceDescription'), get('DeviceType'))
+    return {'ip': ip, 'mac': norm_mac(mac), 'model': model, 'serial': serial, 'port': int(get('HttpPort') or 80),
+            'activated': get('Activated').lower() != 'false', 'terminal': is_terminal(model)}
+
+
+def device_model(serial, *names):
+    """Qurilma modeli. Ko'p qurilmada DeviceType raqam kodi (852140), haqiqiy model esa seriya boshida:
+    'DS-K1T341CM20260119V03...' -> 'DS-K1T341CM' (sanadan oldingi qism)."""
+    m = re.match(r'(.+?)20\d{6}', serial or '')
+    if m:
+        return m.group(1)
+    return next((n for n in names if n and not n.isdigit()), '') or next((n for n in names if n), '')
+
+
+def is_terminal(model):
+    """Hikvision kirish nazorati / yuz terminali (DS-K1T..., DS-K5...), kamera va registrator emas."""
+    return (model or '').upper().startswith('DS-K')
 
 
 def sadp_probe(timeout=3.0):

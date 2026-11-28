@@ -2,6 +2,10 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Agent v0.1.1: terminallar kameralardan ajratiladi (2026-11-28)
+- Asosiy maktab tarmog'ida SADP 60 ta Hikvision qurilma topdi (4 terminal + kamera/registratorlar). `DeviceType` raqam kodi (852140) bo'lgani uchun ro'yxatda farqlab bo'lmasdi.
+- Model endi seriya raqamidan olinadi (`DS-K1T341CM…` → `DS-K1T341CM`); biriktirish oynasida faqat `DS-K…` (kirish nazorati) qurilmalari, IP tartibida; kameralar soni yozib qo'yiladi.
+
 ## Binodagi agent — 2-bosqich: Windows dasturi (2026-11-27)
 - **`SpetionAgent.exe`** (`tools/spetion_agent/`, yo'riqnoma `tools/spetion_agent/README.md`): ulash kodi bilan filialga bog'lanadi; tarmoqdagi Hikvision terminallarini o'zi topadi (SADP, parolsiz; bo'lmasa IP qo'lda) va panel terminallariga biriktiriladi; terminal paroli bir marta kiritiladi.
 - Fonda ishlaydi (soat yonida ikonka), Windows bilan birga ishga tushadi, bitta nusxa. Har daqiqa heartbeat; filial izi o'zgarsa — sync; xato bo'lsa 30 daqiqada qayta; IP o'zgarsa MAC bo'yicha topadi.

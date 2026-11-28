@@ -381,7 +381,8 @@ class App:
         def build():
             for w in grid.winfo_children():
                 w.destroy()
-            opts = ['(biriktirilmagan)'] + [label(d) for d in found.values()]
+            ordered = sorted(found.values(), key=lambda d: tuple(int(x) for x in d['ip'].split('.') if x.isdigit()))
+            opts = ['(biriktirilmagan)'] + [label(d) for d in ordered]
             for i, dev in enumerate(self.worker.devices):
                 ttk.Label(grid, text=f"{dev['name']} ({'kirish' if dev['direction'] == 'in' else 'chiqish'})").grid(row=i, column=0, sticky='w', pady=3)
                 cur = mapped.get(dev['token'])
@@ -408,9 +409,12 @@ class App:
         def done(res, err):
             if not dlg.winfo_exists():
                 return
-            for d in res:
+            terminals = [d for d in res if d.get('terminal')]
+            hidden = len(res) - len(terminals) if terminals else 0     # kamera/registratorlar ro'yxatni to'ldirmasin
+            for d in (terminals or res):
                 found[d['mac']] = d
-            info.config(text=(f"Topildi: {len(found)} ta Hikvision qurilma. Har bir panel terminaliga mos qurilmani tanlang "
+            info.config(text=(f"Topildi: {len(found)} ta terminal" + (f" ({hidden} ta kamera/registrator ko'rsatilmadi)" if hidden else '')
+                              + ". Har bir panel terminaliga mos qurilmani tanlang "
                               "(qaysi biri qaysi ekanini IP yoki terminal ekranidagi manzil bo'yicha aniqlang)."
                               if found else "Terminal topilmadi. Windows «tarmoqqa ruxsat» so'ragan bo'lsa — ruxsat bering va qayta qidiring. "
                               "Yoki IP manzilini qo'lda qo'shing.") + (f'\n{err}' if err else ''))
