@@ -5,6 +5,9 @@ Yangi o'zgarishlar yuqoridan qo'shiladi.
 ## Ilova ikonkasi: 4 rangli belgi (2026-11-28)
 - O'rnatilgan ilova (PWA) va iPhone ikonkasi: gradientli, chetlari qirqilgan belgi o'rniga oq fonda 4 rangli Spetion belgisining o'zi (`static/brand/icon-*.png`, `apple-touch-icon.png`). Android doira/qirqishida ham to'liq ko'rinadi (maskable — xavfsiz zona ichida). Ochilish ekrani foni oq. Manzilga `?v=3` — telefon yangi ikonkani oladi.
 
+## Asosiy maktab: ustozlar rasmlari (2026-11-28)
+- `datalar/asosiy maktab/ustozlar rasmi` (29 fayl) — fayl nomi bo'yicha 24 ustozga rasm biriktirildi (ikki nusxalilardan yangisi). Ustozlar: 24 / 47 rasmli. Egasi topilmadi: «Teacher.jpg», «Ra'no Madaminova», «Yakubova Nigora» (xodimlar ro'yxatida yo'q). «Yuldasheva D» -> Yuldasheva Dilafruz.
+
 ## Asosiy maktab: o'quvchi rasmlari Telegram guruhidan (2026-11-28)
 - Yangi buyruq `attach_telegram_photos --branch N --export <ChatExport papkasi> [--replace] [--dry-run]` (`accounts/telegram_photos.py`): Telegram Desktop eksportidagi rasm + izoh («Familiya Ism / 7b uzb») bo'yicha o'quvchiga biriktiradi. Yozilish farqlari (h/x, o/a, jon/jan, -bek/-xon, «qizi/o'g'li», kirill) hisobga olinadi; familiya ham, ism ham alohida mos bo'lishi shart; sinf raqami va harfi (r/b/w/g) teng nomzodlarni ajratadi. Shubhali moslik biriktirilmaydi.
 - my.spetion.uz: 370 rasmdan 293 o'quvchiga biriktirildi (Face ID bilan). Founder tasdig'idan keyin yana 12 ta qo'shildi: jami 305 / 415, rasmsiz 110 (ro'yxat: datalar/asosiy maktab/rasmsizlar_dushanba.txt). ~58 rasmning egasi to'lov jadvalida yo'q. Eksport serverdan o'chirildi. Zaxira: `/var/backups/erp/erp-before-photos-20261128.dump`.
