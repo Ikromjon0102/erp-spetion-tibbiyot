@@ -2,6 +2,9 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Ota-ona ilovasi: dars jadvalida sanalar (2026-11-28)
+- Kun tugmalarida kun nomi o'rniga sana (Du 30.11, Se 01.12 …), sarlavha ostida hafta oralig'i («30-noyabr – 5-dekabr»). Yakshanba kuni keyingi hafta ko'rsatiladi (taomnoma bilan bir xil hafta). Ustoz ilovasining «Hafta» bo'limida sanalar oldindan bor edi.
+
 ## Asosiy maktab: dars jadvali kiritildi (2026-11-28)
 - Yangi buyruq `import_school_schedule --branch N --file <jadval.xlsx> [--pay-sheet <to'lov jadvali>] [--dry-run]` (`academics/school_schedule_import.py`): ruscha «Расписание Классов» varag'i (5 kun × 9 soat). Fanlar o'zbekchaga (Математика -> Matematika, Урок Будущего -> Kelajak darsi ...), ustoz ismi kirill -> lotin qilib filial ustozlaridan topiladi, «Кл. руководитель» — to'lov jadvalidagi sinf rahbari, «Вакант» — ustozsiz, «ОБЕД» — dars emas. Qayta yuklansa eski darslar nofaol qilinadi (davomat tarixi qoladi).
 - Sinflar: 1-A/B/V/G -> 1-Red/White/Green/Blue; 2..7 A -> Red, B -> Blue, 5-V -> 5-Green; 8-A -> 8-9-Huquq, 8-B -> 8-Red, 8-V -> 8-Blue, 8-G -> 8-Ingliz, 8-D -> 8-Med rus; 10-A/B/V -> 10-Huquq/Matem/Ingliz.

@@ -123,6 +123,7 @@
 
   /* jadval */
   .daychips { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:12px; }
+  .weekline { margin:-6px 0 12px; color:var(--dim); font-weight:600; font-size:13.5px; }
   .daychips button { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:9px 0 7px; text-align:center; font-weight:800; font-size:14px; position:relative; }
   .daychips button small { display:block; font:400 9.5px 'Space Mono',monospace; color:var(--faint); margin-top:1px; }
   .daychips button.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
@@ -351,9 +352,10 @@
 <!-- ====================== JADVAL ====================== -->
 <section class="tabpane" id="tab-schedule" hidden>
   <h1 class="page">{% if kindergarten %}Mashg'ulotlar jadvali{% else %}Dars jadvali{% endif %}</h1>
+  <div class="weekline">{{ week_label }}</div>
   <button type="button" class="hwall" data-hwall hidden><div class="grow">Barcha vazifalar<small data-hwall-sub></small></div><i class="newdot" data-hwall-dot hidden></i><svg class="ic"><use href="#i-next"/></svg></button>
   <div class="daychips" id="dayChips">
-    {% for d in days %}<button data-day="{{ d.idx }}" class="{% if d.is_today %}today{% endif %}">{{ d.code }}<small>{{ d.name|slice:":3" }}</small></button>{% endfor %}
+    {% for d in days %}<button data-day="{{ d.idx }}" class="{% if d.is_today %}today{% endif %}">{{ d.code }}<small>{{ d.date|date:"d.m" }}</small></button>{% endfor %}
   </div>
   {% for d in days %}
   <div class="daypane" data-day="{{ d.idx }}" hidden>

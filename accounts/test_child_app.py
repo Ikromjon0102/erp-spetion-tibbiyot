@@ -134,3 +134,11 @@ class ChildAppTests(TestCase):
         r = self.client.get('/login/')
         self.assertContains(r, 'Telefon raqam yoki login')
         self.assertContains(r, 'autocapitalize')
+
+
+class WeekLabelTests(TestCase):
+    def test_week_label(self):
+        import datetime
+        from accounts.child_data import _week_label
+        self.assertEqual(_week_label(datetime.date(2026, 11, 30), datetime.date(2026, 12, 5)), '30-noyabr – 5-dekabr')
+        self.assertEqual(_week_label(datetime.date(2026, 12, 7), datetime.date(2026, 12, 12)), '7–12-dekabr')

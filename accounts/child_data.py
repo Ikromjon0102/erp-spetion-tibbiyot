@@ -48,6 +48,16 @@ def homework_for(student, viewer, is_guardian):
     return dict(by_subject), unread
 
 
+MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr']
+
+
+def _week_label(a, b):
+    """'30-noyabr – 5-dekabr' yoki '1–6-dekabr'."""
+    if a.month == b.month:
+        return f'{a.day}–{b.day}-{MONTHS[b.month - 1]}'
+    return f'{a.day}-{MONTHS[a.month - 1]} – {b.day}-{MONTHS[b.month - 1]}'
+
+
 def _meal_rows(org, monday, today):
     """Taomnoma qatorlari jadval ichida: {hafta kuni: [qator]} va modal uchun {kalit: taomlar}. Faqat ovqat beriladigan kunlar."""
     rows, detail = {}, {}
@@ -174,8 +184,10 @@ def child_context(student, viewer):
     marks_today = {a.lesson_id: a.status for a in att if a.date == today}
 
     # --- dars jadvali
-    days = [{'idx': i, 'code': c, 'name': n, 'lessons': [], 'is_today': i == today.weekday()}
+    monday = today - timedelta(days=today.weekday()) if today.weekday() < 6 else today + timedelta(days=1)   # yakshanba — keyingi hafta
+    days = [{'idx': i, 'code': c, 'name': n, 'lessons': [], 'is_today': i == today.weekday(), 'date': monday + timedelta(days=i)}
             for i, (c, n) in enumerate(zip(DAY_CODES, DAY_NAMES))]
+    week_label = _week_label(days[0]['date'], days[-1]['date'])
     if student.group_id:
         lessons = (Lesson.objects.filter(teaching__group=student.group_id, active=True)
                    .select_related('teaching__subject', 'teaching__teacher').order_by('weekday', 'period'))
@@ -198,7 +210,7 @@ def child_context(student, viewer):
             hws = homework.get(lesson['subject'], [])
             lesson['hw'] = len(hws)
             lesson['hw_unread'] = sum(1 for h in hws if not h['read'])
-    meal_rows, meal_detail = _meal_rows(org, today - timedelta(days=today.weekday()) if today.weekday() < 6 else today + timedelta(days=1), today)
+    meal_rows, meal_detail = _meal_rows(org, monday, today)
     for idx, rows in meal_rows.items():      # ovqat o'z soatida jadvalga qo'shiladi (dars bilan vaqt bo'yicha tartiblanadi)
         if idx < len(days):
             days[idx]['lessons'] = sorted(days[idx]['lessons'] + rows, key=lambda x: x['start'])
@@ -230,7 +242,7 @@ def child_context(student, viewer):
         'avg_class': grade_class(overall) if overall is not None else '',
         'n_grades': len(grades), 'subjects': subjects, 'recent_grades': recent_grades,
         'att_stats': att_stats, 'issues': issues, 'access_days': day_summaries(student),
-        'days': days, 'today_idx': today_idx, 'default_day': today_idx if today_idx is not None else 0,
+        'days': days, 'week_label': week_label, 'today_idx': today_idx, 'default_day': today_idx if today_idx is not None else 0,
         'today_lessons': days[today_idx]['lessons'] if today_idx is not None else [],
         'payments': payments, 'debt': debt, 'bill': bill, 'news': news, 'siblings': siblings,
         'homework': homework, 'hw_unread': hw_unread,
