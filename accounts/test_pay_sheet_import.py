@@ -86,3 +86,62 @@ class PaySheetImportTests(TestCase):
         again = import_pay_sheets(read_pay_sheets(self.tmp / 'pay.xlsx'), self.branch)
         self.assertEqual((again['created'], again['parents_new'], again['parents_linked']), (0, 0, 0))
         self.assertEqual(import_staff_sheet(staff, self.branch)['existing'], 4)
+
+
+class PayHistoryTests(TestCase):
+    """Founder qoidalari: badal 2 mln, kami chegirma; Grand — o'sha oylar 100%; Free — muddatsiz 100%;
+    «N(bol)» — oy summasi N; «tibbiyot» — shu oydan hisob bekor va chiqariladi; tushunarsiz belgi — ko'rib chiqishga."""
+
+    def setUp(self):
+        from billing.models import BillingSettings
+        self.branch = Branch.objects.create(organization=Organization.objects.create(name='Asosiy maktab'), name='Asosiy')
+        BillingSettings.get(self.branch.organization)
+        path = Path(tempfile.mkdtemp()) / 'pay.xlsx'
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = '5-Blue'
+        ws.append(['jadval'])
+        ws.append([None, 'Sinf:', 'Sinf 5-Blue', 'Sinf rahbari:', 'X'])
+        ws.append(['№', 'Ism', 'Ota-ona', 'Tel1', 'Tel2', 'Badal', 'Sen', 'Okt', 'Noy', 'Dek'])
+        ws.append([1, 'Chegirmali Ali', None, '94-111-11-11', None, 1800000, 1800000, 1800000, 'Grand', 'Grand'])
+        ws.append([2, 'Хасанова Севинч', None, '94-222-22-22', None, 'Free', 'Free', 'Free', 'Free', 'Free'])
+        ws.append([3, 'KASAL VALI', None, '94-333-33-33', None, 2000000, 2000000, '1300000(bol)', 2000000, 2000000])
+        ws.append([4, "O'tgan Sobir", None, '94-444-44-44', None, 2000000, 2000000, 2000000, 'tibbiyot'])
+        ws.append([5, 'Belgili Jasur', None, '94-555-55-55', None, None, 'spravka', 46346, '25-da'])
+        wb.save(path)
+        self.path = path
+
+    def test_rules_and_rerun(self):
+        from billing.models import BillingSettings, Charge, Payment
+        from billing.pay_sheet_history import import_pay_history
+        today = datetime.date(2026, 11, 28)
+        sheets = read_pay_sheets(self.path)
+        import_pay_sheets(sheets, self.branch)
+        self.assertTrue(Student.objects.filter(user__last_name='Xasanova', user__first_name='Sevinch').exists())
+        self.assertTrue(Student.objects.filter(user__last_name='Kasal', user__first_name='Vali').exists())
+        r = import_pay_history(sheets, self.branch, today=today)
+        self.assertEqual(BillingSettings.get(self.branch.organization).monthly_price, 2000000)
+
+        def charges(first):
+            s = Student.objects.get(user__first_name=first)
+            return [(c.month.month, int(c.amount), c.cancelled) for c in s.charges.order_by('month')], s
+        ali, s = charges('Ali')
+        self.assertEqual(ali, [(9, 1800000, False), (10, 1800000, False), (11, 0, False)])   # 10% + grant noyabr
+        self.assertEqual(s.discounts.get(discount__percent=100).valid_to, datetime.date(2026, 12, 1))
+        self.assertEqual([c[1] for c in charges('Sevinch')[0]], [0, 0, 0])
+        vali, s = charges('Vali')
+        self.assertEqual(vali[1], (10, 1300000, False))
+        self.assertEqual(sum(p.amount for p in s.fee_payments.all()), 2000000 + 1300000 + 2000000 + 2000000)
+        self.assertEqual(s.fee_payments.get(note__endswith='dekabr').paid_on, datetime.date(2026, 11, 1))   # oldindan to'lov
+        sobir, s = charges('Sobir')
+        self.assertEqual(sobir[2], (11, 2000000, True))
+        self.assertTrue(s.has_left)
+        self.assertEqual(s.left_at, datetime.date(2026, 11, 1))
+        self.assertEqual(len([x for x in r['review'] if 'Belgili' in x]), 4)      # badalsiz, spravka, sana, 25-da
+        self.assertFalse(Payment.objects.filter(amount__lt=100000).exists())
+
+        again = import_pay_history(read_pay_sheets(self.path), self.branch, today=today)
+        self.assertEqual((again['payments'], again['missing']), (0, []))
+        import_pay_sheets(read_pay_sheets(self.path), self.branch)
+        self.assertEqual(Student.objects.count(), 5)                               # chiqqan o'quvchi qayta yaratilmadi
+        self.assertEqual(Charge.objects.filter(student__user__first_name='Ali').count(), 3)

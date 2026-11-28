@@ -30,6 +30,33 @@ PANEL_TITLES = {'Direktor'}          # panelga kirish shu lavozimlarda (parolni 
 SKIP_TITLES = {'asoschi'}            # egasi hisobi alohida (founder o'zi)
 
 
+CYR = dict(zip('абвгдеёжзийклмнопрстуфхцчшщъыьэюяўқғҳ',
+               ['a', 'b', 'v', 'g', 'd', 'e', 'yo', 'j', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f',
+                'x', 'ts', 'ch', 'sh', 'sh', "'", 'i', '', 'e', 'yu', 'ya', "o'", 'q', "g'", 'h']))
+
+
+def to_latin(text):
+    """Kirill (o'zbek/rus) -> lotin: 'Хасанова Севинч' -> 'Xasanova Sevinch'. Lotin matn o'zgarmaydi."""
+    if not re.search('[Ѐ-ӿ]', text):
+        return text
+    out = []
+    for i, ch in enumerate(text):
+        low = ch.lower()
+        lat = CYR.get(low, ch)
+        if low == 'е' and (i == 0 or not text[i - 1].isalpha()):
+            lat = 'ye'                                            # so'z boshida: Евгений -> Yevgeniy
+        out.append(lat[:1].upper() + lat[1:] if ch != low and lat else lat)
+    return ''.join(out)
+
+
+def person_name(raw):
+    """Jadvaldagi ism: kirill -> lotin, «ORTIQBAYEV DONYORBEK» -> «Ortiqbayev Donyorbek»."""
+    text = to_latin(clean_text(raw))
+    if text.isupper() or text.islower():
+        text = ' '.join(w[:1].upper() + w[1:].lower() for w in text.split(' '))
+    return text
+
+
 def class_name(raw):
     """'Sinf 1-Green' -> '1-Green'; 'Sinf 3 Blue' -> '3-Blue'; 'Sinf 8-med rus' -> '8-Med rus'."""
     name = clean_text(re.sub(r'^\s*sinf\s*', '', str(raw or ''), flags=re.I))
@@ -51,7 +78,7 @@ def read_pay_sheets(path):
         for r in rows[3:]:
             if not isinstance(r[0], (int, float)) or not re.search(r'[^\W\d_]', str(r[1] or '')):
                 continue
-            students.append((clean_text(r[1]), clean_text(r[2]), r[3], r[4], r[5]))
+            students.append((person_name(r[1]), clean_text(r[2]), r[3], r[4], r[5], tuple(r[6:16])))   # oxirgisi: sentabr..iyun
         out[name] = {'teacher': clean_text(rows[1][4]), 'students': students}
     return out
 
@@ -124,6 +151,15 @@ def import_staff_sheet(rows, branch):
     return report
 
 
+def find_student(group, last, first):
+    """Sinfdagi o'quvchi — yoki shu sinfdan chiqib ketgani (qayta yuklaganda yangi o'quvchi bo'lib qolmasin)."""
+    from django.db.models import Q
+    if group is None:
+        return None
+    return (Student.objects.filter(Q(group=group) | Q(group=None, branch=group.branch, left_group_name=group.name),
+                                   user__last_name__iexact=last, user__first_name__iexact=first).first())
+
+
 def _link_parent(student, phone_raw, parent_name, report):
     phone = normalize_phone(phone_raw)
     if phone is None:
@@ -150,9 +186,9 @@ def import_pay_sheets(sheets, branch):
     for name, data in sheets.items():
         group, created = Group.objects.get_or_create(name=name, branch=branch)
         report['groups'] += created
-        for full, parent_name, tel1, tel2, _fee in data['students']:
+        for full, parent_name, tel1, tel2, *_ in data['students']:
             last, first = split_name(full)
-            student = Student.objects.filter(group=group, user__last_name__iexact=last, user__first_name__iexact=first).first()
+            student = find_student(group, last, first)
             if student is None:
                 user = User(username=_unique_username(f'{last}-{first}'), first_name=first, last_name=last, role=User.Role.STUDENT)
                 user.set_unusable_password()
