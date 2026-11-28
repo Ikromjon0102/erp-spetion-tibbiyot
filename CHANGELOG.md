@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Asosiy maktab: o'quvchilar va xodimlar kiritildi (2026-11-28)
+- Yangi buyruq `import_pay_sheet --branch N --staff X.xlsx --students Y.xlsx [--dry-run]`: maktabning to'lov jadvali (har sinf alohida varaq) va xodimlar ro'yxati. Avval xodimlar — farzandi shu maktabda o'qiydigan ustoz bitta hisobda ham ota-ona bo'ladi. Qayta ishga tushirsa takrorlanmaydi.
+- my.spetion.uz ga: 25 sinf, 420 o'quvchi (Face ID bilan), 495 ota-ona (Telefon 1 va 2; aka-uka bitta ota-onada), 45 ustoz (boshlang'ich parol — telefonning oxirgi 4 raqami, almashtirish shart), 16 boshqa xodim (Direktor panelga kiradi, qolganlari kirmaydi).
+- Kiritilmadi (founder javobi kutilmoqda): oylik badal, chegirmalar, sentabr–noyabr to'lovlari, dars jadvali. Asosiy maktab oylik narxi vaqtincha 0 — noto'g'ri qarz yozilmasin. «Asoschi» qatori o'tkazib yuborildi; 24 o'quvchi telefonsiz.
+- Zaxira: `/var/backups/erp/erp-before-asosiy-import-20261128.dump`.
+
 ## my.spetion.uz: sinov ma'lumotlari o'chirildi (2026-11-28)
 - Hamma mock ma'lumot o'chirildi: 64 foydalanuvchi (48 o'quvchi, ustozlar, xodimlar, ota-ona), guruh, fan, dars, davomat, baho, uy vazifa, e'lon, to'lov, xarajat, oylik, menyu va taomlar, galereya, terminallar va voqealar, faoliyat jurnali, sessiyalar.
 - Qoldi: 4 tashkilot, 7 filial (sozlamalari bilan), 9 lavozim. Yangi egasi hisobi `asoschi` (birinchi kirishda parol almashtiriladi).
