@@ -2,6 +2,10 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Asosiy maktab: o'quvchi rasmlari Telegram guruhidan (2026-11-28)
+- Yangi buyruq `attach_telegram_photos --branch N --export <ChatExport papkasi> [--replace] [--dry-run]` (`accounts/telegram_photos.py`): Telegram Desktop eksportidagi rasm + izoh («Familiya Ism / 7b uzb») bo'yicha o'quvchiga biriktiradi. Yozilish farqlari (h/x, o/a, jon/jan, -bek/-xon, «qizi/o'g'li», kirill) hisobga olinadi; familiya ham, ism ham alohida mos bo'lishi shart; sinf raqami va harfi (r/b/w/g) teng nomzodlarni ajratadi. Shubhali moslik biriktirilmaydi.
+- my.spetion.uz: 370 rasmdan 293 o'quvchiga biriktirildi (Face ID bilan). Rasmsiz: 122 / 415 o'quvchi (5-Green butunlay). 12 ta ehtimoliy moslik founder tasdig'ida, ~58 rasmning egasi to'lov jadvalida yo'q. Zaxira: `/var/backups/erp/erp-before-photos-20261128.dump`.
+
 ## Asosiy maktab: xodimlar ro'yxati yangilandi, markaz filiali olib tashlandi (2026-11-28)
 - Xato: yangi ustoz/xodim yaratilganda `org/signals.py` uni «birinchi filial»ga (O'quv markaz · 40-maktab) ham qo'shardi — Asosiy direktori panelda markazni ko'rgan. Import endi yangi xodimni faqat ko'rsatilgan filialda qoldiradi; serverda 60 xodimdan markaz filiali olib tashlandi.
 - Xodimlarga ham birinchi parol — telefonning oxirgi 4 raqami (almashtirish shart): serverda paroli yo'q 16 xodimga qo'yildi (direktor kira oladi). Founder qarori bilan ota-onalarga ham shu qoida: import yangi ota-onaga oxirgi 4 raqamni qo'yadi, serverdagi ota-onalarga ham qo'yildi (Telegram orqali kirish o'zgarmadi). O'quvchilarda sayt paroli yo'q.
