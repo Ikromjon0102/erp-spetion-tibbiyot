@@ -44,6 +44,7 @@ def _staff_book(path):
 
 class PaySheetImportTests(TestCase):
     def setUp(self):
+        Branch.objects.create(organization=Organization.objects.create(name="O'quv markaz"), name='40-maktab')   # «birinchi filial»
         self.branch = Branch.objects.create(organization=Organization.objects.create(name='Asosiy maktab'), name='Asosiy')
         Position.objects.get_or_create(name='Direktor', defaults={'default_perms': ['students.view']})
         self.tmp = Path(tempfile.mkdtemp())
@@ -69,7 +70,7 @@ class PaySheetImportTests(TestCase):
         self.assertTrue(director.staff_profile.is_active)
         self.assertTrue(director.check_password('9666') and director.must_change_password)
         self.assertFalse(User.objects.get(last_name='Mamatov').staff_profile.is_active)
-        self.assertTrue(all(u.branches.filter(pk=self.branch.pk).exists() for u in User.objects.all()))
+        self.assertTrue(all(list(u.branches.all()) == [self.branch] for u in User.objects.all()))   # markaz filiali qo'shilmadi
 
         sheets = read_pay_sheets(self.tmp / 'pay.xlsx')
         self.assertEqual(list(sheets), ['1-Green', '3-Blue'])

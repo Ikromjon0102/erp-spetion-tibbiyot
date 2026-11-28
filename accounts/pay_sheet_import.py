@@ -135,6 +135,7 @@ def import_staff_sheet(rows, branch):
             continue
         if not phone:
             report['no_phone'].append(full)
+        is_new = user is None
         if title:                                                 # dars bermaydigan xodim
             position = Position.objects.filter(name=title).first() or Position.objects.create(name=title, default_perms=[])
             if user is None:
@@ -164,7 +165,10 @@ def import_staff_sheet(rows, branch):
             user.access_id = user.access_id or next_teacher_id()
             user.save()
             report['teachers'] += 1
-        user.branches.add(branch)
+        if is_new:          # signal (org/signals.py) yangi xodimni «birinchi filial»ga ham qo'shadi — faqat shu filial qolsin
+            user.branches.set([branch])
+        else:
+            user.branches.add(branch)
     return report
 
 
