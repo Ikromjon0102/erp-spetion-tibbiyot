@@ -2,6 +2,11 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## my.spetion.uz: sinov ma'lumotlari o'chirildi (2026-11-28)
+- Hamma mock ma'lumot o'chirildi: 64 foydalanuvchi (48 o'quvchi, ustozlar, xodimlar, ota-ona), guruh, fan, dars, davomat, baho, uy vazifa, e'lon, to'lov, xarajat, oylik, menyu va taomlar, galereya, terminallar va voqealar, faoliyat jurnali, sessiyalar.
+- Qoldi: 4 tashkilot, 7 filial (sozlamalari bilan), 9 lavozim. Yangi egasi hisobi `asoschi` (birinchi kirishda parol almashtiriladi).
+- Oldin zaxira: `/var/backups/erp/erp-before-mock-wipe-20261128.dump` (pg_dump). Bo'sh bazada 58 panel sahifasi har filialda tekshirildi.
+
 ## Agent v0.1.1: terminallar kameralardan ajratiladi (2026-11-28)
 - Asosiy maktab tarmog'ida SADP 60 ta Hikvision qurilma topdi (4 terminal + kamera/registratorlar). `DeviceType` raqam kodi (852140) bo'lgani uchun ro'yxatda farqlab bo'lmasdi.
 - Model endi seriya raqamidan olinadi (`DS-K1T341CM…` → `DS-K1T341CM`); biriktirish oynasida faqat `DS-K…` (kirish nazorati) qurilmalari, IP tartibida; kameralar soni yozib qo'yiladi.

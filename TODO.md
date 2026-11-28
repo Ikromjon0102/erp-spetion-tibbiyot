@@ -45,5 +45,8 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Agent 2-bosqich: Windows dasturi `SpetionAgent.exe` (fonda, tray, SADP qidiruv, biriktirish, avto-sync, DPAPI, o'zini yangilash)
 - [ ] Agentni binoda sinash: Tibbiyot (4 terminal), keyin Asosiy maktab; so'ng bog'cha va markaz terminallari kelgach
 - [ ] Founder javoblari: Excel (narx/chegirma, «Grand/Free/tibbiyot/bol-y/Yozda», sentabr–noyabr to'lovlari, kirill ismlar)
-- [ ] Mock ma'lumotlarni o'chirish; Tibbiyot maktabini eski serverdan ko'chirish; Asosiy maktabni Excel'dan yuklash
+- [x] Mock ma'lumotlarni o'chirish (2026-11-28; zaxira `/var/backups/erp/erp-before-mock-wipe-20261128.dump`)
+- [ ] Asl ma'lumotlarni `datalar/` ga yig'ish va kiritish: Tibbiyot (eski serverdan), Asosiy maktab (Excel + terminaldagi 190 kishi/123 yuz), bog'cha, markaz
+- [ ] Terminallarni panelga qayta qo'shish: Tibbiyot 4, Asosiy maktab 4 (192.168.1.190–193)
+- [ ] Exam platformasidagi sinov o'quvchilarini tozalash (ERP tomonidagi bog'lanishlar o'chirildi)
 - [ ] Ko'chirish kuni: med.spetion.uz sertifikatini nusxalash → DNS → `nginx-med-legacy.conf`; ALLOWED_HOSTS ga med.spetion.uz; BOT_TOKEN va webhook; SITE_URL=my.spetion.uz; terminal tekshiruvi
