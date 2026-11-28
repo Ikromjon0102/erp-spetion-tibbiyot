@@ -106,3 +106,12 @@ Markaz va bog'cha jarayonlari maktabnikiga deyarli bir xil: oylik to'lov, qarzdo
 - Boshida **imzosiz** exe (8 ta o'rnatishni o'zimiz qilamiz; Windows «noma'lum dastur» ogohlantirishi). Imzo sertifikati keyin.
 - Yangi terminallar: hozirgi model (DS-K1T343EFWX), imkon bo'lsa LAN kabel, routerda doimiy IP.
 - ISUP («Platform access», kompyutersiz) keyinroq alohida o'rganiladi.
+
+## 14. Terminallarni serverdan boshqarish: ISUP 5.0 (2026-11-28, taklif — founder tasdig'i kutilmoqda)
+- Binodagi Windows agent dalada ishlamadi. Taklif: eduschool.uz kabi **ISUP 5.0** — terminal o'zi serverga tashqariga ulanadi, server shu ulanish orqali foydalanuvchi va yuz rasmini yuboradi, hodisalarni oladi. Binoda kompyuter va routerda port kerak emas. To'liq reja: `docs/isup-server.md`.
+- **Hikvision'ning rasmiy ISUP SDK** (Linux x64) + o'zimizning kichik Python shlyuzi. **Sabab:** protokol yopiq va shifrlangan (har terminal kaliti + sessiya kaliti); ishonchli ochiq kodli ISUP 5.0 server topilmadi (topilganlari o'ylab topilgan format yoki SDK'ning ruxsatsiz nusxasi); protokolni o'zimiz yozish — haftalar va ishonchsiz. SDK'ni **founder o'z hisobi bilan** yuklab oladi va litsenziyasini qabul qiladi; repoga qo'yilmaydi.
+- Python (ctypes), Java emas: alohida JVM xotirasi kerak emas, loyiha muhiti va testlari bir xil.
+- Hodisalar mavjud `/api/access/hikvision/<token>/` ga tushadi; terminaldagi **HTTP listening o'chirilmaydi** (shlyuz to'xtasa ham hodisa keladi; ikki yo'ldan kelgan skan bitta yozuv bo'ladi).
+- Yuz rasmi terminalga **bir martalik, 5 daqiqalik HTTPS manzil** (faceURL) bilan beriladi; bolalar rasmlari ochiq papkada turmaydi.
+- Terminallarga IP emas, `isup.spetion.uz` nomi yoziladi — server ko'chganda 20 terminalni qayta sozlash shart bo'lmaydi.
+- eduschool yozgan odamlar terminalda qoladi: sync faqat o'zi yozganlarni o'chiradi; raqam boshqa odamda bo'lsa — avtomatik yozilmaydi.
