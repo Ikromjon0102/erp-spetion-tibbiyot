@@ -47,7 +47,9 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [ ] Founder javoblari: Excel (narx/chegirma, «Grand/Free/tibbiyot/bol-y/Yozda», sentabr–noyabr to'lovlari, kirill ismlar)
 - [x] Mock ma'lumotlarni o'chirish (2026-11-28; zaxira `/var/backups/erp/erp-before-mock-wipe-20261128.dump`)
 - [x] Asosiy maktab: 25 sinf, 420 o'quvchi, ota-onalar, 61 xodim (2026-11-28)
-- [ ] Asosiy maktab: oylik badal / chegirma / sentabr–noyabr to'lovlari (Grand, Free, tibbiyot, bol-y, Yozda), dars jadvali (1-A/B/V/G ↔ Green/Red/White/Blue), yuz rasmlari (Telegram eksport yoki terminal)
+- [x] Asosiy maktab: oylik badal, chegirma, grant, Free, sentabr–noyabr to'lovlari (2026-11-28)
+- [ ] Asosiy maktab: `korib_chiqish.txt` dagi 30 holat (badalsiz 20, bol-y/spravka 4, «Shoxsanam opa», «25-da», «100$», 200 000)
+- [ ] Asosiy maktab: dars jadvali (yangi format importchisi; sinf nomlari, ustozlar mosligi), yuz rasmlari (Telegram eksport yoki terminal)
 - [ ] Asl ma'lumotlarni `datalar/` ga yig'ish va kiritish: Tibbiyot (eski serverdan), Asosiy maktab (Excel + terminaldagi 190 kishi/123 yuz), bog'cha, markaz
 - [ ] Terminallarni panelga qayta qo'shish: Tibbiyot 4, Asosiy maktab 4 (192.168.1.190–193)
 - [ ] Exam platformasidagi sinov o'quvchilarini tozalash (ERP tomonidagi bog'lanishlar o'chirildi)

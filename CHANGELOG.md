@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Asosiy maktab: to'lovlar, chegirmalar va grantlar kiritildi (2026-11-28)
+- `import_pay_sheet --payments` (`billing/pay_sheet_history.py`), founder qoidalari: badal 2 000 000; kam yozilgani shaxsiy chegirma (10/35/25/30/19/20/5%); «Grand» — choraklik imtihon 1-o'rni, noyabr–dekabr 100%; «Free» — muddatsiz 100% (panelda olib tashlash mumkin); «1300000(bol)» — kasal oy summasi; «tibbiyot» — Tibbiyotga o'tgan: shu oydan hisob bekor, o'quvchi chiqarildi; «Yozda», «bol-y», «spravka» va tushunarsiz belgilar ko'rib chiqish ro'yxatiga.
+- my.spetion.uz: 880 to'lov (1 614 800 000 so'm), 1256 oylik hisob (sentabr–noyabr), 170 chegirma, 22 grant, 1 Free, 5 o'quvchi Tibbiyotga o'tgan. Excel sana raqamlari (46346) to'lov deb olinmaydi.
+- O'quvchi ismlari: kirill -> lotin, BOSH HARF -> oddiy (35 ta). Asoschi hisobi: Sherzod Mahammadjanov.
+- Ko'rib chiqish ro'yxati: `datalar/asosiy maktab/korib_chiqish.txt` (30 holat). Zaxira: `/var/backups/erp/erp-before-asosiy-payments-20261128.dump`.
+
 ## Asosiy maktab: o'quvchilar va xodimlar kiritildi (2026-11-28)
 - Yangi buyruq `import_pay_sheet --branch N --staff X.xlsx --students Y.xlsx [--dry-run]`: maktabning to'lov jadvali (har sinf alohida varaq) va xodimlar ro'yxati. Avval xodimlar — farzandi shu maktabda o'qiydigan ustoz bitta hisobda ham ota-ona bo'ladi. Qayta ishga tushirsa takrorlanmaydi.
 - my.spetion.uz ga: 25 sinf, 420 o'quvchi (Face ID bilan), 495 ota-ona (Telefon 1 va 2; aka-uka bitta ota-onada), 45 ustoz (boshlang'ich parol — telefonning oxirgi 4 raqami, almashtirish shart), 16 boshqa xodim (Direktor panelga kiradi, qolganlari kirmaydi).
