@@ -49,7 +49,9 @@ Qaror (yangilandi): **bitta tizim, bitta baza, ko'p tashkilot** (multi-tenant). 
 - [x] Asosiy maktab: 25 sinf, 420 o'quvchi, ota-onalar, 61 xodim (2026-11-28)
 - [x] Asosiy maktab: oylik badal, chegirma, grant, Free, sentabr–noyabr to'lovlari (2026-11-28)
 - [ ] Asosiy maktab: `korib_chiqish.txt` dagi 30 holat (badalsiz 20, bol-y/spravka 4, «Shoxsanam opa», «25-da», «100$», 200 000)
-- [ ] Asosiy maktab: dars jadvali (yangi format importchisi; sinf nomlari, ustozlar mosligi), yuz rasmlari (Telegram eksport yoki terminal)
+- [x] Asosiy maktab: dars jadvali (1000 dars, 2026-11-28); o'quvchi rasmlari Telegramdan 305 / 415, ustozlar 25 / 47
+- [ ] Asosiy maktab: dushanba (30.11) 110 o'quvchi va 22 ustoz suratga olinadi (`datalar/asosiy maktab/rasmsizlar_dushanba.txt`); «Абдуллаева Хилола» (Mental arifmetika) kim — telefon
+- [ ] Tibbiyot ko'chirilganda: «Ra'no Madaminova», «Yakubova Nigora» rasmlari (`datalar/asosiy maktab/ustozlar rasmi`)
 - [ ] Asl ma'lumotlarni `datalar/` ga yig'ish va kiritish: Tibbiyot (eski serverdan), Asosiy maktab (Excel + terminaldagi 190 kishi/123 yuz), bog'cha, markaz
 - [ ] Terminallarni panelga qayta qo'shish: Tibbiyot 4, Asosiy maktab 4 (192.168.1.190–193)
 - [ ] **ISUP server** (`docs/isup-server.md`): founder ISUP SDK (Linux64) ni o'z hisobi bilan yuklab oladi → M0 faceURL sinovi (LAN) → M1 CMS + pass-through → M2 hodisalar → M3 Django (`Device.transport`, `RemoteClient`) → M4 terminallarni o'tkazish (Tibbiyot, keyin Asosiy maktab). Asosiy maktab: httpHosts 2-slotini hoziroq bizga yo'naltirish mumkin

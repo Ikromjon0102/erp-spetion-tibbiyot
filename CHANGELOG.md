@@ -2,6 +2,12 @@
 
 Yangi o'zgarishlar yuqoridan qo'shiladi.
 
+## Asosiy maktab: dars jadvali kiritildi (2026-11-28)
+- Yangi buyruq `import_school_schedule --branch N --file <jadval.xlsx> [--pay-sheet <to'lov jadvali>] [--dry-run]` (`academics/school_schedule_import.py`): ruscha «Расписание Классов» varag'i (5 kun × 9 soat). Fanlar o'zbekchaga (Математика -> Matematika, Урок Будущего -> Kelajak darsi ...), ustoz ismi kirill -> lotin qilib filial ustozlaridan topiladi, «Кл. руководитель» — to'lov jadvalidagi sinf rahbari, «Вакант» — ustozsiz, «ОБЕД» — dars emas. Qayta yuklansa eski darslar nofaol qilinadi (davomat tarixi qoladi).
+- Sinflar: 1-A/B/V/G -> 1-Red/White/Green/Blue; 2..7 A -> Red, B -> Blue, 5-V -> 5-Green; 8-A -> 8-9-Huquq, 8-B -> 8-Red, 8-V -> 8-Blue, 8-G -> 8-Ingliz, 8-D -> 8-Med rus; 10-A/B/V -> 10-Huquq/Matem/Ingliz.
+- my.spetion.uz: 1000 dars, 25 sinf, 20 fan, 47 ustozdan 46 tasi topildi. Ustozsiz: «Абдуллаева Хилола» (Mental arifmetika, 8 dars — xodimlar ro'yxatida yo'q), 8-Ingliz va 8-Med rus «Kelajak darsi» (sinf rahbari yo'q). Zaxira: `/var/backups/erp/erp-before-schedule-20261128.dump`.
+- Ustozlar rasmlari: «Teacher.jpg» — Tursunboyev Faxriddin (25 / 47). «Ra'no Madaminova», «Yakubova Nigora» — Tibbiyot ustozlari (Tibbiyot ko'chirilganda).
+
 ## Ilova ikonkasi: 4 rangli belgi (2026-11-28)
 - O'rnatilgan ilova (PWA) va iPhone ikonkasi: gradientli, chetlari qirqilgan belgi o'rniga oq fonda 4 rangli Spetion belgisining o'zi (`static/brand/icon-*.png`, `apple-touch-icon.png`). Android doira/qirqishida ham to'liq ko'rinadi (maskable — xavfsiz zona ichida). Ochilish ekrani foni oq. Manzilga `?v=3` — telefon yangi ikonkani oladi.
 
